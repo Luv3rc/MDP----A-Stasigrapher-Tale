@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg130268.combat;
+package it.unicam.cs.mpgc.rpg130268.combat.mechanics;
 
 public record Stats(int maxHealth, int strength, int defense, int agility, int luck)
 {

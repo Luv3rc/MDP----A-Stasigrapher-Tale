@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg130268.combat;
+package it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap;
 
 public class ApPool
 {
@@ -28,6 +28,11 @@ public class ApPool
             throw new IllegalArgumentException("Not enough AP!");
 
         currentAp -= cost;
+    }
+
+    public void fillAp()
+    {
+        this.currentAp = this.maxAp;
     }
 
     public void gainAp(int amount)
