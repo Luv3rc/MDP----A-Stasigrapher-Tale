@@ -6,5 +6,7 @@ public interface Ability
     String getName();
     int getApCost();
 
-    void perform(Fighter user, Fighter target);
+    void perform(Fighter target);
+
+    default boolean canPerform() { return true; }
 }

@@ -42,5 +42,5 @@ public class ApPool
     }
 
     // Used at the start of the battle to set the AP to its starting value (usually 3)
-    public void reset() { currentAp = startingAp; }
+    public void resetToStartingValue() { currentAp = startingAp; }
 }

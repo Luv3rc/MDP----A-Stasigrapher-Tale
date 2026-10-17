@@ -2,7 +2,7 @@ package it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink;
 
 public class InkPool
 {
-    private int maxInk; // 10 at start, max of 20 based on level
+    private int maxInk; // 8 at start, max of 20 (level 60) based on level
     private int currentInk;
 
     public InkPool(int maxInk, int currentInk, InkRules rules)

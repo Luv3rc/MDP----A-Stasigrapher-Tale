@@ -1,10 +1,13 @@
-package it.unicam.cs.mpgc.rpg130268.combat.actors.partyMembers;
+package it.unicam.cs.mpgc.rpg130268.combat.actors.party;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApPool;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
+
+import java.util.List;
 
 // This is anyone who is part of a party.
 // So it's a Fighter with AP and a set of abilities and can be controlled by a player
@@ -15,6 +18,9 @@ public abstract class PartyMember extends Fighter
     private final LevelRules levelRules;
     private final ApPool ap;
     private final ApRules apRules;
+
+    public abstract List<Ability> getAbilities();
+
 
     public PartyMember
             (String name, Stats stats, int maxAp, int startingAp, ApRules apRules,
@@ -38,7 +44,7 @@ public abstract class PartyMember extends Fighter
 
     public int getLevel () { return level; }
     public int getCurrentXp() { return currentXp; }
-    public ApPool ap() { return ap; }
+    public ApPool getAp() { return ap; }
 
     public void gainXp(int xp)
     {
@@ -70,5 +76,5 @@ public abstract class PartyMember extends Fighter
     @Override
     public void onTurnStart() { ap.gainAp(apRules.apGainOnTurnStart()); }
     @Override
-    public void onBattleStart() { ap.reset(); }
+    public void onBattleStart() { ap.resetToStartingValue(); }
 }

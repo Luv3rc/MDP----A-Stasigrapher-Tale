@@ -3,7 +3,7 @@ package it.unicam.cs.mpgc.rpg130268.combat.actors;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 
 // This is anyone who can take part in a combat. Knows nothing about AP
-public class Fighter
+public abstract class Fighter
 {
     private final String name;
     private final Stats stats;
