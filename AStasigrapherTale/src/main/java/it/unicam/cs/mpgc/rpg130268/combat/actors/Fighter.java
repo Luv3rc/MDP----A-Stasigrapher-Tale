@@ -45,5 +45,7 @@ public class Fighter
     // ? Will I need more here
     public void onBasicAttackLanded() {}
     public void onPerfectParry() {}
+    public void onTurnStart() {}
+    public void onBattleStart() {}
 
 }

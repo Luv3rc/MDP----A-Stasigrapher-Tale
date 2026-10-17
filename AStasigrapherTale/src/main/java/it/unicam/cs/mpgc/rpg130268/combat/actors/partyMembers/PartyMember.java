@@ -16,7 +16,9 @@ public abstract class PartyMember extends Fighter
     private final ApPool ap;
     private final ApRules apRules;
 
-    public PartyMember(String name, Stats stats, int maxAp, int startingAp, ApRules apRules, LevelRules levelRules, int startingLevel, int startingXp)
+    public PartyMember
+            (String name, Stats stats, int maxAp, int startingAp, ApRules apRules,
+             LevelRules levelRules, int startingLevel, int startingXp)
     {
         super(name, stats);
         this.ap = new ApPool(maxAp, startingAp);
@@ -27,8 +29,8 @@ public abstract class PartyMember extends Fighter
         if (startingLevel < 1 || startingLevel > levelRules.maxLevel())
             throw new IllegalArgumentException("Starting level must be between 1 and " + levelRules.maxLevel());
 
-        if (startingXp < levelRules.requiredXpForLevel(startingLevel))
-            throw new IllegalArgumentException("startingXp is too low for the provided startingLevel");
+        if (startingXp < 0 || startingXp >= levelRules.requiredXpForLevel(startingLevel + 1))
+            throw new IllegalArgumentException("Starting XP must be between 0 and " + (levelRules.requiredXpForLevel(startingLevel + 1) - 1));
 
         this.level = startingLevel;
         this.currentXp = startingXp;
@@ -61,9 +63,12 @@ public abstract class PartyMember extends Fighter
     // This method can vary depending on the party member, so it's abstract and must be implemented by subclasses
     protected abstract void onLevelUp();
 
-
     @Override
     public void onBasicAttackLanded() { ap.gainAp(apRules.apGainOnBasicAttack()); }
     @Override
     public void onPerfectParry() { ap.gainAp(apRules.apGainOnPerfectParry()); }
+    @Override
+    public void onTurnStart() { ap.gainAp(apRules.apGainOnTurnStart()); }
+    @Override
+    public void onBattleStart() { ap.reset(); }
 }

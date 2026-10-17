@@ -4,6 +4,7 @@ public class ApPool
 {
     private final int maxAp;
     private int currentAp;
+    private final int startingAp;
 
     public ApPool (int maxAp, int startingAp)
     {
@@ -14,6 +15,7 @@ public class ApPool
                 throw new IllegalArgumentException("startingAp must be between 0 and maxAp");
 
         this.maxAp = maxAp;
+        this.startingAp = startingAp;
         this.currentAp = startingAp;
     }
 
@@ -30,10 +32,7 @@ public class ApPool
         currentAp -= cost;
     }
 
-    public void fillAp()
-    {
-        this.currentAp = this.maxAp;
-    }
+    public void fillAp() { this.currentAp = this.maxAp; }
 
     public void gainAp(int amount)
     {
@@ -42,4 +41,6 @@ public class ApPool
         currentAp = Math.min(maxAp, currentAp + Math.max(0, amount));
     }
 
+    // Used at the start of the battle to set the AP to its starting value (usually 3)
+    public void reset() { currentAp = startingAp; }
 }
