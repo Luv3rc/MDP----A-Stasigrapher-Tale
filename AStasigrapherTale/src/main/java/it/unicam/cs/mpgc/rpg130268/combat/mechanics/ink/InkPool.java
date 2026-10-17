@@ -49,4 +49,17 @@ public class InkPool
     {
         this.maxInk = Math.min(rules.maxCapacity(), this.maxInk + rules.capacityUpgradePerTenLevel());
     }
+
+    // Drains ink and return it to the caller.
+    // This is used when Gunther uses abilities which consumes ink to deal damage.
+    public int drainInk()
+    {
+        int drainedInk = currentInk;
+        currentInk = 0;
+        return drainedInk;
+    }
+
+    // At the start of each battle, the InkPool (Gunther's Gauge) is reset to 0
+    public void resetInk() { this.currentInk = 0; }
+
 }

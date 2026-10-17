@@ -24,4 +24,15 @@ public class Gunther extends PartyMember
 
     public InkPool ink() { return ink; }
 
+    @Override
+    public void onBattleStart() {
+        super.onBattleStart();
+        ink.resetInk();
+    }
+
+    @Override
+    public void onBasicAttackLanded() {
+        super.onBasicAttackLanded();
+        ink.gainInk(InkRules.defaults().inkGainPerHit());
+    }
 }
