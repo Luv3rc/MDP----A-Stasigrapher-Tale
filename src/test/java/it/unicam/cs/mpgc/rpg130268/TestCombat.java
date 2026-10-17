@@ -308,8 +308,9 @@ class GuntherAbilitiesTest
     {
         Gunther g = gunther(4);
         g.learn(StasigraphicFury::new);
+        int before = g.getAbilities().size();
         g.learn(StasigraphicFury::new);
-        assertEquals(1, countByName(g, "Stasigraphic Fury"));
+        assertEquals(before, g.getAbilities().size(), "La dimensione della lista delle abilità non dovrebbe aumentare imparando un duplicato");
     }
 
     @Test

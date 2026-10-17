@@ -15,6 +15,7 @@ public class ThirstForInk extends PartyAbility<Gunther>
     public String getName() { return "Thirst for Ink"; }
     public int getApCost() { return AP_COST; }
 
+    @Override
     protected boolean isValidTarget(Fighter target) { return user == target; }
 
     @Override

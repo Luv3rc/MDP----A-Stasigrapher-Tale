@@ -24,7 +24,7 @@ public class Gunther extends PartyMember
     public Gunther(Stats stats, int maxAp, int startingAp, ApRules apRules, InkRules inkRules)
     {
         super("Gunther", stats, maxAp, startingAp, apRules, LevelRules.defaults(), 1, 0);
-        this.ink = new InkPool(8, 0, InkRules.defaults());
+        this.ink = new InkPool(8, 0, inkRules);
         this.inkRules = inkRules;
         this.learn(CutsForInk::new);
         this.learn(StasigraphicFury::new);
@@ -32,6 +32,7 @@ public class Gunther extends PartyMember
     }
 
     public InkPool getInk() { return ink; }
+    public InkRules getInkRules() { return inkRules; }
     @Override
     public List<Ability> getAbilities() { return List.copyOf(abilities); }
 

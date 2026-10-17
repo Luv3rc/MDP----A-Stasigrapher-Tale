@@ -2,7 +2,6 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills.gunther;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
-import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.PartyAbility;
 
 // This ability can be performed only by Gunther.
@@ -25,7 +24,7 @@ public class CutsForInk extends PartyAbility<Gunther>
     @Override
     protected void applyEffect(Fighter target)
     {
-        user.getInk().gainInk(HITS * InkRules.defaults().inkGainPerHit());
+        user.getInk().gainInk(HITS * user.getInkRules().defaults().inkGainPerHit());
 
         // TODO: DamageCalculator
         int damage = (HITS * user.getStats().strength());
