@@ -8,7 +8,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 // The greater the amount of ink, the greater the damage dealt to the target.
 public class StasigraphicCuts implements Ability
 {
-    public String getName() { return "Stratigraphic Cuts"; }
+    public String getName() { return "Stasigraphic Cuts"; }
     public int getApCost() { return 1; }
 
     public void perform(Fighter user, Fighter target)
