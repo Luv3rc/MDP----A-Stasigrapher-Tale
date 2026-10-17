@@ -19,7 +19,8 @@ public class ThirstForInk extends PartyAbility<Gunther>
     protected boolean isValidTarget(Fighter target) { return user == target; }
 
     @Override
-    protected void applyEffect(Fighter target) {
+    protected void applyEffect(Fighter target)
+    {
         user.setHp(1);
         user.getAp().fillAp();
         user.getInk().fillInk();
