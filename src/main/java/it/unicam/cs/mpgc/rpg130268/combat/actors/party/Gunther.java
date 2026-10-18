@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Function;
 
 // TODO
-public class Gunther extends PartyMember
+public final class Gunther extends PartyMember
 {
     private final InkPool ink;
     private final InkRules inkRules;

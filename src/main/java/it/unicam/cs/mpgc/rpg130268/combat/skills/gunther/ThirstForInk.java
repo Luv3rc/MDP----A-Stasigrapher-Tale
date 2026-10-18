@@ -20,7 +20,7 @@ public class ThirstForInk extends PartyAbility<Gunther>
     public TargetType getTargetType() { return TargetType.SELF; }
 
     @Override
-    protected void applyEffect(List<Fighter> target)
+    protected void applyEffect(List<Fighter> targets)
     {
         user.setHp(1);
         user.getAp().fillAp();

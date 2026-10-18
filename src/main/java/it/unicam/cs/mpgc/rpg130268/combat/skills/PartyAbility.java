@@ -24,7 +24,8 @@ public abstract class PartyAbility<U extends PartyMember> implements Ability
 
     // Order of the steps is fixed
     @Override
-    public final void perform(List<Fighter> targets)    {
+    public final void perform(List<Fighter> targets)
+    {
         if (!canPerform())
             throw new IllegalStateException(getName() + " cannot be performed");
 
@@ -53,7 +54,7 @@ public abstract class PartyAbility<U extends PartyMember> implements Ability
         {
             case SELF ->
             {
-                if (targets.size() != 1 || targets.getFirst() != user) // was get(0)
+                if (targets.size() != 1 || targets.getFirst() != user)
                     throw new IllegalArgumentException(getName() + " must target only its user");
             }
             case ONE_ENEMY ->

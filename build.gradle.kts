@@ -29,3 +29,7 @@ javafx {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType<JavaCompile> {
+    options.release.set(21)
+}
