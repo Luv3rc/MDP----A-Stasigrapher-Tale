@@ -34,4 +34,30 @@ class ReactionWindowsTest
     {
         assertThrows(IllegalArgumentException.class, () -> new ReactionWindows(200, 200));
     }
+
+    @Test void windowIsSplitThreeQuartersBeforeAndOneQuarterAfter()
+    {
+        ReactionWindows windows = ReactionWindows.defaults();
+
+        assertEquals(120, windows.earlyParryWindowMs());
+        assertEquals(40, windows.lateParryWindowMs());
+        assertEquals(225, windows.earlyDodgeWindowMs());
+        assertEquals(75, windows.lateDodgeWindowMs());
+    }
+
+    @Test void earlyAndLatePartsAlwaysAddUpToTheWholeWindow()
+    {
+        ReactionWindows odd = new ReactionWindows(171, 301);
+
+        assertEquals(171, odd.earlyParryWindowMs() + odd.lateParryWindowMs());
+        assertEquals(301, odd.earlyDodgeWindowMs() + odd.lateDodgeWindowMs());
+    }
+
+    @Test void theEarlyPartIsAlwaysTheBiggerOne()
+    {
+        ReactionWindows windows = new ReactionWindows(170, 333);
+
+        assertTrue(windows.earlyParryWindowMs() > windows.lateParryWindowMs());
+        assertTrue(windows.earlyDodgeWindowMs() > windows.lateDodgeWindowMs());
+    }
 }

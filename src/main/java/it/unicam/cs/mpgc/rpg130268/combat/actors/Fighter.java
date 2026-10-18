@@ -42,10 +42,10 @@ public abstract class Fighter
         hp = Math.min(stats.maxHealth(), hp + heal);
     }
 
-    // ? Will I need more here
+    // ? Will I need more here -- Will be Overridden
     public void onBasicAttackLanded() {}
     public void onPerfectParry() {}
     public void onTurnStart() {}
     public void onBattleStart() {}
-
+    public int getWeaponDamage() { return 0; }
 }
