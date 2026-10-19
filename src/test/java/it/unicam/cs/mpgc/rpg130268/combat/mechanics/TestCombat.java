@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StatsTest {
-    @Test void validStatsAreCreated() {
+    @Test void validStatsAreCreated()
+    {
         Stats s = new Stats(50, 8, 4, 6, 3);
         assertEquals(50, s.maxHealth());
     }

@@ -6,9 +6,11 @@ import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.CutsForInk;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.StasigraphicFury;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.ThirstForInk;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbility;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.StasigraphicFury;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -16,11 +18,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AbilityTest {
+    // The context applies the damage at once and never crits (see FakeCombatContext)
+    private final FakeCombatContext context = new FakeCombatContext();
+
     private Gunther gunther(int startingAp) {
         return new Gunther(new Stats(50, 8, 4, 6, 3), 9, startingAp,
                 ApRules.defaults(), InkRules.defaults());
     }
 
+    // Defense 1: the defense lets 30/31 of the power through
     private Enemy dummy() {
         return new Enemy("Dummy", new Stats(100, 1, 1, 1, 1));
     }
@@ -35,16 +41,28 @@ class AbilityTest {
         assertEquals(TargetType.ONE_ENEMY, new CutsForInk(g).getTargetType());
     }
 
+    // ---------- The context is required ----------
+
+    @Test
+    void performWithoutAContextThrowsAndCostsNothing() {
+        Gunther g = gunther(3);
+
+        assertThrows(NullPointerException.class, () -> new ThirstForInk(g).perform(List.of(g), null));
+        assertEquals(3, g.getAp().getCurrentAp());
+        assertEquals(50, g.getHp());
+    }
+
     // ---------- Thirst for Ink (SELF) ----------
 
     @Test
     void thirstForInkWorksWithExactlyOneAp() {
         Gunther g = gunther(1);
-        new ThirstForInk(g).perform(List.of(g));
+        new ThirstForInk(g).perform(List.of(g), context);
 
         assertEquals(1, g.getHp());
         assertEquals(9, g.getAp().getCurrentAp());   // paid 1, then refilled to max
         assertEquals(8, g.getInk().getCurrentInk()); // gauge full
+        assertEquals(0, context.hitsResolved);       // it asks nothing to the engine
     }
 
     @Test
@@ -57,7 +75,7 @@ class AbilityTest {
         Gunther g = gunther(3);
         Enemy target = dummy();
 
-        assertThrows(IllegalArgumentException.class, () -> new ThirstForInk(g).perform(List.of(target)));
+        assertThrows(IllegalArgumentException.class, () -> new ThirstForInk(g).perform(List.of(target), context));
         assertEquals(3, g.getAp().getCurrentAp());
         assertEquals(50, g.getHp());
     }
@@ -67,7 +85,7 @@ class AbilityTest {
         Gunther g = gunther(3);
 
         assertThrows(IllegalArgumentException.class,
-                () -> new ThirstForInk(g).perform(List.of(g, dummy())));
+                () -> new ThirstForInk(g).perform(List.of(g, dummy()), context));
         assertEquals(3, g.getAp().getCurrentAp());
     }
 
@@ -93,11 +111,14 @@ class AbilityTest {
         g.getInk().gainInk(4);
         Enemy target = dummy();
 
-        new StasigraphicFury(g).perform(List.of(target));
+        new StasigraphicFury(g).perform(List.of(target), context);
 
         assertEquals(0, g.getAp().getCurrentAp());   // paid exactly 4
         assertEquals(0, g.getInk().getCurrentInk()); // gauge drained
-        assertEquals(100 - 33, target.getHp());      // 4 hits * 6 agility * 1.4 = 33.6 -> 33
+        assertEquals(4, context.hitsResolved);       // one resolved hit for every hit of the combo
+        // agility 6, ink bonus 1.4, defense lets 30/31 through:
+        // 3 light hits of 6 (6 * 0.75 * 1.4 = 6.3 -> 6.09) and 1 normal hit of 8 (8.4 -> 8.13)
+        assertEquals(100 - (3 * 6 + 8), target.getHp());
     }
 
     @Test
@@ -105,14 +126,26 @@ class AbilityTest {
         Gunther low = gunther(4);
         low.getInk().gainInk(4);
         Enemy lowTarget = dummy();
-        new StasigraphicFury(low).perform(List.of(lowTarget));
+        new StasigraphicFury(low).perform(List.of(lowTarget), context);
 
         Gunther high = gunther(4);
         high.getInk().gainInk(8);
         Enemy highTarget = dummy();
-        new StasigraphicFury(high).perform(List.of(highTarget));
+        new StasigraphicFury(high).perform(List.of(highTarget), context);
 
         assertTrue(highTarget.getHp() < lowTarget.getHp());
+    }
+
+    @Test
+    void furyStopsHittingOnceTheTargetIsDead() {
+        Gunther g = gunther(4);
+        g.getInk().gainInk(4);
+        Enemy weak = new Enemy("Weak", new Stats(5, 1, 1, 1, 1));
+
+        new StasigraphicFury(g).perform(List.of(weak), context);
+
+        assertFalse(weak.isAlive());
+        assertEquals(1, context.hitsResolved);       // the first hit killed it, the other 3 never happened
     }
 
     @Test
@@ -121,7 +154,7 @@ class AbilityTest {
         g.getInk().gainInk(2);                       // not enough ink
         Enemy target = dummy();
 
-        assertThrows(IllegalStateException.class, () -> new StasigraphicFury(g).perform(List.of(target)));
+        assertThrows(IllegalStateException.class, () -> new StasigraphicFury(g).perform(List.of(target), context));
         assertEquals(4, g.getAp().getCurrentAp());   // AP untouched
         assertEquals(2, g.getInk().getCurrentInk()); // ink untouched
         assertEquals(100, target.getHp());
@@ -132,7 +165,7 @@ class AbilityTest {
         Gunther g = gunther(4);
         g.getInk().gainInk(4);
 
-        assertThrows(IllegalArgumentException.class, () -> new StasigraphicFury(g).perform(List.of(g)));
+        assertThrows(IllegalArgumentException.class, () -> new StasigraphicFury(g).perform(List.of(g), context));
         assertEquals(4, g.getAp().getCurrentAp());
         assertEquals(4, g.getInk().getCurrentInk());
         assertEquals(50, g.getHp());
@@ -144,9 +177,9 @@ class AbilityTest {
         g.getInk().gainInk(4);
 
         assertThrows(IllegalArgumentException.class,
-                () -> new StasigraphicFury(g).perform(List.of(dummy(), dummy())));
+                () -> new StasigraphicFury(g).perform(List.of(dummy(), dummy()), context));
         assertThrows(IllegalArgumentException.class,
-                () -> new StasigraphicFury(g).perform(List.of()));
+                () -> new StasigraphicFury(g).perform(List.of(), context));
         assertEquals(4, g.getAp().getCurrentAp());   // nothing was paid
     }
 
@@ -157,11 +190,25 @@ class AbilityTest {
         Gunther g = gunther(3);
         Enemy target = dummy();
 
-        new CutsForInk(g).perform(List.of(target));
+        new CutsForInk(g).perform(List.of(target), context);
 
         assertEquals(0, g.getAp().getCurrentAp());
-        assertEquals(100 - 3 * 8, target.getHp());   // 3 hits * strength 8
+        assertEquals(3, context.hitsResolved);
+        // strength 8, defense lets 30/31 through: 2 light hits of 5 (6 -> 5.8) and 1 normal hit of 7 (8 -> 7.7)
+        assertEquals(100 - (5 + 5 + 7), target.getHp());
         assertEquals(3 * g.getInkRules().inkGainPerHit(), g.getInk().getCurrentInk());
+    }
+
+    @Test
+    void cutsStopAndGiveNoMoreInkOnceTheTargetIsDead() {
+        Gunther g = gunther(3);
+        Enemy weak = new Enemy("Weak", new Stats(5, 1, 1, 1, 1));
+
+        new CutsForInk(g).perform(List.of(weak), context);
+
+        assertFalse(weak.isAlive());
+        assertEquals(1, context.hitsResolved);       // only the first hit happened
+        assertEquals(g.getInkRules().inkGainPerHit(), g.getInk().getCurrentInk());   // ink only for that hit
     }
 
     // ---------- ALL_ENEMIES (no real skill uses it yet, so a tiny test ability) ----------
@@ -169,23 +216,16 @@ class AbilityTest {
     // Costs 1 AP and "hits" every target for 5
     private static class Sweep extends PartyAbility<Gunther> {
         Sweep(Gunther user) {
-            super(user);
+            super(user, "Sweep", TargetType.ALL_ENEMIES);
         }
 
-        public String getName() {
-            return "Sweep";
-        }
-
+        @Override
         public int getApCost() {
             return 1;
         }
 
-        public TargetType getTargetType() {
-            return TargetType.ALL_ENEMIES;
-        }
-
         @Override
-        protected void applyEffect(List<Fighter> targets) {
+        protected void applyEffect(List<Fighter> targets, CombatContext context) {
             for (Fighter target : targets) target.takeDamage(5);
         }
     }
@@ -196,7 +236,7 @@ class AbilityTest {
         Enemy first = dummy();
         Enemy second = dummy();
 
-        new AbilityTest.Sweep(g).perform(List.of(first, second));
+        new AbilityTest.Sweep(g).perform(List.of(first, second), context);
 
         assertEquals(95, first.getHp());
         assertEquals(95, second.getHp());
@@ -207,7 +247,7 @@ class AbilityTest {
     void allEnemiesAbilityCannotIncludeItsUser() {
         Gunther g = gunther(2);
 
-        assertThrows(IllegalArgumentException.class, () -> new AbilityTest.Sweep(g).perform(List.of(dummy(), g)));
+        assertThrows(IllegalArgumentException.class, () -> new AbilityTest.Sweep(g).perform(List.of(dummy(), g), context));
         assertEquals(2, g.getAp().getCurrentAp());
     }
 
@@ -215,6 +255,6 @@ class AbilityTest {
     void allEnemiesAbilityNeedsAtLeastOneTarget() {
         Gunther g = gunther(2);
 
-        assertThrows(IllegalArgumentException.class, () -> new AbilityTest.Sweep(g).perform(List.of()));
+        assertThrows(IllegalArgumentException.class, () -> new AbilityTest.Sweep(g).perform(List.of(), context));
     }
 }

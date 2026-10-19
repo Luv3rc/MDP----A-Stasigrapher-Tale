@@ -6,9 +6,9 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkPool;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.CutsForInk;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.StasigraphicFury;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.ThirstForInk;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.StasigraphicFury;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
 
 import java.util.ArrayList;
 import java.util.List;

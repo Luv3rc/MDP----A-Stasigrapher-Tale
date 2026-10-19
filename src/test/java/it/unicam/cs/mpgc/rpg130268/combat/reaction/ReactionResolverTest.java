@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.combat.reaction;
 
+import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,7 +9,7 @@ class ReactionResolverTest
 {
     // Default windows: parry 160 ms (120 early, 40 late), dodge 300 ms (225 early, 75 late)
     private final ReactionResolver resolver = new ReactionResolver(ReactionWindows.defaults());
-    private final Hit hit = new Hit(1000, ReactionOptions.PARRY_OR_DODGE);
+    private final Hit hit = new Hit(1000, ReactionOptions.PARRY_OR_DODGE, StrikeWeight.HEAVY);
 
     private ReactionOutcome parryAt(long ms) { return resolver.resolve(new ReactionInput(ReactionType.PARRY, ms), hit); }
     private ReactionOutcome dodgeAt(long ms) { return resolver.resolve(new ReactionInput(ReactionType.DODGE, ms), hit); }
@@ -104,7 +105,7 @@ class ReactionResolverTest
 
     @Test void dodgingAParryOnlyHitIsAMissEvenWithPerfectTiming()
     {
-        Hit parryOnly = new Hit(1000, ReactionOptions.PARRY_ONLY);
+        Hit parryOnly = new Hit(1000, ReactionOptions.PARRY_ONLY, StrikeWeight.HEAVY);
         ReactionOutcome out = resolver.resolve(new ReactionInput(ReactionType.DODGE, 1000), parryOnly);
 
         assertEquals(ReactionType.DODGE, out.type());      // remembers what the player pressed
@@ -113,7 +114,7 @@ class ReactionResolverTest
 
     @Test void parryingADodgeOnlyHitIsAMissEvenWithPerfectTiming()
     {
-        Hit dodgeOnly = new Hit(1000, ReactionOptions.DODGE_ONLY);
+        Hit dodgeOnly = new Hit(1000, ReactionOptions.DODGE_ONLY, StrikeWeight.HEAVY);
         ReactionOutcome out = resolver.resolve(new ReactionInput(ReactionType.PARRY, 1000), dodgeOnly);
 
         assertFalse(out.isSuccessfulParry());

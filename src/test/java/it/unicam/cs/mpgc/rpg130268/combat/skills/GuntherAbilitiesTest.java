@@ -4,8 +4,8 @@ import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.StasigraphicFury;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.gunther.ThirstForInk;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.StasigraphicFury;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

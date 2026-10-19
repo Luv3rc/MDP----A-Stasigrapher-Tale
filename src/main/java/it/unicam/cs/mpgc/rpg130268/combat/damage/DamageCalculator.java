@@ -8,8 +8,10 @@ import java.util.random.RandomGenerator;
 /* *
     Decides how much damage an attack deals. It does NOT apply it! the caller does target.takeDamage(...)!
 
-    1. base power = the attacker's stats weighted by the attack's Scaling * hits * multiplier
-    2. critical hit: rolled once per attack, with a chance based on the attacker's luck. It multiplies the power
+    1. base power = (the attacker's weapon damage + the attacker's stats weighted by the attack's Scaling)
+       * strike weight * bonus multiplier
+    2. critical hit: rolled at EVERY call (so every hit of a combo has its own roll), with a chance based on the
+       attacker's luck. It multiplies the power
     3. the target's defense lets only a part of the power through (see DamageRules.damageTakenFactor),
        the result is truncated and never below minDamage
 
@@ -38,7 +40,7 @@ public class DamageCalculator
         Objects.requireNonNull(target, "target must not be null");
 
         double scalingValue = spec.scaling().valueFor(attacker.getStats());
-        double power = (attacker.getWeaponDamage() + scalingValue) * spec.multiplier();
+        double power = (attacker.getWeaponDamage() + scalingValue) * spec.getTotalMultiplier();
 
         // An attack with no power does nothing: no roll and no minimum damage
         if (power == 0) return new DamageResult(0, false);
