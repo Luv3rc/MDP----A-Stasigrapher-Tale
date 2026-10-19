@@ -215,4 +215,54 @@ class EnemyAbilitiesTest {
         assertThrows(IllegalArgumentException.class, () -> new EnemyHeal(shaman, "Bad", TargetType.SELF, 1.1));
         assertDoesNotThrow(() -> new EnemyHeal(shaman, "Full", TargetType.SELF, 1.0));
     }
+
+    // ---------- Enemies learn abilities ----------
+
+    @Test
+    void anEnemyStartsWithoutAbilities() {
+        assertTrue(goblin().getListOfAbility().isEmpty());
+    }
+
+    @Test
+    void anEnemyLearnsAbilitiesBuiltWithItselfAsTheUser() {
+        Enemy shaman = new Enemy("Shaman", new Stats(40, 3, 2, 3, 0));
+        shaman.setHp(10);
+
+        shaman.learn(e -> new EnemyHeal(e, "Mend", TargetType.SELF, 0.25));
+        shaman.learn(e -> clubSwing(e, TargetType.ONE_ENEMY));
+
+        assertEquals(List.of("Mend", "Club swing"), shaman.getListOfAbility().stream().map(Ability::getName).toList());
+
+        // The ability really belongs to the shaman: using it heals the shaman
+        shaman.getListOfAbility().getFirst().perform(List.of(shaman), context);
+        assertEquals(20, shaman.getHp());
+    }
+
+    @Test
+    void learningTheSameAbilityTwiceKeepsTheFirstOne() {
+        Enemy goblin = goblin();
+
+        goblin.learn(e -> clubSwing(e, TargetType.ONE_ENEMY));
+        goblin.learn(e -> clubSwing(e, TargetType.ALL_ENEMIES));   // same name
+
+        assertEquals(1, goblin.getListOfAbility().size());
+        assertEquals(TargetType.ONE_ENEMY, goblin.getListOfAbility().getFirst().getTargetType());
+    }
+
+    @Test
+    void theListOfAbilitiesIsACopy() {
+        Enemy goblin = goblin();
+        goblin.learn(e -> clubSwing(e, TargetType.ONE_ENEMY));
+
+        assertThrows(UnsupportedOperationException.class, () -> goblin.getListOfAbility().clear());
+        assertEquals(1, goblin.getListOfAbility().size());
+    }
+
+    @Test
+    void learningNeedsAFactoryThatBuildsSomething() {
+        Enemy goblin = goblin();
+
+        assertThrows(NullPointerException.class, () -> goblin.learn(null));
+        assertThrows(NullPointerException.class, () -> goblin.learn(e -> null));
+    }
 }

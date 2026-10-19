@@ -248,7 +248,7 @@ class AbilityTest {
 
         assertEquals(1, context.hitsSeen.size());    // the combo stopped after the first hit
     }
-    
+
     // ---------- ALL_ENEMIES (no real skill uses it yet, so a tiny test ability) ----------
 
     // Costs 1 AP and "hits" every target for 5
