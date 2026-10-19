@@ -8,6 +8,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkPool;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.BasicAttack;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.StasigraphicFury;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
@@ -27,9 +28,15 @@ public final class Gunther extends PartyMember
 
     public Gunther(Stats stats, int maxAp, int startingAp, ApRules apRules, InkRules inkRules)
     {
-        super("Gunther", stats, Set.of(WeaponType.SWORD), maxAp, startingAp, apRules, LevelRules.defaults(), 1, 0);
+        super("Gunther", stats, Set.of(WeaponType.SWORD), maxAp, startingAp,
+                apRules, LevelRules.defaults(), 1, 0);
         this.ink = new InkPool(8, 0, inkRules);
         this.inkRules = inkRules;
+
+        // Basic Attack
+        this.learn(BasicAttack::new);
+
+        // Abilities
         this.learn(CutsForInk::new);
         this.learn(StasigraphicFury::new);
         this.learn(ThirstForInk::new);
@@ -57,13 +64,15 @@ public final class Gunther extends PartyMember
     }
 
     @Override
-    public void onBattleStart() {
+    public void onBattleStart()
+    {
         super.onBattleStart();
         ink.resetInk();
     }
 
     @Override
-    public void onBasicAttackLanded() {
+    public void onBasicAttackLanded()
+    {
         super.onBasicAttackLanded();
         ink.gainInk(inkRules.inkGainPerHit());
     }
