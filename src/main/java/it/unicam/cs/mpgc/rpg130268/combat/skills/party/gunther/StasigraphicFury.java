@@ -49,14 +49,14 @@ public class StasigraphicFury extends PartyAbility<Gunther>
         Fighter target = targets.getFirst();
         int ink = user.getInk().drainInk();
 
-        // The dynamic bonus weight is applied by the DamageSpec
+        // The dynamic bonus. The hit's own weight is applied by the engine
         double inkBonus = 1 + ink / 10.0;
 
         for (Hit hit : SEQUENCE)
         {
             if (!target.isAlive()) break;
 
-            context.resolveHit(user, target, new DamageSpec(SCALING, hit.strikeWeight(), inkBonus));
+            context.resolveHit(user, target, SCALING, hit, inkBonus);
         }
     }
 }

@@ -47,10 +47,10 @@ public class CutsForInk extends PartyAbility<Gunther>
 
         for (Hit hit : SEQUENCE)
         {
-            // Once the target is dead the combo stops: no more hits and no more ink
+            // Once the target is dead the combo stops. No more hits and no more ink
             if (!target.isAlive()) break;
 
-            context.resolveHit(user, target, new DamageSpec(SCALING, hit.strikeWeight()));
+            context.resolveHit(user, target, SCALING, hit);
             user.getInk().gainInk(user.getInkRules().inkGainPerHit());
         }
     }

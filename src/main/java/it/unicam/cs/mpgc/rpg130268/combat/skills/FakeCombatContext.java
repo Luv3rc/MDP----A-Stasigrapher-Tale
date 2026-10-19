@@ -8,11 +8,12 @@ import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageSpec;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
 // A CombatContext for the tests: the damage is applied at once, nobody ever reacts and nobody ever crits
-// (the roll is always 0.99). It also counts what the abilities asked for
+// (the roll is always 0.99). It also remembers what the abilities asked for
 class FakeCombatContext implements CombatContext
 {
     private static class FixedRandom implements RandomGenerator
@@ -26,11 +27,18 @@ class FakeCombatContext implements CombatContext
     int hitsResolved = 0;
     int healsResolved = 0;
 
+    // The hits (with their timing) and bonuses the abilities handed over, in order
+    final List<Hit> hitsSeen = new ArrayList<>();
+    final List<Double> bonusesSeen = new ArrayList<>();
+
     @Override
-    public DamageResult resolveHit(Fighter attacker, Fighter target, DamageSpec spec)
+    public DamageResult resolveHit(Fighter attacker, Fighter target, Scaling scaling, Hit hit, double bonusMultiplier)
     {
         hitsResolved++;
+        hitsSeen.add(hit);
+        bonusesSeen.add(bonusMultiplier);
 
+        DamageSpec spec = new DamageSpec(scaling, hit.strikeWeight(), bonusMultiplier);
         DamageResult result = calculator.calculate(spec, attacker, target);
         target.takeDamage(result.amount());
         return result;
@@ -45,7 +53,7 @@ class FakeCombatContext implements CombatContext
         {
             if (!target.isAlive()) break;
 
-            total += resolveHit(attacker, target, new DamageSpec(scaling, hit.strikeWeight())).amount();
+            total += resolveHit(attacker, target, scaling, hit).amount();
         }
 
         return total;

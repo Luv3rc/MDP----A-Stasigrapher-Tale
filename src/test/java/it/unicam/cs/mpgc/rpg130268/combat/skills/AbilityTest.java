@@ -10,6 +10,8 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbility;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.StasigraphicFury;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
+import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
+import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 
 import org.junit.jupiter.api.Test;
 
@@ -211,6 +213,42 @@ class AbilityTest {
         assertEquals(g.getInkRules().inkGainPerHit(), g.getInk().getCurrentInk());   // ink only for that hit
     }
 
+    // ---------- The engine receives the timing of every hit ----------
+
+    @Test
+    void cutsHandOverEveryHitWithItsTiming() {
+        new CutsForInk(gunther(3)).perform(List.of(dummy()), context);
+
+        // The hits land 400, 600 and 1200 ms after the start (the running sum of the wind-ups)
+        assertEquals(List.of(400L, 200L, 600L), context.hitsSeen.stream().map(Hit::windUpMs).toList());
+        assertEquals(List.of(StrikeWeight.LIGHT, StrikeWeight.LIGHT, StrikeWeight.NORMAL),
+                context.hitsSeen.stream().map(Hit::strikeWeight).toList());
+        assertEquals(List.of(1.0, 1.0, 1.0), context.bonusesSeen);   // Cuts has no bonus
+    }
+
+    @Test
+    void furyHandsOverEveryHitWithItsTimingAndTheInkBonus() {
+        Gunther g = gunther(4);
+        g.getInk().gainInk(4);
+
+        new StasigraphicFury(g).perform(List.of(dummy()), context);
+
+        assertEquals(List.of(200L, 200L, 200L, 500L), context.hitsSeen.stream().map(Hit::windUpMs).toList());
+
+        double inkBonus = 1 + 4 / 10.0;
+        assertEquals(List.of(inkBonus, inkBonus, inkBonus, inkBonus), context.bonusesSeen);
+    }
+
+    @Test
+    void aDeadTargetIsNotHandedAnyMoreHits() {
+        Gunther g = gunther(3);
+        Enemy weak = new Enemy("Weak", new Stats(5, 1, 1, 1, 1));
+
+        new CutsForInk(g).perform(List.of(weak), context);
+
+        assertEquals(1, context.hitsSeen.size());    // the combo stopped after the first hit
+    }
+    
     // ---------- ALL_ENEMIES (no real skill uses it yet, so a tiny test ability) ----------
 
     // Costs 1 AP and "hits" every target for 5
