@@ -2,9 +2,6 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageSpec;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionOptions;
@@ -17,15 +14,13 @@ import java.util.List;
 // This ability can be performed only by Gunther.
 // To be cast, it requires the user to have at least 4 ink and AP.
 // The greater the amount of ink, the greater the damage dealt to the target.
-// This attack has 4 hits -- 3 light, 1 normal -- and scales on Agility
+// This attack has 4 hits -- 3 light, 1 normal
 public class StasigraphicFury extends PartyAbility<Gunther>
 {
     private static final int MIN_INK = 4;
     private static final int AP_COST = 4;
     private static final String NAME = "Stasigraphic Fury";
     private static final TargetType TARGET_TYPE = TargetType.ONE_ENEMY;
-
-    private static final Scaling SCALING = Scaling.of(ScalingStat.AGILITY);
 
     private static final List<Hit> SEQUENCE = List.of
             (
@@ -56,7 +51,7 @@ public class StasigraphicFury extends PartyAbility<Gunther>
         {
             if (!target.isAlive()) break;
 
-            context.resolveHit(user, target, SCALING, hit, inkBonus);
+            context.resolveHit(user, target, hit, inkBonus);
         }
     }
 }

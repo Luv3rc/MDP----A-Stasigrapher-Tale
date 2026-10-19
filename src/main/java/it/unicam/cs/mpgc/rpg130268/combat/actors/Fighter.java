@@ -1,6 +1,11 @@
 package it.unicam.cs.mpgc.rpg130268.combat.actors;
 
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
+
+import java.util.Objects;
+import java.util.Set;
 
 // This is anyone who can take part in a combat. Knows nothing about AP
 public abstract class Fighter
@@ -8,17 +13,32 @@ public abstract class Fighter
     private final String name;
     private final Stats stats;
     private int hp;
+    private Weapon weapon;
+    private final Set<WeaponType> allowedWeapons;
 
-    protected Fighter(String name, Stats stats)
+    protected Fighter(String name, Stats stats, Set<WeaponType> allowedWeapons)
     {
         this.name = name;
         this.stats = stats;
         this.hp = stats.maxHealth();
+        this.allowedWeapons = Objects.requireNonNull(allowedWeapons, "allowedWeapons must not be null");
+        this.weapon = Weapon.unarmed();
     }
 
     public String getName() { return name; }
     public Stats getStats() { return stats; }
     public int getHp() { return hp; }
+    public Weapon getWeapon() { return weapon; }
+
+    public void equip(Weapon weapon)
+    {
+        Objects.requireNonNull(weapon, "weapon must not be null");
+
+        if (!allowedWeapons.contains(weapon.type()))
+            throw new IllegalArgumentException(name + " cannot equip a " + weapon.type());
+
+        this.weapon = weapon;
+    }
 
     public boolean isAlive() { return hp > 0; }
 

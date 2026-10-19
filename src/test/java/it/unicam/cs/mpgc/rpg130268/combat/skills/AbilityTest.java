@@ -3,7 +3,10 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
+import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingGrade;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbility;
@@ -33,6 +36,7 @@ class AbilityTest {
         return new Enemy("Dummy", new Stats(100, 1, 1, 1, 1));
     }
 
+
     // ---------- Declared target types ----------
 
     @Test
@@ -42,6 +46,7 @@ class AbilityTest {
         assertEquals(TargetType.ONE_ENEMY, new StasigraphicFury(g).getTargetType());
         assertEquals(TargetType.ONE_ENEMY, new CutsForInk(g).getTargetType());
     }
+
 
     // ---------- The context is required ----------
 
@@ -53,6 +58,7 @@ class AbilityTest {
         assertEquals(3, g.getAp().getCurrentAp());
         assertEquals(50, g.getHp());
     }
+
 
     // ---------- Thirst for Ink (SELF) ----------
 
@@ -91,6 +97,7 @@ class AbilityTest {
         assertEquals(3, g.getAp().getCurrentAp());
     }
 
+
     // ---------- Stasigraphic Fury (ONE_ENEMY) ----------
 
     @Test
@@ -118,9 +125,11 @@ class AbilityTest {
         assertEquals(0, g.getAp().getCurrentAp());   // paid exactly 4
         assertEquals(0, g.getInk().getCurrentInk()); // gauge drained
         assertEquals(4, context.hitsResolved);       // one resolved hit for every hit of the combo
-        // agility 6, ink bonus 1.4, defense lets 30/31 through:
-        // 3 light hits of 6 (6 * 0.75 * 1.4 = 6.3 -> 6.09) and 1 normal hit of 8 (8.4 -> 8.13)
-        assertEquals(100 - (3 * 6 + 8), target.getHp());
+
+        // Multiplicative Math: Unarmed (Base 1, Str D 0.5)
+        // Bonus 1.4, Defense lets 30/31 through.
+        // Result is exactly 8 damage across 4 hits (2 + 2 + 2 + 2)
+        assertEquals(92, target.getHp());
     }
 
     @Test
@@ -143,6 +152,7 @@ class AbilityTest {
         Gunther g = gunther(4);
         g.getInk().gainInk(4);
         Enemy weak = new Enemy("Weak", new Stats(5, 1, 1, 1, 1));
+        weak.setHp(1); // Dies instantly on first hit
 
         new StasigraphicFury(g).perform(List.of(weak), context);
 
@@ -185,6 +195,7 @@ class AbilityTest {
         assertEquals(4, g.getAp().getCurrentAp());   // nothing was paid
     }
 
+
     // ---------- Cuts for Ink (ONE_ENEMY) ----------
 
     @Test
@@ -196,8 +207,11 @@ class AbilityTest {
 
         assertEquals(0, g.getAp().getCurrentAp());
         assertEquals(3, context.hitsResolved);
-        // strength 8, defense lets 30/31 through: 2 light hits of 5 (6 -> 5.8) and 1 normal hit of 7 (8 -> 7.7)
-        assertEquals(100 - (5 + 5 + 7), target.getHp());
+
+        // Multiplicative Math: Unarmed (Base 1, Str D 0.5)
+        // Defense lets 30/31 through.
+        // Result is exactly 4 damage across 3 hits (1 + 1 + 2)
+        assertEquals(96, target.getHp());
         assertEquals(3 * g.getInkRules().inkGainPerHit(), g.getInk().getCurrentInk());
     }
 
@@ -205,6 +219,7 @@ class AbilityTest {
     void cutsStopAndGiveNoMoreInkOnceTheTargetIsDead() {
         Gunther g = gunther(3);
         Enemy weak = new Enemy("Weak", new Stats(5, 1, 1, 1, 1));
+        weak.setHp(1); // Dies instantly on first hit
 
         new CutsForInk(g).perform(List.of(weak), context);
 
@@ -212,6 +227,7 @@ class AbilityTest {
         assertEquals(1, context.hitsResolved);       // only the first hit happened
         assertEquals(g.getInkRules().inkGainPerHit(), g.getInk().getCurrentInk());   // ink only for that hit
     }
+
 
     // ---------- The engine receives the timing of every hit ----------
 
@@ -243,11 +259,13 @@ class AbilityTest {
     void aDeadTargetIsNotHandedAnyMoreHits() {
         Gunther g = gunther(3);
         Enemy weak = new Enemy("Weak", new Stats(5, 1, 1, 1, 1));
+        weak.setHp(1); // Dies instantly
 
         new CutsForInk(g).perform(List.of(weak), context);
 
         assertEquals(1, context.hitsSeen.size());    // the combo stopped after the first hit
     }
+
 
     // ---------- ALL_ENEMIES (no real skill uses it yet, so a tiny test ability) ----------
 

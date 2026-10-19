@@ -1,6 +1,8 @@
 package it.unicam.cs.mpgc.rpg130268.combat.actors.party;
 
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkPool;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
@@ -12,18 +14,20 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 // TODO
 public final class Gunther extends PartyMember
 {
+
     private final InkPool ink;
     private final InkRules inkRules;
     private final List<Ability> abilities = new ArrayList<>();
 
     public Gunther(Stats stats, int maxAp, int startingAp, ApRules apRules, InkRules inkRules)
     {
-        super("Gunther", stats, maxAp, startingAp, apRules, LevelRules.defaults(), 1, 0);
+        super("Gunther", stats, Set.of(WeaponType.SWORD), maxAp, startingAp, apRules, LevelRules.defaults(), 1, 0);
         this.ink = new InkPool(8, 0, inkRules);
         this.inkRules = inkRules;
         this.learn(CutsForInk::new);

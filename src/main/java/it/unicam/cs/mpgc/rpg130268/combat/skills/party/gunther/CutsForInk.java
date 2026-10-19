@@ -2,9 +2,6 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageSpec;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionOptions;
@@ -16,15 +13,13 @@ import java.util.List;
 
 // This ability can be performed only by Gunther.
 // To be cast, it requires the user to have at least 3 AP
-// This attack has 3 hits -- 2 light, 1 normal -- and scales on Strength
+// This attack has 3 hits -- 2 light, 1 normal
 // Each hit gives Gunther 1 ink
 public class CutsForInk extends PartyAbility<Gunther>
 {
     private static final int AP_COST = 3;
     private static final String NAME = "Cuts for Ink";
     private static final TargetType TARGET_TYPE = TargetType.ONE_ENEMY;
-
-    private static final Scaling SCALING = Scaling.of(ScalingStat.STRENGTH);
 
     // The exact timing and weight of the 3 strikes. The timing is data for the UI (how long each
     // strike takes to land)
@@ -50,7 +45,7 @@ public class CutsForInk extends PartyAbility<Gunther>
             // Once the target is dead the combo stops. No more hits and no more ink
             if (!target.isAlive()) break;
 
-            context.resolveHit(user, target, SCALING, hit);
+            context.resolveHit(user, target, hit);
             user.getInk().gainInk(user.getInkRules().inkGainPerHit());
         }
     }

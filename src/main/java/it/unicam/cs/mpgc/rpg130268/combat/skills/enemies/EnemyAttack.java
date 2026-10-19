@@ -2,7 +2,6 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills.enemies;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.CombatContext;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.TargetType;
@@ -15,20 +14,17 @@ import java.util.Objects;
 // are two instances with different data)
 public class EnemyAttack extends EnemyAbility
 {
-    private final Scaling scaling;
     private final List<Hit> sequence; // The sequence of strikes in this attack
 
-    public EnemyAttack(Enemy user, String name, TargetType targetType, Scaling scaling, List<Hit> sequence)
+    public EnemyAttack(Enemy user, String name, TargetType targetType, List<Hit> sequence)
     {
         super(user, name, targetType);
 
-        Objects.requireNonNull(scaling, "scaling must not be null");
         Objects.requireNonNull(sequence, "sequence must not be null");
 
         if (sequence.isEmpty())
             throw new IllegalArgumentException("an attack needs at least one hit");
 
-        this.scaling = scaling;
         this.sequence = List.copyOf(sequence);
     }
 
@@ -39,6 +35,6 @@ public class EnemyAttack extends EnemyAbility
         // and parries (e.g. a perfect parry skips the damage and gives the counter)
         for (Fighter target : targets)
             if (target.isAlive())
-                context.resolveAttack(user, target, scaling, sequence);
+                context.resolveAttack(user, target, sequence);
     }
 }

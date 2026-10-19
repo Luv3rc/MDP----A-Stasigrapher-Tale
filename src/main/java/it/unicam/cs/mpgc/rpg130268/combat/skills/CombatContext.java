@@ -2,8 +2,6 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageResult;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageSpec;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 
 import java.util.List;
@@ -20,11 +18,11 @@ public interface CombatContext
         so the ability can see the amount and whether it was a crit
         bonusMultiplier is for dynamic effects (e.g. the ink of Stasigraphic Fury)
     */
-    DamageResult resolveHit(Fighter attacker, Fighter target, Scaling scaling, Hit hit, double bonusMultiplier);
+    DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit, double bonusMultiplier);
 
-    default DamageResult resolveHit(Fighter attacker, Fighter target, Scaling scaling, Hit hit)
+    default DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit)
     {
-        return resolveHit(attacker, target, scaling, hit, 1.0);
+        return resolveHit(attacker, target, hit, 1.0);
     }
 
     /* *
@@ -33,7 +31,7 @@ public interface CombatContext
         It takes the whole sequence because reactions are about the attack as a whole
         (e.g. parrying every hit gives a counter)
     */
-    int resolveAttack(Fighter attacker, Fighter target, Scaling scaling, List<Hit> hits);
+    int resolveAttack(Fighter attacker, Fighter target, List<Hit> hits);
 
     // Restores health: never above the maximum, never reviving a dead fighter. Returns the health restored
     int heal(Fighter source, Fighter target, int amount);

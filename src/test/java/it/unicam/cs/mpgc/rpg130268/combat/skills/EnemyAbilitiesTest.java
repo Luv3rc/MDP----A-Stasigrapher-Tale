@@ -2,10 +2,11 @@ package it.unicam.cs.mpgc.rpg130268.combat.skills;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
+import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingGrade;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
@@ -34,7 +35,7 @@ class EnemyAbilitiesTest {
             new Hit(300, ReactionOptions.PARRY_ONLY, StrikeWeight.HEAVY));
 
     private EnemyAttack clubSwing(Enemy user, TargetType targetType) {
-        return new EnemyAttack(user, "Club swing", targetType, Scaling.of(ScalingStat.STRENGTH), TWO_HITS);
+        return new EnemyAttack(user, "Club swing", targetType, TWO_HITS);
     }
 
     // ---------- Enemies don't use AP ----------
@@ -55,8 +56,11 @@ class EnemyAbilitiesTest {
 
         clubSwing(goblin(), TargetType.ONE_ENEMY).perform(List.of(g), context);
 
-        // strength 10: normal hit 10 -> 8.8, heavy hit 15 -> 13.2
-        assertEquals(50 - (8 + 13), g.getHp());
+        // Multiplicative Math: Unarmed (Base 1, Str D 0.5x).
+        // Goblin Str 10 adds 1.0 (Innate) + 0.5 (Weapon) = 2.5x Total Multiplier.
+        // Normal hit power = 2.5. Heavy hit power = 3.75.
+        // Defense 4 lets 30/34 through -> 2.2 (2 damage) + 3.3 (3 damage) = 5 total damage.
+        assertEquals(45, g.getHp());
         assertEquals(2, context.hitsResolved);
     }
 
@@ -67,8 +71,8 @@ class EnemyAbilitiesTest {
 
         clubSwing(goblin(), TargetType.ALL_ENEMIES).perform(List.of(first, second), context);
 
-        assertEquals(50 - 21, first.getHp());
-        assertEquals(50 - 21, second.getHp());
+        assertEquals(45, first.getHp());
+        assertEquals(45, second.getHp());
     }
 
     @Test
@@ -80,16 +84,20 @@ class EnemyAbilitiesTest {
         clubSwing(goblin(), TargetType.ALL_ENEMIES).perform(List.of(dead, alive), context);
 
         assertEquals(0, dead.getHp());
-        assertEquals(50 - 21, alive.getHp());
+        assertEquals(45, alive.getHp());
         assertEquals(2, context.hitsResolved);       // only the living target was attacked
     }
 
     @Test
-    void attackStopsWhenTheTargetDiesInTheMiddleOfTheSequence() {
-        Gunther fragile = gunther();
-        fragile.setHp(5);                            // the first hit (8) kills
+    void attackStopsWhenTheTargetDiesInTheMiddleOfTheSequence()
+    {
+        Enemy goblin = goblin();
+        goblin.equip(new Weapon("God Fists", WeaponType.UNARMED, 999, ScalingGrade.S));
 
-        clubSwing(goblin(), TargetType.ONE_ENEMY).perform(List.of(fragile), context);
+        Gunther fragile = gunther();
+        fragile.setHp(5);                            // the first hit instantly kills
+
+        clubSwing(goblin, TargetType.ONE_ENEMY).perform(List.of(fragile), context);
 
         assertFalse(fragile.isAlive());
         assertEquals(1, context.hitsResolved);
@@ -106,21 +114,17 @@ class EnemyAbilitiesTest {
     @Test
     void attackNeedsScalingAndAtLeastOneHit() {
         Enemy g = goblin();
-
         assertThrows(NullPointerException.class,
-                () -> new EnemyAttack(g, "Bad", TargetType.ONE_ENEMY, null, TWO_HITS));
-        assertThrows(NullPointerException.class,
-                () -> new EnemyAttack(g, "Bad", TargetType.ONE_ENEMY, Scaling.of(ScalingStat.STRENGTH), null));
+                () -> new EnemyAttack(g, "Bad", TargetType.ONE_ENEMY, null));
         assertThrows(IllegalArgumentException.class,
-                () -> new EnemyAttack(g, "Bad", TargetType.ONE_ENEMY, Scaling.of(ScalingStat.STRENGTH), List.of()));
+                () -> new EnemyAttack(g, "Bad", TargetType.ONE_ENEMY, List.of()));
     }
 
     @Test
     void attackKeepsItsOwnCopyOfTheSequence() {
         Gunther g = gunther();
         java.util.ArrayList<Hit> hits = new java.util.ArrayList<>(TWO_HITS);
-        EnemyAttack attack = new EnemyAttack(goblin(), "Club swing", TargetType.ONE_ENEMY,
-                Scaling.of(ScalingStat.STRENGTH), hits);
+        EnemyAttack attack = new EnemyAttack(goblin(), "Club swing", TargetType.ONE_ENEMY, hits);
 
         hits.clear();                                // changing the original list changes nothing
         attack.perform(List.of(g), context);

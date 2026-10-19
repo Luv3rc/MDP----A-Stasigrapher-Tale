@@ -18,9 +18,6 @@ public record Scaling(Map<ScalingStat, Double> weights)
     {
         Objects.requireNonNull(weights, "Weights must not be null");
 
-        if(weights.isEmpty())
-            throw new IllegalArgumentException("An attack must scale on something");
-
         // Copy into an EnumMap.
         // Added in the same order, so the result of the sum is always the same
         EnumMap<ScalingStat, Double> copy = new EnumMap<>(ScalingStat.class);
@@ -39,6 +36,7 @@ public record Scaling(Map<ScalingStat, Double> weights)
         weights = Collections.unmodifiableMap(copy);
     }
 
+    public static Scaling none () { return new Scaling(Map.of()); }
     public static Scaling of(ScalingStat stat) { return of(stat, 1.0); }
 
     public static Scaling of(ScalingStat stat, double weight)
@@ -46,6 +44,14 @@ public record Scaling(Map<ScalingStat, Double> weights)
      Objects.requireNonNull(stat, "Stats must not be null");
 
      return new Scaling(Map.of(stat, weight));
+    }
+
+    // Handles grades. If a weapon is created with just NONE, it returns empty scaling
+    public static Scaling of(ScalingStat stat, ScalingGrade grade)
+    {
+        if (grade == ScalingGrade.NONE) return none();
+
+        return of(stat, grade.getMultiplier());
     }
 
     // Returns a NEW scaling with one more stat
@@ -56,10 +62,19 @@ public record Scaling(Map<ScalingStat, Double> weights)
         if (weights.containsKey(stat))
             throw new IllegalArgumentException(stat + " is already part of this scaling");
 
-        EnumMap<ScalingStat, Double> more = new EnumMap<>(weights);
+        EnumMap<ScalingStat, Double> more = new EnumMap<>(ScalingStat.class);
+        more.putAll(weights);
         more.put(stat, weight);
 
         return new Scaling(more);
+    }
+
+    // Ignores NONE grades when combining
+    public Scaling and(ScalingStat stat, ScalingGrade grade)
+    {
+        if (grade == ScalingGrade.NONE) return this;
+
+        return and(stat, grade.getMultiplier());
     }
 
     public double valueFor(Stats stats)

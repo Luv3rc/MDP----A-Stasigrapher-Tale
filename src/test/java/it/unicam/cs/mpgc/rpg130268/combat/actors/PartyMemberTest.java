@@ -3,19 +3,22 @@ package it.unicam.cs.mpgc.rpg130268.combat.actors;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PartyMemberTest {
     private PartyMember member(int startingAp) {
-        return new PartyMember("Test", new Stats(50, 5, 3, 4, 1), 9, startingAp,
-                ApRules.defaults(), LevelRules.defaults(), 1, 0) {
+        return new PartyMember("Test", new Stats(50, 5, 3, 4, 1),
+                Set.of(WeaponType.SWORD), 9, startingAp, ApRules.defaults(), LevelRules.defaults(), 1, 0)
+            {
             @Override
             protected void onLevelUp() {
             }

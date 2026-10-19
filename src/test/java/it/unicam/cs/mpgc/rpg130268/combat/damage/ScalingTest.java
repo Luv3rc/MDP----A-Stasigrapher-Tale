@@ -54,11 +54,6 @@ class ScalingTest
         assertThrows(IllegalArgumentException.class, () -> Scaling.of(STRENGTH).and(STRENGTH, 0.5));
     }
 
-    @Test void emptyScalingThrows()
-    {
-        assertThrows(IllegalArgumentException.class, () -> new Scaling(Map.of()));
-    }
-
     @Test void zeroOrNegativeWeightThrows()
     {
         assertThrows(IllegalArgumentException.class, () -> Scaling.of(STRENGTH, 0));

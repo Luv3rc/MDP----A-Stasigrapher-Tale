@@ -2,12 +2,15 @@ package it.unicam.cs.mpgc.rpg130268.combat.actors.party;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApPool;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 
 import java.util.List;
+import java.util.Set;
 
 // This is anyone who is part of a party.
 // So it's a Fighter with AP and a set of abilities and can be controlled by a player
@@ -23,10 +26,10 @@ public abstract class PartyMember extends Fighter
 
 
     public PartyMember
-            (String name, Stats stats, int maxAp, int startingAp, ApRules apRules,
+            (String name, Stats stats, Set<WeaponType> allowedWeapons, int maxAp, int startingAp, ApRules apRules,
              LevelRules levelRules, int startingLevel, int startingXp)
     {
-        super(name, stats);
+        super(name, stats, allowedWeapons);
         this.ap = new ApPool(maxAp, startingAp);
         this.apRules = apRules;
 

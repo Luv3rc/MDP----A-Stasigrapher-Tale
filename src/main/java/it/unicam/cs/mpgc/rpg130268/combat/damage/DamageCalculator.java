@@ -39,10 +39,18 @@ public class DamageCalculator
         Objects.requireNonNull(attacker, "attacker must not be null");
         Objects.requireNonNull(target, "target must not be null");
 
-        double scalingValue = spec.scaling().valueFor(attacker.getStats());
-        double power = (attacker.getWeaponDamage() + scalingValue) * spec.getTotalMultiplier();
+        int weaponBase = attacker.getWeapon().baseDamage();
 
-        // An attack with no power does nothing: no roll and no minimum damage
+        // Strength multiplier (divided by 10 to turn stats into a percentage bonus)
+        double innateStrengthMult = attacker.getStats().strength() / 10.0;
+
+        // Weapon specific scaling multiplier (directly from the weapon, NOT the spec)
+        double weaponScalingMult = attacker.getWeapon().scaling().valueFor(attacker.getStats()) / 10.0;
+
+        // Base * (1.0 + Stats) * Strike Weight -- the +1 is to avoid 0
+        double totalStatMultiplier = 1.0 + innateStrengthMult + weaponScalingMult;
+        double power = weaponBase * totalStatMultiplier * spec.getTotalMultiplier();
+
         if (power == 0) return new DamageResult(0, false);
 
         boolean critical = random.nextDouble() < damageRules.critChance(attacker.getStats().luck());

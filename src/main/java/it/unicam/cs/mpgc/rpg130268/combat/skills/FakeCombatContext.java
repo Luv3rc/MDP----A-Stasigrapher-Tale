@@ -5,7 +5,6 @@ import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageCalculator;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageResult;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageRules;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageSpec;
-import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 
 import java.util.ArrayList;
@@ -32,30 +31,30 @@ class FakeCombatContext implements CombatContext
     final List<Double> bonusesSeen = new ArrayList<>();
 
     @Override
-    public DamageResult resolveHit(Fighter attacker, Fighter target, Scaling scaling, Hit hit, double bonusMultiplier)
+    public DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit, double bonusMultiplier)
     {
         hitsResolved++;
         hitsSeen.add(hit);
         bonusesSeen.add(bonusMultiplier);
 
-        DamageSpec spec = new DamageSpec(scaling, hit.strikeWeight(), bonusMultiplier);
+        // Removed scaling from DamageSpec here
+        DamageSpec spec = new DamageSpec(hit.strikeWeight(), bonusMultiplier);
         DamageResult result = calculator.calculate(spec, attacker, target);
+
         target.takeDamage(result.amount());
         return result;
     }
 
+    // Removed scaling from the method call
     @Override
-    public int resolveAttack(Fighter attacker, Fighter target, Scaling scaling, List<Hit> hits)
+    public int resolveAttack(Fighter attacker, Fighter target, List<Hit> hits)
     {
         int total = 0;
-
         for (Hit hit : hits)
         {
             if (!target.isAlive()) break;
-
-            total += resolveHit(attacker, target, scaling, hit).amount();
+            total += resolveHit(attacker, target, hit).amount();
         }
-
         return total;
     }
 
