@@ -47,11 +47,13 @@ public class ReactionResolver
     }
 
     // Window of 3/4 before the impact and 1/4 after the impact
-    private boolean isWithinParry(long delta) {
+    private boolean isWithinParry(long delta)
+    {
         return delta >= -reactionWindows.earlyParryWindowMs() && delta <= reactionWindows.lateParryWindowMs();
     }
 
-    private boolean isWithinDodge(long delta) {
+    private boolean isWithinDodge(long delta)
+    {
         return delta >= -reactionWindows.earlyDodgeWindowMs() && delta <= reactionWindows.lateDodgeWindowMs();
     }
 }

@@ -1,7 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.combat.actors.party;
 
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
-import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkPool;

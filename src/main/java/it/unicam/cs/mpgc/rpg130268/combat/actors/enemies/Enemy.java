@@ -26,7 +26,7 @@ public class Enemy  extends Fighter
     public List<EnemyAbility> getListOfAbility() { return List.copyOf(listOfAbility); }
 
     // Same idea as Gunther.learn: the factory receives the enemy, because an ability needs to know its user
-    // e.g. goblin.learn(e -> new EnemyAttack(e, "Club swing", TargetType.ONE_ENEMY, scaling, sequence))
+    // e.g. goblin.learn(e -> new EnemyAttack(e, "Club swing", TargetType.ONE_ENEMY, sequence))
     public void learn(Function<Enemy, EnemyAbility> factory)
     {
         Objects.requireNonNull(factory, "factory must not be null");

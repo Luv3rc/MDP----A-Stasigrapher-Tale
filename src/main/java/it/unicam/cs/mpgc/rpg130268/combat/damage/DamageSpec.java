@@ -2,11 +2,13 @@ package it.unicam.cs.mpgc.rpg130268.combat.damage;
 
 import java.util.Objects;
 
-// Describes ONE strike, without saying who attacks or who is hit
-// Base power = (weapon damage + scaling value) * strike weight * bonus multiplier
-// The defense of who gets hit is not part of it: the DamageCalculator applies it afterward
-// Note: Hits have been removed. A combo of N hits calls the DamageCalculator N times (one spec per hit),
-// so every hit has its own critical roll. Having the number of hits in the DamageSpec was not correct
+/* *
+    Describes ONE strike, without saying who attacks or who is hit
+    Base power = Weapon Base * Total Stat Multiplier * Strike Weight * Dynamic Bonus
+    he defense of who gets hit is not part of it: the DamageCalculator applies it afterward
+    Note: Hits have been removed. A combo of N hits calls the DamageCalculator N times (one spec per hit),
+    so every hit has its own critical roll. Having the number of hits in the DamageSpec was not correct
+*/
 public record DamageSpec(StrikeWeight weight, double bonusMultiplier)
 {
 

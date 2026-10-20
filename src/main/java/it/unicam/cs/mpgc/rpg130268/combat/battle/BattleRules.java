@@ -6,7 +6,6 @@ import java.util.Objects;
 
 // The rules of the battle engine that are not about damage numbers or reaction windows
 // Counter: when a fighter perfectly parries EVERY hit of an attack, it strikes back at the attacker
-// with this scaling and this weight (placeholder until basic attacks exist)
 public record BattleRules(StrikeWeight counterWeight)
 {
     public BattleRules { Objects.requireNonNull(counterWeight, "counterWeight must not be null"); }

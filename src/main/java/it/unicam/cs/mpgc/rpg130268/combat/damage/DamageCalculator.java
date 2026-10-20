@@ -8,8 +8,7 @@ import java.util.random.RandomGenerator;
 /* *
     Decides how much damage an attack deals. It does NOT apply it! the caller does target.takeDamage(...)!
 
-    1. base power = (the attacker's weapon damage + the attacker's stats weighted by the attack's Scaling)
-       * strike weight * bonus multiplier
+    1. base power = Weapon Base * Total Stat Multiplier * Strike Weight * Dynamic Bonus
     2. critical hit: rolled at EVERY call (so every hit of a combo has its own roll), with a chance based on the
        attacker's luck. It multiplies the power
     3. the target's defense lets only a part of the power through (see DamageRules.damageTakenFactor),

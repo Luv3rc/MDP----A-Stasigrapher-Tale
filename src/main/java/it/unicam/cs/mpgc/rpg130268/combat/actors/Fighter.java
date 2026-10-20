@@ -67,5 +67,4 @@ public abstract class Fighter
     public void onPerfectParry() {}
     public void onTurnStart() {}
     public void onBattleStart() {}
-    public int getWeaponDamage() { return 0; }
 }
