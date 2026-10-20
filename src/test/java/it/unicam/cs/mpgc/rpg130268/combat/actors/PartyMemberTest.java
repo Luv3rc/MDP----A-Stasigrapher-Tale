@@ -24,7 +24,7 @@ class PartyMemberTest {
             }
 
             @Override
-            public List<Ability> getAbilities() {
+            public List<Ability> getListOfAbility() {
                 return List.of();
             }
         };

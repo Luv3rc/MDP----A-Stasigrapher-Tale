@@ -19,7 +19,7 @@ class GuntherAbilitiesTest {
     }
 
     private long countByName(Gunther g, String name) {
-        return g.getAbilities().stream().filter(a -> a.getName().equals(name)).count();
+        return g.getListOfAbility().stream().filter(a -> a.getName().equals(name)).count();
     }
 
     @Test
@@ -33,9 +33,9 @@ class GuntherAbilitiesTest {
     void learningTheSameAbilityTwiceDoesNotDuplicateIt() {
         Gunther g = gunther(4);
         g.learn(StasigraphicFury::new);
-        int before = g.getAbilities().size();
+        int before = g.getListOfAbility().size();
         g.learn(StasigraphicFury::new);
-        assertEquals(before, g.getAbilities().size(), "La dimensione della lista delle abilità non dovrebbe aumentare imparando un duplicato");
+        assertEquals(before, g.getListOfAbility().size(), "La dimensione della lista delle abilità non dovrebbe aumentare imparando un duplicato");
     }
 
     @Test
@@ -44,7 +44,7 @@ class GuntherAbilitiesTest {
         g.learn(StasigraphicFury::new);
         g.getInk().gainInk(4);
 
-        Ability cuts = g.getAbilities().stream()
+        Ability cuts = g.getListOfAbility().stream()
                 .filter(a -> a.getName().equals("Stasigraphic Fury"))
                 .findFirst().orElseThrow();
 
@@ -54,7 +54,7 @@ class GuntherAbilitiesTest {
     @Test
     void abilityListCannotBeModifiedFromOutside() {
         Gunther g = gunther(4);
-        List<Ability> list = g.getAbilities();
+        List<Ability> list = g.getListOfAbility();
         assertThrows(UnsupportedOperationException.class, () -> list.clear());
     }
 }

@@ -21,7 +21,7 @@ public abstract class PartyMember extends Fighter
     private final ApPool ap;
     private final ApRules apRules;
 
-    public abstract List<Ability> getAbilities();
+    public abstract List<Ability> getListOfAbility();
 
 
     public PartyMember

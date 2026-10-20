@@ -44,7 +44,7 @@ public final class Gunther extends PartyMember
     public InkPool getInk() { return ink; }
     public InkRules getInkRules() { return inkRules; }
     @Override
-    public List<Ability> getAbilities() { return List.copyOf(abilities); }
+    public List<Ability> getListOfAbility() { return List.copyOf(abilities); }
 
     // This is to add the possibility of not knowing all the abilities from the start
     public void learn(Function<Gunther, Ability> factory)
