@@ -18,7 +18,14 @@ public interface CombatContext
         so the ability can see the amount and whether it was a crit
         bonusMultiplier is for dynamic effects (e.g. the ink of Stasigraphic Fury)
     */
-    DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit, double bonusMultiplier);
+    // Symmetrical AoE hit for the player
+    List<DamageResult> resolveHit(Fighter attacker, List<Fighter> targets, Hit hit, double bonusMultiplier);
+
+    // Default wrappers so your single-target skills still compile perfectly
+    default DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit, double bonusMultiplier) {
+        return resolveHit(attacker, List.of(target), hit, bonusMultiplier).getFirst();
+    }
+
 
     default DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit)
     {

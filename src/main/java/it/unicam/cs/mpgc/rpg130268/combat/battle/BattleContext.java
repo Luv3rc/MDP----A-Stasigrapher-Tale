@@ -66,6 +66,7 @@ public class BattleContext implements CombatContext
         return drained;
     }
 
+    // Todo: edit with List
     @Override
     public DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit, double bonusMultiplier)
     {
