@@ -173,7 +173,7 @@ class EnemyAbilitiesTest {
         ally.setHp(10);
         EnemyHeal heal = new EnemyHeal(shaman, "Mend ally", TargetType.ONE_ALLY, 0.25);
 
-        assertTrue(heal.canPerform());               // the shaman is fine, but the ally is not
+        assertTrue(heal.canPerform());               // the shaman is fine, but the allay is not
         heal.perform(List.of(ally), context);
 
         assertEquals(20, ally.getHp());              // + 25% of 40
@@ -268,5 +268,16 @@ class EnemyAbilitiesTest {
 
         assertThrows(NullPointerException.class, () -> goblin.learn(null));
         assertThrows(NullPointerException.class, () -> goblin.learn(e -> null));
+    }
+
+    @Test
+    void anAttackOnEveryoneIsOneAttackNotOnePerTarget() {
+        Gunther first = gunther();
+        Gunther second = gunther();
+
+        clubSwing(goblin(), TargetType.ALL_ENEMIES).perform(List.of(first, second), context);
+
+        assertEquals(1, context.attackTargets.size());
+        assertEquals(List.of(first, second), context.attackTargets.getFirst());
     }
 }

@@ -30,7 +30,7 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
     // Used to check if the ability is available right now. Final: every ability, party or enemy,
     // is available only if its user can pay AND its own requirements are met
     @Override
-    public final boolean canPerform() { return canAfford() && meetsRequirements(); }
+    public final boolean canPerform() { return user.isAlive() && canAfford() && meetsRequirements(); }
 
     // Order of the steps is fixed -- Moved from PartyAbility
     public final void perform(List<Fighter> targets, CombatContext context)

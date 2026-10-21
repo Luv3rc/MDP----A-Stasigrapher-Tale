@@ -21,8 +21,9 @@ class TurnManagerTest
         return new Gunther(new Stats(50, 8, 4, 6, 3), 9, 3, ApRules.defaults(), InkRules.defaults());
     }
 
-    private Enemy enemy(String name, int agility) { return new Enemy(name, new Stats(40, 5, 2, agility, 0)); }
+    private Enemy enemy(String name, int agility) { return enemy(name, agility, 0); }
 
+    private Enemy enemy(String name, int agility, int luck) { return new Enemy(name, new Stats(40, 5, 2, agility, luck)); }
     // The next n actors, by name
     private List<String> next(TurnManager turns, int n)
     {
@@ -40,9 +41,17 @@ class TurnManagerTest
         assertEquals(List.of("Imp", "Gunther", "Slug"), next(turns, 3));
     }
 
-    @Test void withTheSameAgilityThePartyActsFirst()
+    @Test void withTheSameAgilityTheLuckiestActsFirst()
     {
-        TurnManager turns = new TurnManager(List.of(gunther()), List.of(enemy("Goblin", 6)));
+        // Gunther has 3 luck
+        TurnManager turns = new TurnManager(List.of(gunther()), List.of(enemy("Lucky", 6, 9), enemy("Unlucky", 6, 0)));
+
+        assertEquals(List.of("Lucky", "Gunther", "Unlucky"), next(turns, 3));
+    }
+
+    @Test void withTheSameAgilityAndLuckThePartyActsFirst()
+    {
+        TurnManager turns = new TurnManager(List.of(gunther()), List.of(enemy("Goblin", 6, 3)));
 
         assertEquals(List.of("Gunther", "Goblin"), next(turns, 2));
     }

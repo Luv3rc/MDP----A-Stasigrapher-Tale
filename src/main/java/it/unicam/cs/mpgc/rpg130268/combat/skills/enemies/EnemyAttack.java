@@ -31,10 +31,12 @@ public class EnemyAttack extends EnemyAbility
     @Override
     protected void applyEffect(List<Fighter> targets, CombatContext context)
     {
-        // Every target is hit by the whole sequence. The context waits for the reactions
-        // and parries (e.g. a perfect parry skips the damage and gives the counter)
-        for (Fighter target : targets)
-            if (target.isAlive())
-                context.resolveAttack(user, target, sequence);
+        // It is ONE attack on everybody it is aimed at: every hit eats all the living targets together
+        // and they react to it together. The context judges the reactions and the parries
+        // (e.g. a perfect parry skips the damage and gives the counter)
+        List<Fighter> living = targets.stream().filter(Fighter::isAlive).toList();
+
+        if (!living.isEmpty())
+            context.resolveAttack(user, living, sequence);
     }
 }

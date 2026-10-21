@@ -313,4 +313,14 @@ class AbilityTest {
 
         assertThrows(IllegalArgumentException.class, () -> new AbilityTest.Sweep(g).perform(List.of(), context));
     }
+
+    @Test
+    void aDeadFighterCannotUseAbilities() {
+        Gunther g = gunther(3);
+        g.setHp(0);
+
+        assertFalse(new ThirstForInk(g).canPerform());
+        assertThrows(IllegalStateException.class, () -> new ThirstForInk(g).perform(List.of(g), context));
+        assertEquals(3, g.getAp().getCurrentAp());
+    }
 }

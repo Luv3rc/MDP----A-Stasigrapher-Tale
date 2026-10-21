@@ -26,12 +26,15 @@ public interface CombatContext
     }
 
     /* *
-        A whole attack the target may react to, hit by hit (the Hit says how long and what the target can do).
-        It stops as soon as the target is dead. Returns the total damage dealt.
+        A whole attack the targets may react to, hit by hit (the Hit says how long and what they can do).
+        A hit eats EVERYONE it is aimed at: there is one reaction per hit, and it counts for all the targets,
+        so if it fails everyone takes the damage and if it is a perfect parry everyone parries.
+        (An attack that hits different people differently is just several single target attacks)
+        It stops when the attacker is dead or all the targets are. Returns the total damage dealt.
         It takes the whole sequence because reactions are about the attack as a whole
         (e.g. parrying every hit gives a counter)
     */
-    int resolveAttack(Fighter attacker, Fighter target, List<Hit> hits);
+    int resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits);
 
     // Restores health: never above the maximum, never reviving a dead fighter. Returns the health restored
     int heal(Fighter source, Fighter target, int amount);

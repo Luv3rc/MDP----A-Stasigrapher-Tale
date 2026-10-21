@@ -29,6 +29,8 @@ class FakeCombatContext implements CombatContext
     // The hits (with their timing) and bonuses the abilities handed over, in order
     final List<Hit> hitsSeen = new ArrayList<>();
     final List<Double> bonusesSeen = new ArrayList<>();
+    // The targets of every attack the abilities asked for (one entry per attack, not per target)
+    final List<List<Fighter>> attackTargets = new ArrayList<>();
 
     @Override
     public DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit, double bonusMultiplier)
@@ -45,19 +47,25 @@ class FakeCombatContext implements CombatContext
         return result;
     }
 
-    // Removed scaling from the method call
+    // UPDATED: Now matches the AoE signature using List<Fighter> targets
+
     @Override
-    public int resolveAttack(Fighter attacker, Fighter target, List<Hit> hits)
+    public int resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
     {
+        attackTargets.add(List.copyOf(targets));
+
         int total = 0;
+
+        // Every hit eats all the targets who are still alive (nobody reacts in this context)
         for (Hit hit : hits)
         {
-            if (!target.isAlive()) break;
-            total += resolveHit(attacker, target, hit).amount();
+            for (Fighter target : targets)
+                if (target.isAlive())
+                    total += resolveHit(attacker, target, hit).amount();
         }
+
         return total;
     }
-
     @Override
     public int heal(Fighter source, Fighter target, int amount)
     {
@@ -67,6 +75,7 @@ class FakeCombatContext implements CombatContext
 
         int before = target.getHp();
         target.heal(amount);
-        return target.getHp() - before;
+
+        return target.getHp() - before; // Fixed syntax formatting here
     }
 }

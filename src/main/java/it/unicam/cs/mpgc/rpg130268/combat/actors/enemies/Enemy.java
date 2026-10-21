@@ -6,22 +6,43 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.enemies.EnemyAbility;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 
 // A Fighter that is not part of the party. It has no AP and what it can do is its list of abilities
 // WHICH ability it uses on its turn (its attack pattern) will be a separate behavior,
 // because choosing needs to know the state of the battle (who is alive, who is wounded, ...)
-public class Enemy  extends Fighter
+// The level tells the player how dangerous it is and the xp reward is what the party gets for defeating it.
+// An enemy can wield any weapon (a goblin's club, a beast's claws...): the weapon decides how hard it hits
+public class Enemy extends Fighter
 {
+    private final int level;
+    private final int xpReward;
     private final List<EnemyAbility> listOfAbility = new ArrayList<>();
 
     public Enemy(String name, Stats stats)
     {
-        super(name, stats, Set.of(WeaponType.UNARMED));
+        this(name, stats, 1, 0);
     }
+
+    public Enemy(String name, Stats stats, int level, int xpReward)
+    {
+        super(name, stats, EnumSet.allOf(WeaponType.class));
+
+        if (level < 1)
+            throw new IllegalArgumentException("level must be at least 1");
+
+        if (xpReward < 0)
+            throw new IllegalArgumentException("xpReward must not be negative");
+
+        this.level = level;
+        this.xpReward = xpReward;
+    }
+
+    public int getLevel() { return level; }
+    public int getXpReward() { return xpReward; }
 
     public List<EnemyAbility> getListOfAbility() { return List.copyOf(listOfAbility); }
 
