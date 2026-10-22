@@ -158,17 +158,33 @@ class BattleContextTest
 
     // ---------- Events and the clock ----------
 
-    @Test void drainingGivesTheEventsOnceAndRestartsTheClock()
+    @Test void drainingGivesTheEventsOnlyOnce()
     {
         BattleContext battle = battle(ReactionSource.none());
-        Gunther g = gunther();
 
-        battle.resolveHit(g, goblin(), hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
+        battle.resolveHit(gunther(), goblin(), hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
+
         assertEquals(1, battle.drainEvents().size());
         assertTrue(battle.drainEvents().isEmpty());
+    }
 
-        battle.resolveHit(g, goblin(), hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
-        assertEquals(300, battle.drainEvents().getFirst().atMs());   // the new action starts at 0 ms
+    @Test void theClockKeepsRunningAcrossActionsAndNeverGoesBack()
+    {
+        BattleClock clock = new BattleClock();
+        BattleContext battle = new BattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()),
+                new ReactionResolver(ReactionWindows.defaults()), ReactionSource.none(), BattleRules.defaults(), clock);
+        Gunther g = gunther();
+        Enemy target = goblin(500);
+
+        battle.resolveHit(g, target, hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
+        assertEquals(400, battle.drainEvents().getFirst().atMs());
+
+        battle.resolveHit(g, target, hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
+        assertEquals(700, battle.drainEvents().getFirst().atMs());        // it starts where the last one ended
+
+        clock.advance(2000);                                              // the UI let time pass
+        battle.resolveHit(g, target, hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
+        assertEquals(2300, battle.drainEvents().getFirst().atMs());       // it starts now, not in the past
     }
 
     @Test void theDrainedEventsCannotBeChanged()
@@ -247,7 +263,7 @@ class BattleContextTest
                 events.subList(events.size() - 2, events.size()));
     }
 
-    @Test void aCounterThatDefeatsTheAttackerStopsTheOthers()
+    @Test void aCounterThatDefeatsTheAttackerStopsTheOtherCounters()
     {
         Enemy attacker = goblin(20);
         BattleContext battle = battle(new ScriptedReactions(perfectParry()));

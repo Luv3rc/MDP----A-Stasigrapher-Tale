@@ -26,7 +26,6 @@ public interface CombatContext
         return resolveHit(attacker, List.of(target), hit, bonusMultiplier).getFirst();
     }
 
-
     default DamageResult resolveHit(Fighter attacker, Fighter target, Hit hit)
     {
         return resolveHit(attacker, target, hit, 1.0);

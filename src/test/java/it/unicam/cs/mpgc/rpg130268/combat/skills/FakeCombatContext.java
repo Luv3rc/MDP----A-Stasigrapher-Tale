@@ -47,7 +47,16 @@ class FakeCombatContext implements CombatContext
         return result;
     }
 
-    // UPDATED: Now matches the AoE signature using List<Fighter> targets
+    public List<DamageResult> resolveHit(Fighter attacker, List<Fighter> targets, Hit hit, double bonusMultiplier)
+    {
+        List<DamageResult> results = new ArrayList<>();
+
+        for (Fighter target : targets)
+            if (target.isAlive())
+                results.add(resolveHit(attacker, target, hit, bonusMultiplier));
+
+        return results;
+    }
 
     @Override
     public int resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
