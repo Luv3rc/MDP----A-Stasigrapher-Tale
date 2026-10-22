@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg130268.ui.console;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
+import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.Battle;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleEvent;
@@ -371,7 +372,10 @@ public class ConsoleBattle
         String text = fighter.getName() + "  HP " + fighter.getHp() + "/" + fighter.getStats().maxHealth();
 
         if (fighter instanceof PartyMember member)
-            text += "  AP " + member.getAp().getCurrentAp();
+            text += "  AP " + member.getAp().getCurrentAp() + "/" + member.getAp().getMaxAp();
+
+        if (fighter instanceof Gunther gunther)
+            text += "  INK " + gunther.getInk().getCurrentInk() + "/" + gunther.getInk().getMaxInk();
 
         return text;
     }
