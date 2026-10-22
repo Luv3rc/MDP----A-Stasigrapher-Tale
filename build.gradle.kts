@@ -22,14 +22,10 @@ application {
 }
 
 javafx {
-    version = "24"
+    version = "25"
     modules = listOf("javafx.controls", "javafx.graphics", "javafx.media")
 }
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType<JavaCompile> {
-    options.release.set(21)
 }

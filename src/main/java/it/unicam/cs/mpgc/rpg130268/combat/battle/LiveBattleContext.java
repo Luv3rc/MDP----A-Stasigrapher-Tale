@@ -82,6 +82,13 @@ public class LiveBattleContext extends BattleContext
     }
 
     @Override
+    public List<DamageResult> resolveHit(Fighter attacker, List<Fighter> targets, Hit hit, double bonusMultiplier)
+    {
+        requireIdle();
+        return super.resolveHit(attacker, targets, hit, bonusMultiplier);
+    }
+
+    @Override
     public int heal(Fighter source, Fighter target, int amount)
     {
         requireIdle();

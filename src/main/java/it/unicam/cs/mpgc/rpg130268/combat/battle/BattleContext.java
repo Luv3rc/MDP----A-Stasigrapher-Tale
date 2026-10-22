@@ -117,7 +117,6 @@ public class BattleContext implements CombatContext
             Hit hit = attack.nextHit();
             cursorMs += hit.windUpMs();
 
-            // The reaction of the first living target stands for the whole group: the hit eats everyone
             attack.resolveNext(reactionTo(attack.livingTargets(), hit), cursorMs);
         }
 

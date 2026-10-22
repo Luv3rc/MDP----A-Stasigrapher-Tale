@@ -59,8 +59,8 @@ class LiveBattleContextTest
         return gunther;
     }
 
-    // Default windows: parry perfect from 150 ms before the impact to 50 ms after it,
-    // dodge good from 263 ms before to 87 ms after it
+    // Default windows: parry perfect from 120 ms before the impact to 40 ms after it,
+    // dodge good from 225 ms before to 75 ms after it
     private static Hit hit(long windUp, ReactionOptions options) { return new Hit(windUp, options, StrikeWeight.NORMAL); }
     private static Hit parryable() { return hit(500, ReactionOptions.PARRY_OR_DODGE); }
 
@@ -171,7 +171,7 @@ class LiveBattleContextTest
         Gunther g = gunther();
         live.resolveAttack(goblin(), List.of(g), List.of(parryable()));
 
-        live.update(540);                                // 40 ms after the impact, the window allows 50
+        live.update(540);                                // 40 ms after the impact, the window allows 40
         assertTrue(live.react(ReactionType.PARRY));
         live.update(47);
 
@@ -197,7 +197,7 @@ class LiveBattleContextTest
         Gunther g = gunther();
         live.resolveAttack(goblin(), List.of(g), List.of(parryable()));
 
-        live.update(560);                                // the dodge window allows 87 ms
+        live.update(560);                                // the dodge window allows 75 ms
         assertTrue(live.react(ReactionType.DODGE));
         live.update(27);
 

@@ -21,7 +21,7 @@ The prologue is planned as:
 Combat is turn-based. Gunther's skills cost AP, while basic attacks are free and give AP back. Using Stasigraphy fills an Ink gauge that powers his strongest attacks. When enemies attack, the player reacts with a dodge or a parry based on timing.
 
 ## How to run
-Requirements: **Java 24**. Gradle is downloaded automatically by the wrapper.
+Requirements: **Java 25**. Gradle is downloaded automatically by the wrapper.
 ```
 ./gradlew build
 ./gradlew run
