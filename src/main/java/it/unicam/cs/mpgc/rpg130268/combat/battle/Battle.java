@@ -26,7 +26,7 @@ import java.util.Optional;
       An enemy with nothing to do passes
     - The next turn begins only when the action in progress has been played (its events, on the clock, are over)
     - When one side has fallen the battle is over. If the party won, every party member who is still alive gets
-      the XP of ALL the enemies (the sum of their rewards)
+      (XP / members alive) as reward
 * */
 public class Battle
 {
@@ -166,6 +166,9 @@ public class Battle
         side.removeIf(fighter -> !fighter.isAlive());
         return side;
     }
+
+    // True while an enemy attack is being played: this is when the keys of the player count
+    public boolean isAttackInProgress() { return context.isBusy(); }
 
     // Starts the turn of the next fighter. An enemy that has nothing to do passes, so this goes on
     // until somebody acts, somebody has to be waited for, or the battle is over
