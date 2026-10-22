@@ -60,22 +60,17 @@ class FakeCombatContext implements CombatContext
     }
 
     @Override
-    public int resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
+    public void resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
     {
         attackTargets.add(List.copyOf(targets));
 
-        int total = 0;
-
         // Every hit eats all the targets who are still alive (nobody reacts in this context)
         for (Hit hit : hits)
-        {
             for (Fighter target : targets)
                 if (target.isAlive())
-                    total += resolveHit(attacker, target, hit).amount();
-        }
-
-        return total;
+                    resolveHit(attacker, target, hit);
     }
+
     @Override
     public int heal(Fighter source, Fighter target, int amount)
     {

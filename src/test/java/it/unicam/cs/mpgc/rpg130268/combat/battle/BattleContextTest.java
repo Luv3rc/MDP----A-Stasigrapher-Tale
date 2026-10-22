@@ -205,10 +205,9 @@ class BattleContextTest
         Gunther second = gunther();
         List<Hit> hits = List.of(parryable(), hit(300, ReactionOptions.PARRY_ONLY, StrikeWeight.HEAVY));
 
-        int total = battle(ReactionSource.none()).resolveAttack(goblin(), List.of(first, second), hits);
+        battle(ReactionSource.none()).resolveAttack(goblin(), List.of(first, second), hits);
 
         // each takes 17 + 26 = 43
-        assertEquals(86, total);
         assertEquals(50 - 43, first.getHp());
         assertEquals(50 - 43, second.getHp());
     }
@@ -232,11 +231,10 @@ class BattleContextTest
         Gunther second = gunther();
         int ap = first.getAp().getCurrentAp();
 
-        int total = battle(new ScriptedReactions(perfectParry()))
-                .resolveAttack(goblin(500), List.of(first, second), List.of(parryable(), parryable()));
+        battle(new ScriptedReactions(perfectParry())).resolveAttack(goblin(500),
+                List.of(first, second), List.of(parryable(), parryable()));
 
         // the first hit is parried by both, the second one (nobody reacts) eats both
-        assertEquals(34, total);
         assertEquals(50 - 17, first.getHp());
         assertEquals(50 - 17, second.getHp());
         assertEquals(ap + ApRules.defaults().apGainOnPerfectParry(), first.getAp().getCurrentAp());
@@ -250,9 +248,8 @@ class BattleContextTest
         Enemy attacker = goblin(100);
         BattleContext battle = battle(new ScriptedReactions(perfectParry(), perfectParry()));
 
-        int total = battle.resolveAttack(attacker, List.of(first, second), List.of(parryable(), parryable()));
+        battle.resolveAttack(attacker, List.of(first, second), List.of(parryable(), parryable()));
 
-        assertEquals(0, total);
         assertEquals(50, first.getHp());
         assertEquals(50, second.getHp());
         assertEquals(100 - 28 - 28, attacker.getHp());   // two counters of 28
@@ -263,17 +260,23 @@ class BattleContextTest
                 events.subList(events.size() - 2, events.size()));
     }
 
-    @Test void aCounterThatDefeatsTheAttackerStopsTheOtherCounters()
+    @Test void everyCounterHappensEvenIfTheFirstOneDefeatsTheAttacker()
     {
         Enemy attacker = goblin(20);
+        Gunther first = gunther();
+        Gunther second = gunther();
+        int ap = second.getAp().getCurrentAp();
         BattleContext battle = battle(new ScriptedReactions(perfectParry()));
 
-        battle.resolveAttack(attacker, List.of(gunther(), gunther()), List.of(parryable()));
+        battle.resolveAttack(attacker, List.of(first, second), List.of(parryable()));
 
         assertFalse(attacker.isAlive());
         List<BattleEvent> events = battle.drainEvents();
-        assertEquals(1, events.stream().filter(e -> e instanceof BattleEvent.Countered).count());
-        assertEquals(1, events.stream().filter(e -> e instanceof BattleEvent.Defeated).count());
+        assertEquals(2, events.stream().filter(e -> e instanceof BattleEvent.Countered).count());   // both countered
+        assertEquals(1, events.stream().filter(e -> e instanceof BattleEvent.Defeated).count());    // it falls only once
+        // the second one still got the AP of the parry and of its counter
+        assertEquals(ap + ApRules.defaults().apGainOnPerfectParry() + ApRules.defaults().apGainOnBasicAttack(),
+                second.getAp().getCurrentAp());
     }
 
     @Test void everyoneIsHitAtTheSameMoment()
@@ -324,9 +327,8 @@ class BattleContextTest
         Gunther g = gunther();
         BattleContext battle = battle(source);
 
-        int total = battle.resolveAttack(dead, List.of(g), List.of(parryable()));
+        battle.resolveAttack(dead, List.of(g), List.of(parryable()));
 
-        assertEquals(0, total);
         assertEquals(50, g.getHp());
         assertTrue(source.asked.isEmpty());
         assertTrue(battle.drainEvents().isEmpty());              // not even a counter
@@ -338,7 +340,7 @@ class BattleContextTest
         dead.setHp(0);
         BattleContext battle = battle(ReactionSource.none());
 
-        assertEquals(0, battle.resolveAttack(goblin(), List.of(dead), List.of(parryable())));
+        battle.resolveAttack(goblin(), List.of(dead), List.of(parryable()));
         assertTrue(battle.drainEvents().isEmpty());
     }
 
@@ -382,9 +384,8 @@ class BattleContextTest
         fragile.setHp(5);                                // the first hit (17) kills
         BattleContext battle = battle(source);
 
-        int total = battle.resolveAttack(goblin(), List.of(fragile), List.of(parryable(), parryable(), parryable()));
+        battle.resolveAttack(goblin(), List.of(fragile), List.of(parryable(), parryable(), parryable()));
 
-        assertEquals(17, total);
         assertFalse(fragile.isAlive());
         assertEquals(1, source.asked.size());            // nobody was asked about the hits that never happened
 
@@ -566,5 +567,16 @@ class BattleContextTest
 
         assertThrows(IllegalArgumentException.class, () -> battle.resolveHit(gunther(), List.<Fighter>of(), parryable()));
         assertThrows(NullPointerException.class, () -> battle.resolveHit(gunther(), (List<Fighter>) null, parryable()));
+    }
+
+    @Test void aHitThatCannotBeReactedToDoesNotAskAnyone()
+    {
+        ScriptedReactions source = new ScriptedReactions(perfectParry());
+        Gunther g = gunther();
+
+        battle(source).resolveAttack(goblin(), List.of(g), List.of(hit(500, ReactionOptions.NONE, StrikeWeight.NORMAL)));
+
+        assertTrue(source.asked.isEmpty());
+        assertEquals(50 - 17, g.getHp());                // it was the only damage check: now the HP
     }
 }

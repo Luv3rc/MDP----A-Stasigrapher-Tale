@@ -74,9 +74,8 @@ class LiveBattleContextTest
         Gunther g = gunther();
         Enemy attacker = goblin();
 
-        int total = live.resolveAttack(attacker, List.of(g), List.of(parryable()));
+        live.resolveAttack(attacker, List.of(g), List.of(parryable()));
 
-        assertEquals(0, total);                          // the damage is not known yet
         assertEquals(50, g.getHp());
         assertTrue(live.isBusy());
         assertEquals(List.of(new BattleEvent.AttackStarted(attacker, List.of(g), List.of(parryable()), 0)), live.drainEvents());
@@ -219,19 +218,48 @@ class LiveBattleContextTest
         assertEquals(40, attacker.getHp());
     }
 
-    @Test void onlyTheFirstKeyOfAHitCounts()
+    @Test void aKeyOutsideEveryWindowIsIgnoredAndDoesNotSpoilTheHit()
     {
         LiveBattleContext live = live();
         Gunther g = gunther();
         live.resolveAttack(goblin(), List.of(g), List.of(parryable()));
 
         live.update(5);
-        assertTrue(live.react(ReactionType.PARRY));      // far too early: it is taken, and it is a miss
+        assertFalse(live.react(ReactionType.PARRY));     // far too early: ignored
         live.update(495);
-        assertFalse(live.react(ReactionType.PARRY));     // the right moment, but this hit already had its key
+        assertTrue(live.react(ReactionType.PARRY));      // the right moment still works
         live.update(87);
 
-        assertEquals(50 - 17, g.getHp());
+        assertEquals(50, g.getHp());
+    }
+
+    @Test void onlyTheFirstKeyInsideTheWindowCounts()
+    {
+        LiveBattleContext live = live();
+        Gunther g = gunther();
+        Enemy attacker = goblin();
+        live.resolveAttack(attacker, List.of(g), List.of(parryable()));
+
+        live.update(300);                                // 200 ms early: inside the dodge window only
+        assertTrue(live.react(ReactionType.DODGE));
+        live.update(200);                                // the impact
+        assertFalse(live.react(ReactionType.PARRY));     // this hit already has its key
+        live.update(87);
+
+        assertEquals(50, g.getHp());                     // the dodge counted
+        assertEquals(40, attacker.getHp());              // so there is no counter
+    }
+
+    @Test void aKeyTooEarlyForTheNextHitIsIgnoredToo()
+    {
+        LiveBattleContext live = live();
+        live.resolveAttack(goblin(), List.of(gunther()), List.of(parryable(), hit(1000, ReactionOptions.PARRY_ONLY)));
+
+        live.update(500);
+        assertTrue(live.react(ReactionType.PARRY));      // the first hit takes it
+        live.update(10);
+
+        assertFalse(live.react(ReactionType.PARRY));     // the second hit lands at 1500: way too early for it
     }
 
     @Test void aKeyThatTheHitDoesNotAcceptIsIgnored()
@@ -326,7 +354,7 @@ class LiveBattleContextTest
         assertEquals(50 - 17, second.getHp());
     }
 
-    @Test void counterThatDefeatsTheAttackerStopsTheOtherCounters()
+    @Test void everyCounterHappensEvenIfTheFirstOneDefeatsTheAttacker()
     {
         LiveBattleContext live = live();
         Enemy attacker = goblin(20);
@@ -339,7 +367,7 @@ class LiveBattleContextTest
 
         List<BattleEvent> events = live.drainEvents();
         assertFalse(attacker.isAlive());
-        assertEquals(1, events.stream().filter(e -> e instanceof BattleEvent.Countered).count());
+        assertEquals(2, events.stream().filter(e -> e instanceof BattleEvent.Countered).count());
         assertEquals(1, events.stream().filter(e -> e instanceof BattleEvent.Defeated).count());
     }
 
@@ -367,7 +395,7 @@ class LiveBattleContextTest
         Enemy dead = goblin();
         dead.setHp(0);
 
-        assertEquals(0, live.resolveAttack(dead, List.of(gunther()), List.of(parryable())));
+        live.resolveAttack(dead, List.of(gunther()), List.of(parryable()));
 
         assertFalse(live.isBusy());
         assertTrue(live.drainEvents().isEmpty());

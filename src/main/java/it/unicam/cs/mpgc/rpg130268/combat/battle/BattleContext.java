@@ -107,7 +107,7 @@ public class BattleContext implements CombatContext
     }
 
     @Override
-    public int resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
+    public void resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
     {
         AttackInProgress attack = new AttackInProgress(attacker, targets, hits);
         startAction();
@@ -117,11 +117,11 @@ public class BattleContext implements CombatContext
             Hit hit = attack.nextHit();
             cursorMs += hit.windUpMs();
 
+            // ONE reaction for the whole group: the hit eats everyone
             attack.resolveNext(reactionTo(attack.livingTargets(), hit), cursorMs);
         }
 
         attack.finish(cursorMs);
-        return attack.totalDamage();
     }
 
     @Override
@@ -186,6 +186,8 @@ public class BattleContext implements CombatContext
 
     private void counter(Fighter defender, Fighter attacker, long atMs)
     {
+        boolean wasAlive = attacker.isAlive();
+
         DamageSpec spec = new DamageSpec(rules.counterWeight());
         DamageResult result = calculator.calculate(spec, defender, attacker);
 
@@ -194,7 +196,8 @@ public class BattleContext implements CombatContext
 
         defender.onBasicAttackLanded();
 
-        if (!attacker.isAlive())
+        // It falls once, however many counters hit it
+        if (wasAlive && !attacker.isAlive())
             events.add(new BattleEvent.Defeated(attacker, atMs));
     }
 
@@ -219,7 +222,6 @@ public class BattleContext implements CombatContext
         private final List<Hit> hits;
 
         private int next = 0;
-        private int totalDamage = 0;
 
         // The reaction is the same for every living target, so either all of them parried a hit or none did
         private boolean parriedEveryHit = true;
@@ -244,8 +246,6 @@ public class BattleContext implements CombatContext
 
         List<Fighter> livingTargets() { return targets.stream().filter(Fighter::isAlive).toList(); }
 
-        int totalDamage() { return totalDamage; }
-
         // Resolves the next hit, which lands at atMs, with the reaction of the group
         void resolveNext(ReactionOutcome reaction, long atMs)
         {
@@ -262,7 +262,6 @@ public class BattleContext implements CombatContext
                 {
                     DamageResult result = calculator.calculate(new DamageSpec(hit.strikeWeight()), attacker, target);
                     dealDamage(attacker, target, reaction, result, atMs);
-                    totalDamage += result.amount();
                 }
 
                 if (reaction.isSuccessfulParry())
@@ -272,17 +271,15 @@ public class BattleContext implements CombatContext
             }
         }
 
-        // Everyone who parried every hit strikes back, while the attacker is still standing
+        // Everyone who parried every hit strikes back, all at the same moment in a team attack. Every counter
+        // happens (and gives its AP and ink/other things that might be onPerfectParry() rewards)
+        // even if the attacker dies after the first one
         void finish(long atMs)
         {
             if (next == 0 || !parriedEveryHit) return;
 
             for (Fighter defender : livingTargets())
-            {
-                if (!attacker.isAlive()) break;
-
                 counter(defender, attacker, atMs);
-            }
         }
     }
 }

@@ -23,8 +23,9 @@ import java.util.Objects;
     - An enemy attack (resolveAttack) does not resolve at once, it is scheduled on the clock, the hits land one
       after the other, and AttackStarted will tell the UI when. A hit is judged when its reaction window has closed
       (the impact + how late a reaction can still be good). By then every key the player pressed is known
-    - react() is stamped with the time of the clock. The FIRST key pressed that a hit can take counts for that hit,
-      and a key pressed before the wind-up of a hit begins is ignored
+    - react() is stamped with the time of the clock. The FIRST key pressed INSIDE the reaction window of a hit
+      counts for that hit. A key outside every window is ignored and doesn't spoil anything (the UI can punish
+      mashing, e.g. with a lockout, since react() says when a key counted for nothing)
     - Only one attack is in progress at a time (isBusy()), the next action waits for the end of the last one
     - The player's own strikes (resolveHit) and heals don't need reactions, so they are resolved at once as in
       BattleContext, but their events are stamped on the same clock, after whatever was scheduled before
@@ -74,7 +75,9 @@ public class LiveBattleContext extends BattleContext
     }
 
     // The player pressed a key NOW (on the battle clock). Returns false when it counts for nothing: there is no
-    // attack, no hit that accepts it, or it is too early or too late for all of them
+    // attack, no hit that accepts it, or it is outside the reaction window of every hit (too early or too late).
+    // A key that counts for nothing is simply ignored, and it does NOT spoil the hit. What to do with somebody who
+    // presses at random (e.g. ignore every key for a moment) is up to the future UI
     public boolean react(ReactionType type)
     {
         Objects.requireNonNull(type, "type must not be null");
@@ -109,14 +112,14 @@ public class LiveBattleContext extends BattleContext
     // It only schedules the attack: the damage is not known until its hits land. So it returns 0, and
     // the events tell what happened (hit by hit)
     @Override
-    public int resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
+    public void resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits)
     {
         requireIdle();
 
         AttackInProgress attack = new AttackInProgress(attacker, targets, hits);
 
         // A dead attacker, or nobody left to hit: there is nothing to play
-        if (attack.isOver()) return 0;
+        if (attack.isOver()) return;
 
         long start = startAction();
         current = new LiveAttack(attack, List.copyOf(hits), start);
@@ -126,8 +129,6 @@ public class LiveBattleContext extends BattleContext
 
         // A hit that lands at once, and can't be reacted to, is already due
         resolveDue();
-
-        return 0;
     }
 
     private void requireIdle()
@@ -167,6 +168,12 @@ public class LiveBattleContext extends BattleContext
     private long lateWindowMs(ReactionType type)
     {
         return type == ReactionType.PARRY ? windows.lateParryWindowMs() : windows.lateDodgeWindowMs();
+    }
+
+    // How early a reaction of this type can still be good
+    private long earlyWindowMs(ReactionType type)
+    {
+        return type == ReactionType.PARRY ? windows.earlyParryWindowMs() : windows.earlyDodgeWindowMs();
     }
 
     /* *
@@ -218,6 +225,9 @@ public class LiveBattleContext extends BattleContext
 
                 // Already has its key, or does not accept this one
                 if (inputs[i] != null || !hit.options().allows(type)) continue;
+
+                // Too early for the window of this hit, so for the window of all the later ones too: it counts for nothing
+                if (nowMs < impactMs[i] - earlyWindowMs(type)) return false;
 
                 // Too late even for this hit's window: it can only be meant for the next hit
                 if (nowMs > impactMs[i] + lateWindowMs(type)) continue;
