@@ -31,6 +31,11 @@ public interface CombatContext
         return resolveHit(attacker, target, hit, 1.0);
     }
 
+    default List<DamageResult> resolveHit(Fighter attacker, List<Fighter> targets, Hit hit)
+    {
+        return resolveHit(attacker, targets, hit, 1.0);
+    }
+
     /* *
         A whole attack the targets may react to, hit by hit (the Hit says how long and what they can do).
         A hit eats EVERYONE it is aimed at: there is one reaction per hit, and it counts for all the targets,

@@ -21,6 +21,12 @@ public sealed interface BattleEvent
     record HitResolved(Fighter attacker, Fighter target, ReactionOutcome reaction,
                        int damage, boolean critical, long atMs) implements BattleEvent {}
 
+    // The turn of a fighter begins; a party member waits for the choice of the player, an enemy acts at once
+    record TurnStarted(Fighter actor, long atMs) implements BattleEvent {}
+
+    // The battle is over. xp is what every party member who is still standing received (0 if the party lost)
+    record BattleEnded(BattleOutcome outcome, int xp, long atMs) implements BattleEvent {}
+
     // After parrying every hit of an attack, the defender strikes back
     record Countered(Fighter defender, Fighter attacker, int damage, boolean critical, long atMs) implements BattleEvent {}
 

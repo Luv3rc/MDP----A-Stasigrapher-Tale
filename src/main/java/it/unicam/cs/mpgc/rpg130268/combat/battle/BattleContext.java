@@ -244,8 +244,6 @@ public class BattleContext implements CombatContext
 
         List<Fighter> livingTargets() { return targets.stream().filter(Fighter::isAlive).toList(); }
 
-        Fighter firstLivingTarget() { return livingTargets().getFirst(); }
-
         int totalDamage() { return totalDamage; }
 
         // Resolves the next hit, which lands at atMs, with the reaction of the group

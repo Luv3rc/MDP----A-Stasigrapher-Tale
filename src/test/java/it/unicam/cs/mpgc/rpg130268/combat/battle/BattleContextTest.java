@@ -503,4 +503,68 @@ class BattleContextTest
 
         assertTrue(new BattleContext(ReactionSource.none()).resolveHit(gunther(), target, parryable()).amount() >= 1);
     }
+
+    // ---------- The same hit on several targets ----------
+
+    @Test void aHitOnSeveralTargetsLandsOnAllOfThemAtTheSameMoment()
+    {
+        BattleContext battle = battle(ReactionSource.none());
+        Gunther g = gunther();
+        Enemy first = goblin();
+        Enemy second = goblin();
+
+        List<DamageResult> results = battle.resolveHit(g, List.of(first, second), hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
+
+        assertEquals(2, results.size());
+        assertEquals(40 - 18, first.getHp());
+        assertEquals(40 - 18, second.getHp());
+        assertEquals(List.of(400L, 400L), battle.drainEvents().stream().map(BattleEvent::atMs).toList());
+    }
+
+    @Test void aGroupHitMovesTheClockOnlyOnce()
+    {
+        BattleContext battle = battle(ReactionSource.none());
+        Gunther g = gunther();
+
+        battle.resolveHit(g, List.of(goblin(), goblin(), goblin()), hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
+        battle.drainEvents();
+        battle.resolveHit(g, goblin(), hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
+
+        assertEquals(700, battle.drainEvents().getFirst().atMs());       // not 400 * 3 + 300
+    }
+
+    @Test void aGroupHitSkipsTheFallen()
+    {
+        BattleContext battle = battle(ReactionSource.none());
+        Enemy fallen = goblin();
+        fallen.setHp(0);
+        Enemy alive = goblin();
+
+        List<DamageResult> results = battle.resolveHit(gunther(), List.of(fallen, alive), parryable());
+
+        assertEquals(1, results.size());
+        assertEquals(0, fallen.getHp());
+        assertEquals(40 - 18, alive.getHp());
+    }
+
+    @Test void aGroupHitOnNobodyDoesNotMoveTheClock()
+    {
+        BattleContext battle = battle(ReactionSource.none());
+        Gunther g = gunther();
+        Enemy fallen = goblin();
+        fallen.setHp(0);
+
+        assertTrue(battle.resolveHit(g, List.of(fallen), hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL)).isEmpty());
+        battle.resolveHit(g, goblin(), hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
+
+        assertEquals(300, battle.drainEvents().getLast().atMs());
+    }
+
+    @Test void aGroupHitNeedsTargets()
+    {
+        BattleContext battle = battle(ReactionSource.none());
+
+        assertThrows(IllegalArgumentException.class, () -> battle.resolveHit(gunther(), List.<Fighter>of(), parryable()));
+        assertThrows(NullPointerException.class, () -> battle.resolveHit(gunther(), (List<Fighter>) null, parryable()));
+    }
 }

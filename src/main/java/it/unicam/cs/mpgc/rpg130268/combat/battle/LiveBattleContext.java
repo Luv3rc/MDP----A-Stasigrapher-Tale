@@ -55,6 +55,17 @@ public class LiveBattleContext extends BattleContext
     // True while an attack is being played: nothing else can be resolved until it ends
     public boolean isBusy() { return current != null; }
 
+    public boolean isIdle() { return current == null && clock().getNowMs() >= scheduledUntilMs(); }
+
+    // The moment when something is due on the battle clock
+    public long nextDueMs()
+    {
+        if (current != null)
+            return current.isOver() ? clock().getNowMs() : current.nextDeadline();
+
+        return scheduledUntilMs();
+    }
+
     // Time goes on by deltaMs: the clock moves and every hit whose reaction window has closed gets resolved
     public void update(long deltaMs)
     {

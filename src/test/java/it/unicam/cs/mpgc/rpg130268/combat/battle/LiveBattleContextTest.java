@@ -435,4 +435,56 @@ class LiveBattleContextTest
         assertThrows(NullPointerException.class, () -> live.resolveAttack(null, List.of(gunther()), List.of(parryable())));
         assertThrows(NullPointerException.class, () -> new LiveBattleContext(null));
     }
+
+    // ---------- Idle: everything scheduled has been played ----------
+
+    @Test void theEngineIsIdleOnlyWhenEverythingScheduledHasBeenPlayed()
+    {
+        LiveBattleContext live = live();
+        assertTrue(live.isIdle());
+
+        live.resolveHit(gunther(), goblin(), hit(400, ReactionOptions.NONE));
+        assertFalse(live.isIdle());                      // it is resolved, but its replay takes 400 ms
+        live.update(399);
+        assertFalse(live.isIdle());
+        live.update(1);
+        assertTrue(live.isIdle());
+
+        live.resolveAttack(goblin(), List.of(gunther()), List.of(parryable()));   // starts at 400, lands at 900
+        assertFalse(live.isIdle());
+        live.update(574);                                // 974: the reaction window is still open
+        assertFalse(live.isIdle());
+        live.update(1);                                  // 975: judged
+        assertTrue(live.isIdle());
+    }
+
+    @Test void aGroupHitCannotBeResolvedWhileAnAttackIsInProgress()
+    {
+        LiveBattleContext live = live();
+        Gunther g = gunther();
+        Enemy attacker = goblin();
+        live.resolveAttack(attacker, List.of(g), List.of(parryable()));
+
+        assertThrows(IllegalStateException.class, () -> live.resolveHit(g, List.of(attacker), parryable()));
+    }
+
+    @Test void theNextDueMomentIsWhenTheNextHitCanBeJudged()
+    {
+        LiveBattleContext live = live();
+        live.resolveAttack(goblin(), List.of(gunther()), List.of(parryable(), hit(300, ReactionOptions.PARRY_ONLY)));
+
+        assertEquals(575, live.nextDueMs());             // the first impact (500) and the late dodge window (75)
+
+        live.update(575);
+        assertEquals(840, live.nextDueMs());             // the second impact (800) and the late parry window (40)
+    }
+
+    @Test void whenNothingIsHappeningTheNextDueMomentIsTheEndOfWhatWasScheduled()
+    {
+        LiveBattleContext live = live();
+
+        live.resolveHit(gunther(), goblin(), hit(400, ReactionOptions.NONE));
+
+        assertEquals(400, live.nextDueMs());
+    }
 }

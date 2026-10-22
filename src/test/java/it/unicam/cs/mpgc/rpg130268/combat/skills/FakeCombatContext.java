@@ -47,6 +47,7 @@ class FakeCombatContext implements CombatContext
         return result;
     }
 
+    @Override
     public List<DamageResult> resolveHit(Fighter attacker, List<Fighter> targets, Hit hit, double bonusMultiplier)
     {
         List<DamageResult> results = new ArrayList<>();
