@@ -2,7 +2,6 @@ plugins {
     id("java")
     id("application")
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
 group = "it.unicam.cs.mpgc.rpg130268"
