@@ -50,7 +50,11 @@ public class ConsoleBattleMain
         Battle battle = new Battle(List.of(gunther), List.of(goblin, bandit), new BattleClock());
         ConsoleBattle runner = new ConsoleBattle(battle, ReactionWindows.defaults(), new InputLockout(PENALTY_MS), System.out);
 
-        System.out.println("Type the number of your choice. When you see >>> NOW! type e (parry) or q (dodge) and press Enter.");
+        System.out.println("Type the number of your choice. When you see >>> NOW! type e (parry) or q (dodge) and press Enter" +
+                "\nBase Attack       -- 1 normal hit. Gives you 1 ink and 1 AP" +
+                "\nStasigraphic Fury -- 3 normal hits in a row. 4 Ink minimum. Uses your INK to increase the damage of each hit" +
+                "\nCuts for Ink      -- 2 light hits followed by a normal one. For each hit, you gain 1 ink" +
+                "\nThirst for Ink    -- Puts you at 1hp, filling your Ink and AP to the max");
 
         ConsoleBattleLoop.run(runner, System.in);
     }
