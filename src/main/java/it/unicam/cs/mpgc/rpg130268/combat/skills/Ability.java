@@ -7,6 +7,7 @@ import java.util.List;
 public interface Ability
 {
     String getName();
+    String getDescription();
     int getApCost();
     TargetType getTargetType();
 

@@ -147,6 +147,31 @@ public class BattleContext implements CombatContext
         return restored;
     }
 
+    @Override
+    public void setHp(Fighter source, Fighter target, int newHp) {
+        Objects.requireNonNull(source, "source must not be null");
+        Objects.requireNonNull(target, "target must not be null");
+
+        if (!target.isAlive()) return;
+
+        if (newHp < 1 || newHp > target.getStats().maxHealth())
+            throw new IllegalArgumentException("newHp must be between 1 and max health");
+
+        int before = target.getHp();
+        target.setHp(newHp);
+        int changed = target.getHp() - before;
+
+        if (changed != 0)
+        {
+            long atMs = startAction();
+            // Record a HitResolved or a custom HP change event so the UI updates
+            events.add(new BattleEvent.HitResolved(source, target, ReactionOutcome.noReaction(), -changed, false, atMs));
+
+            if (!target.isAlive())
+                events.add(new BattleEvent.Defeated(target, atMs));
+        }
+    }
+
     // ---------- What the live engine (LiveBattleContext) shares with this one ----------
 
     BattleClock clock() { return clock; }

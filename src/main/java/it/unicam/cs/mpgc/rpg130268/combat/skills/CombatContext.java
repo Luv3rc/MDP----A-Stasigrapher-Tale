@@ -49,4 +49,6 @@ public interface CombatContext
 
     // Restores health: never above the maximum, never reviving a dead fighter. Returns the health restored
     int heal(Fighter source, Fighter target, int amount);
+
+    void setHp(Fighter source, Fighter target, int newHp);
 }

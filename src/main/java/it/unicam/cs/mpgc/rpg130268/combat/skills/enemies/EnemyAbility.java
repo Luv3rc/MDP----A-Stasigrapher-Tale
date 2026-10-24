@@ -18,6 +18,7 @@ public abstract class EnemyAbility extends AbstractAbility<Enemy>
 
     @Override
     protected boolean canAfford() { return true; }
+    public String getDescription() { return ""; }
 
     @Override
     protected void payCost() {}

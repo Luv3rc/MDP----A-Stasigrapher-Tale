@@ -10,11 +10,15 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.TargetType;
 // abilities against them if the user is enchanted
 public abstract class PartyAbility<USER extends PartyMember> extends AbstractAbility<USER>
 {
-    protected PartyAbility(USER user, String name, TargetType targetType)
+    private final String description;
+
+    protected PartyAbility(USER user, String name, String description, TargetType targetType)
     {
         super(user, name, targetType);
+        this.description = description;
     }
 
+    public final String getDescription() { return description; }
     protected final boolean canAfford() { return user.getAp().canAffordAbility(getApCost()); }
 
     protected void payCost() { user.getAp().spendAp(getApCost()); }

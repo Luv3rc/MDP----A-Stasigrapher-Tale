@@ -14,12 +14,13 @@ public class BasicAttack extends PartyAbility<PartyMember>
 {
     private static final short AP_COST = 0;
     private static final String NAME = "Basic Attack";
+    private static final String DESCRIPTION = "A normal strike. Grants 1AP on hit.";
     private static final TargetType TARGET_TYPE = TargetType.ONE_ENEMY;
     private static final short WIND_UP_MS = 400;
 
     private static final Hit STRIKE = new Hit(WIND_UP_MS, ReactionOptions.NONE, StrikeWeight.NORMAL);
 
-    public BasicAttack(PartyMember user) { super(user, NAME, TARGET_TYPE); }
+    public BasicAttack(PartyMember user) { super(user, NAME, DESCRIPTION, TARGET_TYPE); }
 
     @Override
     public int getApCost() { return AP_COST; }

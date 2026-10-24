@@ -19,6 +19,8 @@ public class CutsForInk extends PartyAbility<Gunther>
 {
     private static final int AP_COST = 3;
     private static final String NAME = "Cuts for Ink";
+    private static final String DESCRIPTION = "A flurry of 2 light cuts followed by 1 normal cut that gives Gunther 1 ink per hit.";
+
     private static final TargetType TARGET_TYPE = TargetType.ONE_ENEMY;
 
     // The exact timing and weight of the 3 strikes. The timing is data for the UI (how long each
@@ -30,7 +32,7 @@ public class CutsForInk extends PartyAbility<Gunther>
                     new Hit(600, ReactionOptions.NONE, StrikeWeight.NORMAL)
             );
 
-    public CutsForInk(Gunther user) { super(user, NAME, TARGET_TYPE); }
+    public CutsForInk(Gunther user) { super(user, NAME, DESCRIPTION, TARGET_TYPE); }
 
     @Override
     public int getApCost() { return AP_COST; }
