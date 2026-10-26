@@ -83,4 +83,9 @@ class FakeCombatContext implements CombatContext
 
         return target.getHp() - before; // Fixed syntax formatting here
     }
+
+    @Override
+    public void setHp(Fighter source, Fighter target, int newHp) {
+        target.setHp(newHp);
+    }
 }

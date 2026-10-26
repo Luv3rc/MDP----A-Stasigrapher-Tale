@@ -272,7 +272,7 @@ class AbilityTest {
     // Costs 1 AP and "hits" every target for 5
     private static class Sweep extends PartyAbility<Gunther> {
         Sweep(Gunther user) {
-            super(user, "Sweep", TargetType.ALL_ENEMIES);
+            super(user, "Sweep", "Sweep all foes", TargetType.ALL_ENEMIES);
         }
 
         @Override

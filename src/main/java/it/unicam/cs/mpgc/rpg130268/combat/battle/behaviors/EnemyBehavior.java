@@ -1,13 +1,14 @@
-package it.unicam.cs.mpgc.rpg130268.combat.battle;
+package it.unicam.cs.mpgc.rpg130268.combat.battle.behaviors;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
+import it.unicam.cs.mpgc.rpg130268.combat.battle.EnemyAction;
 
 import java.util.List;
 import java.util.Optional;
 
 // How an enemy chooses what to do on its turn (its "attack pattern"). It is separate from the Enemy because
-// choosing needs to know the state of the battle: who is alive and who is wounded.
+// choosing needs to know the state of the battle (who is alive and who is wounded)
 // The allies and the foes are the LIVING fighters, from the point of view of the enemy
 // (its allies include itself; its foes are the party)
 public interface EnemyBehavior

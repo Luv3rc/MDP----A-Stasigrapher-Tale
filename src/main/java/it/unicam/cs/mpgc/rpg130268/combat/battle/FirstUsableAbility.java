@@ -2,17 +2,15 @@ package it.unicam.cs.mpgc.rpg130268.combat.battle;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.TargetType;
+import it.unicam.cs.mpgc.rpg130268.combat.battle.behaviors.EnemyBehavior;
+import it.unicam.cs.mpgc.rpg130268.combat.battle.behaviors.EnemyTargeting;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.enemies.EnemyAbility;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-// ! The simplest behavior -- That's why it has to be changed in the future for a better one
-// The first ability the enemy can use (in the order it learned them) that has
-// somebody to use it on. A real attack pattern (phases, "heal when wounded", weights...) will replace it
-// Targets: one foe -> the first one; one ally -> the most wounded one
+// The simplest behavior: the first ability the enemy can use (in the order it learned them) that has
+// somebody to use it on. It is the default for the enemies that have no pattern of their own
 public class FirstUsableAbility implements EnemyBehavior
 {
     @Override
@@ -20,27 +18,11 @@ public class FirstUsableAbility implements EnemyBehavior
     {
         for (EnemyAbility ability : self.getListOfAbility())
         {
-            if (!ability.canPerform()) continue;
+            Optional<EnemyAction> action = EnemyTargeting.actionFor(self, ability, allies, foes);
 
-            List<Fighter> targets = targetsFor(ability.getTargetType(), self, allies, foes);
-            if (!targets.isEmpty())
-                return Optional.of(new EnemyAction(ability, targets));
+            if (action.isPresent()) return action;
         }
 
         return Optional.empty();
     }
-
-    private List<Fighter> targetsFor(TargetType type, Enemy self, List<Fighter> allies, List<Fighter> foes)
-    {
-        return switch (type)
-        {
-            case SELF -> List.of(self);
-            case ONE_ENEMY -> foes.isEmpty() ? List.of() : List.of(foes.getFirst());
-            case ALL_ENEMIES -> foes;
-            case ONE_ALLY -> allies.stream().min(Comparator.comparingDouble(this::healthRatio)).map(List::of).orElse(List.of());
-            case ALL_ALLIES -> allies;
-        };
-    }
-
-    private double healthRatio(Fighter fighter) { return (double) fighter.getHp() / fighter.getStats().maxHealth(); }
 }

@@ -14,6 +14,18 @@ java {
     }
 }
 
+// Source - https://stackoverflow.com/a/75923728
+// Posted by romtsn
+// Retrieved 2026-10-26, License - CC BY-SA 4.0
+
+gradle.taskGraph.whenReady {
+    val task = this.allTasks.find { it.name.endsWith(".main()") } as? JavaExec // or whatever other method your Main class runs
+    task?.let {
+        it.setExecutable(it.javaLauncher.get().executablePath.asFile.absolutePath)
+    }
+}
+
+
 repositories {
     mavenCentral()
 }

@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg130268.combat.battle;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
+import it.unicam.cs.mpgc.rpg130268.combat.battle.behaviors.EnemyBehavior;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 
