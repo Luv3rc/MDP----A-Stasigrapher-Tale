@@ -109,6 +109,13 @@ public class LiveBattleContext extends BattleContext
         return super.heal(source, target, amount);
     }
 
+    @Override
+    public void announce(Fighter actor, String text)
+    {
+        requireIdle();
+        super.announce(actor, text);
+    }
+
     // It only schedules the attack: the damage is not known until its hits land. So it returns 0, and
     // the events tell what happened (hit by hit)
     @Override

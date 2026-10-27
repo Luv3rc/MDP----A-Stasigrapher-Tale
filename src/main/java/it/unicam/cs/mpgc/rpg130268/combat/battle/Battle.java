@@ -26,6 +26,7 @@ import java.util.Optional;
     - A party member waits for the player; an enemy decides with its behavior and acts at once.
       An enemy with nothing to do passes
     - The next turn begins only when the action in progress has been played (its events, on the clock, are over)
+      and the dead zone after it has passed (see BattleRules)
     - When one side has fallen the battle is over. If the party won, every party member who is still alive gets
       (XP / members alive) as reward
 * */
@@ -113,6 +114,7 @@ public class Battle
             throw new IllegalArgumentException(actor.getName() + " does not know " + ability.getName());
 
         ability.perform(targets, context);
+        context.endAction();                // the next turn waits for the dead zone
         phase = BattlePhase.PLAYING;
     }
 
@@ -212,6 +214,7 @@ public class Battle
         if (action.isEmpty()) return false;
 
         action.get().ability().perform(action.get().targets(), context);
+        context.endAction();                // the next turn waits for the dead zone
         return true;
     }
 

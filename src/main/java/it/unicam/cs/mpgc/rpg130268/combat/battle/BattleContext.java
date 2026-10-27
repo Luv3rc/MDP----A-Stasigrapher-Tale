@@ -172,6 +172,19 @@ public class BattleContext implements CombatContext
         }
     }
 
+    // The text of an ability that announces itself. It is shown first, and what the ability does begins when the text
+    // is gone. Everything scheduled after this starts announcementMs later
+    @Override
+    public void announce(Fighter actor, String text)
+    {
+        Objects.requireNonNull(actor, "actor must not be null");
+        Objects.requireNonNull(text, "text must not be null");
+
+        long atMs = startAction();
+        events.add(new BattleEvent.Announced(actor, text, rules.announcementMs(), atMs));
+        reserveUntil(atMs + rules.announcementMs());
+    }
+
     // ---------- What the live engine (LiveBattleContext) shares with this one ----------
 
     BattleClock clock() { return clock; }
@@ -190,6 +203,9 @@ public class BattleContext implements CombatContext
 
     // Something is going to happen until atMs: the next action starts after it
     void reserveUntil(long atMs) { cursorMs = Math.max(cursorMs, atMs); }
+
+    // An action (a whole attack, a heal...) has been scheduled; the next one begins only after the dead zone
+    void endAction() { cursorMs = Math.max(cursorMs, clock.getNowMs()) + rules.deadZoneMs(); }
 
     // A hit that can't be reacted to (e.g. the player's own strikes) asks nothing to nobody
     ReactionOutcome judge(ReactionInput input, Hit hit)

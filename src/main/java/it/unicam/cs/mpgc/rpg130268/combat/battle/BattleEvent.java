@@ -21,6 +21,10 @@ public sealed interface BattleEvent
     record HitResolved(Fighter attacker, Fighter target, ReactionOutcome reaction,
                        int damage, boolean critical, long atMs) implements BattleEvent {}
 
+    // An ability that announces itself (e.g. "Bandit heals!"): the UI shows the text for durationMs. Whatever the
+    // ability does begins after the text is gone
+    record Announced(Fighter actor, String text, long durationMs, long atMs) implements BattleEvent {}
+
     // The turn of a fighter begins; a party member waits for the choice of the player, an enemy acts at once
     record TurnStarted(Fighter actor, long atMs) implements BattleEvent {}
 
