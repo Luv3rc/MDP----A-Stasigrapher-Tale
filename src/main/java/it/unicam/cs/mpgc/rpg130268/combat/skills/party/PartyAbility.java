@@ -19,6 +19,13 @@ public abstract class PartyAbility<USER extends PartyMember> extends AbstractAbi
     }
 
     public final String getDescription() { return description; }
+
+    @Override
+    public PartyAbility<USER> withAnnouncement(String text)
+    {
+        super.withAnnouncement(text);
+        return this;
+    }
     protected final boolean canAfford() { return user.getAp().canAffordAbility(getApCost()); }
 
     protected void payCost() { user.getAp().spendAp(getApCost()); }

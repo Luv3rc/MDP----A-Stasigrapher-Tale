@@ -12,6 +12,14 @@ public abstract class EnemyAbility extends AbstractAbility<Enemy>
         super(user, name, targetType);
     }
 
+    // So it can be chained: e.learn(e -> new EnemyHeal(...).withAnnouncement("{user} heals!"))
+    @Override
+    public EnemyAbility withAnnouncement(String text)
+    {
+        super.withAnnouncement(text);
+        return this;
+    }
+
     // Enemies don't use AP, so there is nothing to afford and nothing to pay
     @Override
     public final int getApCost() { return 0; }

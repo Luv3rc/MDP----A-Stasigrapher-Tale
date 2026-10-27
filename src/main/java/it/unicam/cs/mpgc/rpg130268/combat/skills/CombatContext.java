@@ -47,6 +47,10 @@ public interface CombatContext
     */
     void resolveAttack(Fighter attacker, List<Fighter> targets, List<Hit> hits);
 
+    // The text of an ability that announces itself ("Bandit heals!"). The engine shows it first and what the ability
+    // does next begins when the text is gone. Contexts that show nothing can ignore it
+    default void announce(Fighter actor, String text) { }
+
     // Restores health: never above the maximum, never reviving a dead fighter. Returns the health restored
     int heal(Fighter source, Fighter target, int amount);
 

@@ -4,6 +4,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageCalculator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 // It fixes the order of the steps
 public abstract class AbstractAbility<USER extends Fighter> implements Ability
@@ -11,6 +12,7 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
     protected final USER user;
     private final String abilityName;
     private final TargetType targetType;
+    private String announcement = null;     // not every ability announce
 
     protected AbstractAbility (USER user, String abilityName, TargetType targetType)
     {
@@ -27,6 +29,27 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
     public String getName() { return abilityName; }
     public TargetType getTargetType() { return targetType; }
 
+    /* *
+        Makes the ability announce itself. The text pops up before it starts, and it starts when the text is gone.
+        {user} becomes the name of the user:  withAnnouncement("{user} heals!")  ->  "Bandit heals!"
+    * */
+    public AbstractAbility<USER> withAnnouncement(String text)
+    {
+        Objects.requireNonNull(text, "text must not be null");
+
+        if (text.isBlank())
+            throw new IllegalArgumentException("the announcement must not be blank");
+
+        this.announcement = text.strip();
+        return this;
+    }
+
+    @Override
+    public Optional<String> getAnnouncement()
+    {
+        return Optional.ofNullable(announcement).map(text -> text.replace("{user}", user.getName()));
+    }
+
     // Used to check if the ability is available right now. Final: every ability, party or enemy,
     // is available only if its user can pay AND its own requirements are met
     @Override
@@ -41,6 +64,7 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
             throw new IllegalStateException(abilityName + " cannot be performed");
 
         validateTargets(targets);
+        getAnnouncement().ifPresent(text -> context.announce(user, text));     // before anything else happens
         payCost();
         applyEffect(targets, context);
     }
