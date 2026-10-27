@@ -14,7 +14,7 @@ public record ReactionWindows(long parryWindowMs, long dodgeWindowMs)
             throw new IllegalArgumentException("Dodge Window can't be less or equal to the parry window");
     }
 //    public static ReactionWindows defaults() { return new ReactionWindows(160, 300); }
-    public static ReactionWindows defaults() { return new ReactionWindows(120, 200); }
+    public static ReactionWindows defaults() { return new ReactionWindows(160, 300); }
 
     public long lateParryWindowMs() { return parryWindowMs / 4; }
     public long earlyParryWindowMs() { return parryWindowMs - lateParryWindowMs(); }

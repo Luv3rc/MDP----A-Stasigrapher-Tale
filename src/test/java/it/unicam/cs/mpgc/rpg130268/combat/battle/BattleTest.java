@@ -45,6 +45,12 @@ class BattleTest
                 ReactionWindows.defaults(), BattleRules.defaults(), clock);
     }
 
+    private LiveBattleContext live(BattleRules rules)
+    {
+        return new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()),
+                ReactionWindows.defaults(), rules, clock);
+    }
+
     // The numbers: Gunther (strength 10, defense 4, agility 6) hits a goblin (defense 2) for 18 with a normal hit.
     // The goblin (strength 10, agility 3) hits Gunther for 17. Gunther is faster, so he acts first.
     // A basic attack takes 400 ms; the goblin's swing lands 500 ms after it starts
@@ -74,6 +80,11 @@ class BattleTest
     private Battle battle(List<PartyMember> party, List<Enemy> enemies) { return new Battle(party, enemies, live(), new FirstUsableAbility()); }
 
     private Battle battle(Gunther gunther, Enemy enemy) { return battle(List.of(gunther), List.of(enemy)); }
+
+    private Battle battle(Gunther gunther, Enemy enemy, BattleRules rules)
+    {
+        return new Battle(List.of(gunther), List.of(enemy), live(rules), new FirstUsableAbility());
+    }
 
     private Ability basicAttack(Gunther gunther)
     {
@@ -166,6 +177,120 @@ class BattleTest
         assertSame(goblin, battle.getCurrentActor().orElseThrow());      // now it is the goblin's turn
         assertEquals(BattlePhase.PLAYING, battle.getPhase());            // and it attacked at once
         assertTrue(battle.drainEvents().stream().anyMatch(e -> e instanceof BattleEvent.AttackStarted));
+    }
+
+    // ---------- The dead zone ----------
+
+    @Test void aDeadZoneSeparatesTheEndOfAnActionFromTheStartOfTheNextOne()
+    {
+        Gunther g = gunther();
+        Enemy goblin = goblin(100, 30);
+        Battle battle = battle(g, goblin, new BattleRules(StrikeWeight.HEAVY, 1000, 1500));
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.drainEvents();
+
+        battle.update(400 + 999);                        // the strike has landed, but the dead zone is not over
+        assertSame(g, battle.getCurrentActor().orElseThrow());
+        assertTrue(battle.drainEvents().stream().noneMatch(e -> e instanceof BattleEvent.TurnStarted));
+
+        battle.update(1);                                // 1400: the goblin's turn, and its swing starts now
+
+        assertSame(goblin, battle.getCurrentActor().orElseThrow());
+        assertTrue(battle.drainEvents().stream().anyMatch(e -> e instanceof BattleEvent.AttackStarted a && a.atMs() == 1400));
+    }
+
+    @Test void theDeadZoneAlsoFollowsAnEnemyAttackBeforeTheTurnOfThePlayer()
+    {
+        Gunther g = gunther();
+        Enemy goblin = goblin(100, 30);
+        Battle battle = battle(g, goblin, new BattleRules(StrikeWeight.HEAVY, 1000, 1500));
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.update(1400);                             // the swing starts at 1400 and lands at 1900
+
+        battle.update(1499);                             // 2899: the swing was judged long ago, but the dead zone goes on
+        assertEquals(BattlePhase.PLAYING, battle.getPhase());
+
+        battle.update(1);                                // 2900: 1000 ms after the last impact
+        assertEquals(BattlePhase.WAITING_FOR_PLAYER, battle.getPhase());
+    }
+
+    @Test void withoutADeadZoneTheNextActionStartsAsSoonAsTheLastOneEnds()
+    {
+        Gunther g = gunther();
+        Enemy goblin = goblin(100, 30);
+        Battle battle = battle(g, goblin);               // the default rules
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.drainEvents();
+
+        battle.update(400);
+
+        assertSame(goblin, battle.getCurrentActor().orElseThrow());
+    }
+
+    // ---------- The announcements ----------
+
+    @Test void anAbilityThatAnnouncesItselfShowsItsTextAndStartsOnlyWhenTheTextIsGone()
+    {
+        Gunther g = gunther();
+        Enemy goblin = goblinWithoutAbilities(100, 30);
+        goblin.learn(e -> new EnemyAttack(e, "Club swing", TargetType.ONE_ENEMY, List.of(swing()))
+                .withAnnouncement("{user} winds up!"));
+        Battle battle = battle(g, goblin, new BattleRules(StrikeWeight.HEAVY, 0, 1500));
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.drainEvents();
+
+        battle.update(400);                              // the goblin's turn: first the text
+        List<BattleEvent> events = battle.drainEvents();
+
+        BattleEvent.Announced announced = events.stream().filter(BattleEvent.Announced.class::isInstance)
+                .map(BattleEvent.Announced.class::cast).findFirst().orElseThrow();
+        BattleEvent.AttackStarted attack = events.stream().filter(BattleEvent.AttackStarted.class::isInstance)
+                .map(BattleEvent.AttackStarted.class::cast).findFirst().orElseThrow();
+
+        assertEquals("Goblin winds up!", announced.text());     // {user} is the name of who acts
+        assertEquals(400, announced.atMs());
+        assertEquals(1500, announced.durationMs());
+        assertEquals(400 + 1500, attack.atMs());                // the attack starts when the text is gone
+    }
+
+    @Test void anAbilityWithoutAnAnnouncementShowsNoText()
+    {
+        Gunther g = gunther();
+        Enemy goblin = goblin(100, 30);
+        Battle battle = battle(g, goblin);
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.update(400);
+
+        assertTrue(battle.drainEvents().stream().noneMatch(e -> e instanceof BattleEvent.Announced));
+    }
+
+    @Test void aHealThatAnnouncesItselfHealsOnlyAfterTheText()
+    {
+        Gunther g = gunther();
+        Enemy goblin = goblinWithoutAbilities(100, 30);
+        goblin.learn(e -> new it.unicam.cs.mpgc.rpg130268.combat.skills.enemies.EnemyHeal(e, "Heal", TargetType.SELF, 0.3)
+                .withAnnouncement("{user} heals!"));
+        goblin.takeDamage(50);                           // wounded: a heal on itself is worth using
+        Battle battle = battle(g, goblin, new BattleRules(StrikeWeight.HEAVY, 0, 1500));
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.drainEvents();
+        battle.update(400);
+
+        List<BattleEvent> events = battle.drainEvents();
+        BattleEvent.Announced announced = events.stream().filter(BattleEvent.Announced.class::isInstance)
+                .map(BattleEvent.Announced.class::cast).findFirst().orElseThrow();
+        BattleEvent.Healed healed = events.stream().filter(BattleEvent.Healed.class::isInstance)
+                .map(BattleEvent.Healed.class::cast).findFirst().orElseThrow();
+
+        assertEquals("Goblin heals!", announced.text());
+        assertEquals(400, announced.atMs());
+        assertEquals(400 + 1500, healed.atMs());         // what the heal shows comes after the text
     }
 
     @Test void aChoiceThatIsNotValidChangesNothingAndTheTurnKeepsWaiting()

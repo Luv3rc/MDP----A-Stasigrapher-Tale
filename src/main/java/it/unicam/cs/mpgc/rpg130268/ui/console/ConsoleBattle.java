@@ -250,6 +250,9 @@ public class ConsoleBattle
             case BattleEvent.TurnStarted e ->
                     say(e.atMs(), "-- Turn of " + e.actor().getName() + " --");
 
+            case BattleEvent.Announced e ->
+                    say(e.atMs(), e.text());
+
             case BattleEvent.AttackStarted e ->
             {
                 say(e.atMs(), e.attacker().getName() + " attacks " + names(e.targets()) + "!");
