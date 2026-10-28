@@ -91,8 +91,10 @@ public class BattleContext implements CombatContext
         List<Fighter> living = targets.stream().filter(Fighter::isAlive).toList();
         if (living.isEmpty()) return List.of();
 
-        // ONE step of the clock for everyone: they are all hit at the same moment
-        startAction();
+        // ONE step of the clock for everyone: they are all hit at the same moment. First the swing is shown,
+        // and the hit lands when its wind-up is over
+        long startMs = startAction();
+        events.add(new BattleEvent.Swing(attacker, List.copyOf(living), hit, startMs));
         cursorMs += hit.windUpMs();
 
         List<DamageResult> results = new ArrayList<>();

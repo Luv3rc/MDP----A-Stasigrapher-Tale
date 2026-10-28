@@ -5,6 +5,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageCalculator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 // It fixes the order of the steps
 public abstract class AbstractAbility<USER extends Fighter> implements Ability
@@ -12,7 +13,7 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
     protected final USER user;
     private final String abilityName;
     private final TargetType targetType;
-    private String announcement = null;     // not every ability announce
+    private String announcement = null;     // not every ability announces itself
 
     protected AbstractAbility (USER user, String abilityName, TargetType targetType)
     {
@@ -30,8 +31,9 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
     public TargetType getTargetType() { return targetType; }
 
     /* *
-        Makes the ability announce itself. The text pops up before it starts, and it starts when the text is gone.
-        {user} becomes the name of the user:  withAnnouncement("{user} heals!")  ->  "Bandit heals!"
+        Makes the ability announce itself: the text pops up before it starts, and it starts when the text is gone.
+        {user} becomes the name of the user and {target} the names of the targets:
+        * withAnnouncement("{user} heals {target}!")  ->  "Mattias27 heals Alex!"
     * */
     public AbstractAbility<USER> withAnnouncement(String text)
     {
@@ -50,6 +52,12 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
         return Optional.ofNullable(announcement).map(text -> text.replace("{user}", user.getName()));
     }
 
+    // The names of the targets, for the text of an announcement: "Alex", "Gunther, Alex"
+    private static String names(List<Fighter> targets)
+    {
+        return targets.stream().map(Fighter::getName).collect(Collectors.joining(", "));
+    }
+
     // Used to check if the ability is available right now. Final: every ability, party or enemy,
     // is available only if its user can pay AND its own requirements are met
     @Override
@@ -64,7 +72,7 @@ public abstract class AbstractAbility<USER extends Fighter> implements Ability
             throw new IllegalStateException(abilityName + " cannot be performed");
 
         validateTargets(targets);
-        getAnnouncement().ifPresent(text -> context.announce(user, text));     // before anything else happens
+        getAnnouncement().ifPresent(text -> context.announce(user, text.replace("{target}", names(targets))));     // before anything else happens
         payCost();
         applyEffect(targets, context);
     }

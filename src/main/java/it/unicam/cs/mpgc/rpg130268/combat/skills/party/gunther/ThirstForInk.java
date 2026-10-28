@@ -15,7 +15,7 @@ public class ThirstForInk extends PartyAbility<Gunther>
 {
     private static final int AP_COST = 1;
     private static final String NAME = "Thirst for Ink";
-    private static final String DESCRIPTION = "Puts Gunther at 1hp, but completely refills his AP and his ink gauge.";
+    private static final String DESCRIPTION = "Puts Gunther at 1HP, completely refilling his AP and his INK gauge.";
     private static final TargetType TARGET_TYPE = TargetType.SELF;
 
     public ThirstForInk(Gunther user) { super(user, NAME, DESCRIPTION, TARGET_TYPE); }

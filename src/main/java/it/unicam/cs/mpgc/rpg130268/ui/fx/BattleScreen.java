@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
     What is on the screen:
     - the enemies in front (upper part), Gunther and the party from behind (bottom-left), facing them
     - the menu next to Gunther: ATTACK / ABILITIES / ITEMS. ABILITIES opens a second menu (two columns of three)
-    - the HUD of every party member in the bottom-right corner (face, life, AP, ink: see PartyPanel)
+    - the HUD of every party member in the top-right corner (face, life, AP, ink: see PartyPanel)
     - the cuts of the attacks (SlashEffect), on a transparent layer over everything
 
     How it works:
@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
     - Keys: F, E, W = the first, second, third entry of the menu, Esc = back, E = parry, Q = dodge (the menu and the
       attacks never happen together), Y / N = retry the battle or not, T = show/hide the timing bar,
       L = show/hide the log
-    - The buttons are gold hexagons (css/battle.css, in the resources). The pictures of the background and of the
+    - The buttons are hexagons with a thin silver border (css/battle.css, in the resources). The pictures of the background and of the
       characters are looked for in the resources too, see SpriteArt. Without them the game draws plain shapes
     - The background depends on the area of the battle (BattlePresenter.getArea): every new battle shows its own
 * */
@@ -80,13 +80,14 @@ public class BattleScreen
     private static final long NANOS_PER_MS = 1_000_000;
     private static final long MAX_STEP_MS = 100;       // a long pause (the window was dragged...) is not played at once
 
+    private static final double HUD_MARGIN = 14;
     private static final double BOTTOM_MARGIN = 40;          // under it there is room for the keys that work now
-    private static final double MENU_LEFT = 20;
-    private static final double PARTY_LEFT = MENU_LEFT + 270 + 40;   // Gunther is next to the menu (270 = a menu button)
-    private static final double ENEMIES_RIGHT = 150;
-    private static final double ENEMIES_BOTTOM = 270;        // the feet of the enemies in front (the others are higher)
+    private static final double PARTY_LEFT = 300;
+    private static final double MENU_LEFT = PARTY_LEFT + 150 + 36;   // the menu is on the right of Gunther (150 = his width)
+    private static final double ENEMIES_RIGHT = 120;
+    private static final double ENEMIES_BOTTOM = 150;        // the feet of the enemies in front: above the head of Gunther
     private static final double ENEMY_SPACING = 190;         // between two enemies of the same row
-    private static final double ENEMY_DEPTH = 80;            // how much lower the enemies of the front row are
+    private static final double ENEMY_DEPTH = 60;            // how much lower the enemies of the front row are
     private static final double ENEMY_CARD_WIDTH = 130;
     private static final double ENEMY_CARD_HEIGHT = 252;     // sprite, name and life bar
     private static final String DAMAGE_COLOR = "#e74c3c";    // the colors of the numbers over the sprites
@@ -95,12 +96,12 @@ public class BattleScreen
     private static final long ANNOUNCEMENT_FADE_OUT_MS = 350;
     private static final double BACKGROUND_DIM = 0.35;       // how much the background is darkened (0 = not at all)
 
-    private static final double MENU_BUTTON_WIDTH = 270;
-    private static final double MENU_BUTTON_HEIGHT = 62;
-    private static final double ABILITY_WIDTH = 292;              // with more than three abilities: ABILITY_WIDTH_NARROW
+    private static final double MENU_BUTTON_WIDTH = 210;
+    private static final double MENU_BUTTON_HEIGHT = 52;
+    private static final double ABILITY_WIDTH = 272;              // with more than three abilities: ABILITY_WIDTH_NARROW
     private static final double ABILITY_WIDTH_NARROW = 262;       // (two columns must not reach Gunther)
-    private static final double BORDER = 2;                       // the gold border of a button (see battle.css)
-    private static final double ABILITY_HEIGHT = 84;          // three of them (with the gaps) are not taller than Gunther
+    private static final double BORDER = 1;                       // the thin border of a button (see battle.css)
+    private static final double ABILITY_HEIGHT = 75;          // three of them (with the gaps) are not taller than Gunther
     private static final double ABILITY_GAP = 6;
 
     // The keys of the menu, in order: the first entry is F, the second E, the third W...
@@ -136,6 +137,10 @@ public class BattleScreen
 
     private final Map<Fighter, FighterCard> cards = new LinkedHashMap<>();
     private final List<PartyPanel> panels = new ArrayList<>();
+
+    // The moment (battle clock) when a fighter has to start its attack animation so that its blow lands with the hit
+    private record AttackCue(long atMs, FighterCard card) { }
+    private final List<AttackCue> attackCues = new ArrayList<>();
     private final AnimationTimer timer = new AnimationTimer()
     {
         @Override
@@ -149,7 +154,7 @@ public class BattleScreen
     private String page = PAGE_MAIN;
     private boolean timingBarOn = true;
     private SequentialTransition announcement = null;        // the one that is on the screen now, if any
-    private boolean buttonStyleLoaded = false;   // battle.css found: the buttons are gold hexagons
+    private boolean buttonStyleLoaded = false;   // battle.css found: the buttons are hexagons with a silver border
     private int targetIndex = 0;              // which of the candidates (from the left) is selected
 
     public BattleScreen(Supplier<BattlePresenter> factory)
@@ -212,12 +217,13 @@ public class BattleScreen
 
         // Center: the field. Gunther on the left and the enemies on the right, facing each other: the middle of the
         // screen is left free, because that is where the backgrounds have what is worth looking at.
-        // The menu is in the bottom-left corner, next to Gunther, and the HUD in the bottom-right corner.
+        // The menu is on the right of Gunther, and the HUD in the top-right corner.
+        // The enemies are above the head of Gunther: the middle of the screen stays free.
         // Every box has exactly the size of its content: if the StackPane stretched them, the alignment
         // (and the middle of the sprites, where the cuts aim) would be wrong
         enemyField.setAlignment(Pos.BOTTOM_CENTER);
         partyBox.setAlignment(Pos.BOTTOM_CENTER);
-        hudBox.setAlignment(Pos.BOTTOM_RIGHT);
+        hudBox.setAlignment(Pos.TOP_RIGHT);
         hudBox.setSpacing(12);
         menuBox.setAlignment(Pos.BOTTOM_LEFT);
         for (HBox box : List.of(partyBox, hudBox)) box.setFillHeight(false);
@@ -229,8 +235,8 @@ public class BattleScreen
         StackPane.setMargin(partyBox, new Insets(0, 0, BOTTOM_MARGIN, PARTY_LEFT));
         StackPane.setAlignment(menuBox, Pos.BOTTOM_LEFT);
         StackPane.setMargin(menuBox, new Insets(0, 0, BOTTOM_MARGIN, MENU_LEFT));
-        StackPane.setAlignment(hudBox, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(hudBox, new Insets(0, 16, BOTTOM_MARGIN, 0));
+        StackPane.setAlignment(hudBox, Pos.TOP_RIGHT);
+        StackPane.setMargin(hudBox, new Insets(HUD_MARGIN, HUD_MARGIN, 0, 0));
 
         // The log is out of the way: it is only there if the player wants it (L)
         logArea.setEditable(false);
@@ -249,9 +255,9 @@ public class BattleScreen
         StackPane.setAlignment(hintLabel, Pos.BOTTOM_LEFT);
         StackPane.setMargin(hintLabel, new Insets(0, 0, 8, 10));
 
-// The announcement: the text of an ability that announces itself ("Mattias27 heals!"), in the top-center of the
+        // The announcement: the text of an ability that announces itself ("Mattias27 heals!"), in the top-center of the
         // window. The engine makes the ability begin only after it is gone
-        announcementLabel.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 20px; -fx-font-weight: bold; "
+        announcementLabel.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 16px; -fx-font-weight: bold; "
                 + "-fx-background-color: rgba(10, 10, 14, 0.78); -fx-border-color: #d2b45a; -fx-border-width: 1.5; "
                 + "-fx-padding: 4 20 4 20; -fx-effect: dropshadow(gaussian, black, 6, 0.4, 0, 1);");
         announcementLabel.setVisible(false);
@@ -265,7 +271,10 @@ public class BattleScreen
         bannerLabel.setVisible(false);
         bannerLabel.setMouseTransparent(true);
 
-        field.getChildren().addAll(enemyField, partyBox, menuBox, hudBox, hintLabel, logArea, bannerLabel);
+        field.getChildren().addAll(enemyField, partyBox, menuBox, hintLabel, logArea, bannerLabel);
+
+        // The HUD is in the top-right corner of the WHOLE window, over the top bar (under the cuts)
+        stage.getChildren().add(stage.getChildren().indexOf(slashLayer), hudBox);
         root.setCenter(field);
     }
 
@@ -280,6 +289,7 @@ public class BattleScreen
         presenter.setAlwaysAskTarget(true);     // even with a single enemy, the player confirms it
         presenter.start();
 
+        for (FighterCard old : cards.values()) old.dispose();
         cards.clear();
         panels.clear();
         partyBox.getChildren().clear();
@@ -300,6 +310,7 @@ public class BattleScreen
         placeEnemies(enemyCards);
 
         showBackground(presenter.getArea());
+        attackCues.clear();
 
         logArea.clear();
         logShown = 0;
@@ -314,13 +325,16 @@ public class BattleScreen
         timer.start();
     }
 
-    public void stop() { timer.stop(); }
+    public void stop()
+    {
+        timer.stop();
+        for (FighterCard card : cards.values()) card.dispose();
+    }
 
     // The background of the area: background_<area>.png, otherwise the general background.png, otherwise a dark color
     private void showBackground(String area)
     {
-        Image picture = SpriteArt.ui("background_" + area);
-        if (picture == null) picture = SpriteArt.ui("background");
+        Image picture = SpriteArt.background(area);
 
         backgroundView.setImage(picture);
         backgroundDim.setVisible(picture != null);
@@ -540,7 +554,12 @@ public class BattleScreen
             case BattleEvent.TurnStarted e -> { }
             case BattleEvent.Announced e -> showAnnouncement(e);
             case BattleEvent.AttackStarted e -> scheduleSlashes(e);
-            case BattleEvent.Defeated e -> { }
+            case BattleEvent.Swing e -> scheduleSwing(e);
+            case BattleEvent.Defeated e ->
+            {
+                FighterCard card = cards.get(e.fighter());
+                if (card != null) card.defeat();
+            }
         }
     }
 
@@ -562,8 +581,34 @@ public class BattleScreen
                     slashes.schedule(e.attacker(), target, card.getTarget(), start, impact, hit.strikeWeight(), fromParty);
             }
 
+            queueAttack(e.attacker(), impact);
             start = impact;
         }
+    }
+
+    // A strike of the party (it cannot be reacted to): the blade comes toward the target during the wind-up, and the
+    // attacker strikes so that its blow lands with it. Then the HitResolved says what happened
+    private void scheduleSwing(BattleEvent.Swing e)
+    {
+        boolean fromParty = isParty(e.attacker());
+        long impact = e.atMs() + e.hit().windUpMs();
+
+        for (Fighter target : e.targets())
+        {
+            FighterCard card = cards.get(target);
+            if (card != null)
+                slashes.schedule(e.attacker(), target, card.getTarget(), e.atMs(), impact, e.hit().strikeWeight(), fromParty);
+        }
+
+        queueAttack(e.attacker(), impact);
+    }
+
+    // The attacker's strike starts a bit before the impact: as long as its animation needs to reach the blow
+    private void queueAttack(Fighter attacker, long impactMs)
+    {
+        FighterCard card = cards.get(attacker);
+        if (card != null)
+            attackCues.add(new AttackCue(impactMs - card.attackLeadMs(), card));
     }
 
     // The hit has been judged: its blade learns how it ended (or a fast cut is drawn, for the strikes of the player)
@@ -592,16 +637,21 @@ public class BattleScreen
         if (card == null) return;
 
         if (e.reaction().isSuccessfulParry())
+        {
             card.floatText("PARRY!", "#f1c40f", 24);
+            card.play("parry");
+        }
         else if (e.reaction().avoidsDamage())
         {
             card.floatText("DODGE!", "#3498db", 24);
             card.sidestep();
+            card.play("dodge");
         }
         else
         {
             card.floatText("-" + e.damage() + (e.critical() ? "!" : ""), e.critical() ? CRIT_COLOR : DAMAGE_COLOR, e.critical() ? 34 : 22);
             card.shake();
+            card.play("hit");
         }
     }
 
@@ -677,6 +727,15 @@ public class BattleScreen
             timingBar.hide();
 
         slashes.update(presenter.getTimeMs());
+
+        long now = presenter.getTimeMs();
+        attackCues.removeIf(cue ->
+        {
+            if (cue.atMs() > now) return false;
+
+            cue.card().attack();
+            return true;
+        });
 
         List<String> log = presenter.getLog();
         for (; logShown < log.size(); logShown++)
@@ -804,35 +863,41 @@ public class BattleScreen
     // with "..." (the whole text is in the tooltip)
     private Button abilityButton(int number, Ability ability, double width)
     {
-        double textWidth = width - 2 * (BORDER + bevel(ABILITY_HEIGHT)) - 8;
+        // The text has room around it: the same on every side of the button, and the pointed ends are kept clear
+        double left = 0.6 * bevel(ABILITY_HEIGHT) + 16;
+        double right = 0.6 * bevel(ABILITY_HEIGHT) + 12;
+        double textWidth = width - 2 * BORDER - left - right;
 
-        Label name = new Label("[" + MENU_KEYS.get(number - 1).getName() + "]  " + ability.getName() + "   (AP " + ability.getApCost() + ")");
-        name.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 15px; -fx-font-weight: bold;");
+        Label name = new Label("[" + MENU_KEYS.get(number - 1).getName() + "]  " + ability.getName() + "   " +
+                "(" + ability.getApCost() + ")");
+        name.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 14px; -fx-font-weight: bold;");
 
         Label description = new Label(ability.getDescription());
         description.setStyle("-fx-text-fill: #b8b8cc; -fx-font-size: 11px;");
         description.setWrapText(true);
         description.setPrefWidth(textWidth);
-        description.setMaxSize(textWidth, 46);       // three lines
+        description.setMaxWidth(textWidth);
+        description.setMinHeight(Region.USE_PREF_SIZE); // Forces JavaFX to allocate enough height for wrapped lines
+        description.setAlignment(Pos.TOP_LEFT);       // two lines (the whole text is in the tooltip)
 
-        VBox text = new VBox(2, name, description);
-        text.setAlignment(Pos.CENTER_LEFT);
+        // The text starts at the top of the button, always at the same height: the name is where the name is on every
+        // button, whatever the length of the description is
+        VBox text = new VBox(4, name, description);
+        text.setAlignment(Pos.TOP_LEFT);
 
-        Button button = rpgButton(text, width, ABILITY_HEIGHT, Pos.CENTER_LEFT);
-        button.setTooltip(new Tooltip(ability.getDescription()));
-        return button;
+        return rpgButton(text, width, ABILITY_HEIGHT, Pos.TOP_LEFT, new Insets(8, right, 10, left));
     }
 
     private Button menuButton(String text)
     {
         Label label = new Label(text);
-        label.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 20px; -fx-font-weight: bold;");
+        label.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 14px; -fx-font-weight: bold;");
 
         return rpgButton(label, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT, Pos.CENTER);
     }
 
     /* *
-        A button of the battle: an elongated hexagon, a gold border and a dark inside (see battle.css).
+        A button of the battle: an elongated hexagon, a thin silver border and a dark inside (see battle.css).
         It is two hexagons one in the other: the button itself is the gold one (its padding is the border) and
         what it holds, the inside, is a dark one a bit smaller. The stylesheet gives the colors, the hover and the
         disabled look; the shape is calculated here for the real size.
@@ -840,14 +905,20 @@ public class BattleScreen
     * */
     private Button rpgButton(Node content, double width, double height, Pos alignment)
     {
+        double bevel = bevel(height);
+        return rpgButton(content, width, height, alignment, new Insets(0, bevel * 0.6 + 8, 0, bevel * 0.6 + 14));
+    }
+
+    // padding: the room between the text and the border of the button
+    private Button rpgButton(Node content, double width, double height, Pos alignment, Insets padding)
+    {
         Button button = new Button();
         button.setFocusTraversable(false);       // the keys are the screen's, a focused button must not take them
         fixSize(button, width, height);
 
-        double bevel = bevel(height);
         StackPane inner = new StackPane(content);
         inner.setAlignment(alignment);
-        inner.setPadding(new Insets(0, bevel, 0, bevel + 4));        // the text stays clear of the slanted ends
+        inner.setPadding(padding);
         fixSize(inner, width - 2 * BORDER, height - 2 * BORDER);
 
         if (buttonStyleLoaded)
@@ -876,7 +947,7 @@ public class BattleScreen
     // How deep the slanted ends are: the same proportion for every height
     private static double bevel(double height)
     {
-        return Math.round(height * 0.29);
+        return Math.round(height * 0.42);
     }
 
     // The style that gives a region the shape of an elongated hexagon of exactly this size

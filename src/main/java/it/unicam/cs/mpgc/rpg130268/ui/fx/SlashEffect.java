@@ -228,7 +228,8 @@ final class SlashEffect
         // Returns false when there is nothing left to draw
         boolean draw(long now, double width, double height)
         {
-            Bounds bounds = layer.sceneToLocal(targetNode.localToScene(targetNode.getBoundsInLocal()));
+            // The layout bounds are the fixed box of the sprite: the cut aims at the same spot whatever the animation does
+            Bounds bounds = layer.sceneToLocal(targetNode.localToScene(targetNode.getLayoutBounds()));
             if (bounds == null) return true;
 
             double cx = bounds.getCenterX();

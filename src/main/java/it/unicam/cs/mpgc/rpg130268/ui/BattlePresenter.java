@@ -347,6 +347,7 @@ public class BattlePresenter
         {
             case BattleEvent.TurnStarted e -> { }
             case BattleEvent.Announced e -> { }
+            case BattleEvent.Swing e -> { }
             case BattleEvent.AttackStarted e -> rememberHits(e);
             case BattleEvent.HitResolved e -> view(e.target()).damage(e.damage());
             case BattleEvent.Countered e -> view(e.attacker()).damage(e.damage());
@@ -355,7 +356,8 @@ public class BattlePresenter
             case BattleEvent.BattleEnded e -> end = e;
         }
 
-        log.add(textOf(event));
+        String text = textOf(event);
+        if (!text.isEmpty()) log.add(text);          // some events are only for the animations
     }
 
     private void rememberHits(BattleEvent.AttackStarted event)
@@ -398,6 +400,7 @@ public class BattlePresenter
         {
             case BattleEvent.TurnStarted e -> "-- Turn of " + e.actor().getName() + " --";
             case BattleEvent.Announced e -> e.text();
+            case BattleEvent.Swing e -> "";
             case BattleEvent.AttackStarted e -> e.attacker().getName() + " attacks " + names(e.targets()) + "!";
             case BattleEvent.HitResolved e -> hitText(e);
             case BattleEvent.Countered e -> e.defender().getName() + " counters " + e.attacker().getName()

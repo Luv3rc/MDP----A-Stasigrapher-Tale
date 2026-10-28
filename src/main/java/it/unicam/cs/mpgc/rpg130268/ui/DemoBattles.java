@@ -83,8 +83,7 @@ public final class DemoBattles
                 List.of(new Hit(2000, ReactionOptions.PARRY_ONLY, StrikeWeight.HEAVY),
                         new Hit(700, ReactionOptions.PARRY_OR_DODGE, StrikeWeight.NORMAL))));
         Mattias27.learn(e -> new EnemyHeal(e, "Heal Allay", TargetType.ONE_ALLY, 0.3).
-                withAnnouncement("{user} heals an allay!"));
-
+                withAnnouncement("{user} heals {target}!"));
 
         Enemy Alex = new Enemy("Alex", new Stats(800, 12, 10, 4, 6),
                 3, 500);
@@ -117,7 +116,7 @@ public final class DemoBattles
         BattleRules rules = new BattleRules(StrikeWeight.HEAVY, DEAD_ZONE_MS, ANNOUNCEMENT_MS);
         LiveBattleContext context = new LiveBattleContext(new DamageCalculator(), ReactionWindows.defaults(),
                 rules, new BattleClock());
-        Battle battle = new Battle(party, enemies, new LiveBattleContext(new BattleClock()), patterns);
+        Battle battle = new Battle(party, enemies, context, patterns);     // with the rules above: dead zone, announcements
         BattlePresenter presenter = new BattlePresenter(battle, party, enemies, ReactionWindows.defaults(),
                 new InputLockout(PENALTY_MS));
         presenter.setArea("arena");     // the background: background_arena.png (or background.png if there is none)

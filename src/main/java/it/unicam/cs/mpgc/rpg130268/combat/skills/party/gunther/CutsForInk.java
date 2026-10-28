@@ -19,7 +19,7 @@ public class CutsForInk extends PartyAbility<Gunther>
 {
     private static final int AP_COST = 3;
     private static final String NAME = "Cuts for Ink";
-    private static final String DESCRIPTION = "A flurry of 2 light cuts followed by 1 normal cut that gives Gunther 1 ink per hit.";
+    private static final String DESCRIPTION = "Light damage. 3 hits. Each hit generates 1 INK.";
 
     private static final TargetType TARGET_TYPE = TargetType.ONE_ENEMY;
 

@@ -253,6 +253,8 @@ public class ConsoleBattle
             case BattleEvent.Announced e ->
                     say(e.atMs(), e.text());
 
+            case BattleEvent.Swing e -> { }          // only for the animations
+
             case BattleEvent.AttackStarted e ->
             {
                 say(e.atMs(), e.attacker().getName() + " attacks " + names(e.targets()) + "!");

@@ -2,15 +2,15 @@ package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
+import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -18,13 +18,17 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.util.Duration;
 
 /* *
     How a fighter looks on the battlefield: a sprite, and the numbers that float over it.
     - A party member is seen from BEHIND (just the sprite: its life, AP and ink are in the HUD, see PartyPanel)
     - An enemy is seen from the front, with its name and a small life bar over the sprite
-    The picture comes from the resources (see SpriteArt); without it a placeholder silhouette is drawn.
+    The picture comes from the resources (see SpriteArt). In order of preference: the animations (idle.png...,
+    played by an AnimatedSprite), a still picture (also an AnimatedSprite, of one frame), a placeholder silhouette.
+    THE BOX OF THE SPRITE IS FIXED: whatever the size of the picture is, it is scaled to fit in it and never goes out.
+    When it strikes it plays its "attack" animation or, if it has none yet, it lunges at the enemy
     It only draws what the presenter's FighterView says (the bar follows what has been SHOWN)
 * */
 final class FighterCard
@@ -32,15 +36,26 @@ final class FighterCard
     private static final String PARTY_COLOR = "#4f6fa8";
     private static final String ENEMY_COLOR = "#8a4f5a";
 
+    private static final double HP_BAR_WIDTH = 110;
+    private static final double HP_BAR_HEIGHT = 12;
+    private static final String[] ANIMATIONS = {"idle", "attack", "hit", "dodge", "parry", "defeat"};
+
+    private static final double ATTACK_IMPACT_AT = 0.5;   // the blow of the "attack" animation lands halfway through it
+    private static final int LUNGE_MS = 140;              // the lunge, when there is no "attack" animation: forward...
+    private static final int LUNGE_BACK_MS = 260;         // ...and back
+    private static final double LUNGE_DISTANCE = 56;
+
     private static final int FLOAT_MS = 2400;      // how long a number stays over the sprite
     private static final int FADE_MS = 700;        // the last part of it, while it fades away
 
     private final BattlePresenter.FighterView view;
     private final Node sprite;
+    private AnimatedSprite animated = null;       // the sprite, if it has animations
+    private SequentialTransition lunge = null;
     private final StackPane root = new StackPane();
     private final Label nameLabel = new Label();
     private final Label hpLabel = new Label();
-    private final ProgressBar hpBar = new ProgressBar(1.0);
+    private final Rectangle hpFill = new Rectangle(HP_BAR_WIDTH, HP_BAR_HEIGHT);
     private final Pane overlay = new Pane();
 
     private String glow = "?";
@@ -50,8 +65,8 @@ final class FighterCard
         this.view = view;
 
         boolean party = view.isPartyMember();
-        sprite = buildSprite(party ? 150 : 110, party ? 260 : 192);
-
+        sprite = buildSprite(party ? 220 : 180, party ? 260 : 192);
+        
         VBox box = new VBox(4);
         box.setAlignment(Pos.TOP_CENTER);
 
@@ -61,8 +76,7 @@ final class FighterCard
                     + "-fx-effect: dropshadow(gaussian, black, 4, 0.8, 0, 0);");
             hpLabel.setStyle("-fx-text-fill: #dddddd; -fx-font-size: 12px; "
                     + "-fx-effect: dropshadow(gaussian, black, 4, 0.8, 0, 0);");
-            hpBar.setPrefWidth(110);
-            box.getChildren().addAll(nameLabel, hpBar, hpLabel);
+            box.getChildren().addAll(nameLabel, buildLifeBar(), hpLabel);
         }
 
         box.getChildren().add(sprite);
@@ -91,7 +105,10 @@ final class FighterCard
         {
             nameLabel.setText(view.getName());
             hpLabel.setText(view.getShownHp() + " / " + view.getMaxHp());
-            hpBar.setProgress((double) view.getShownHp() / view.getMaxHp());
+
+            // How much is left, clamped: the fill is a rectangle, so it is always there and it is always the right size
+            double left = view.getMaxHp() > 0 ? (double) view.getShownHp() / view.getMaxHp() : 0;
+            hpFill.setWidth(HP_BAR_WIDTH * Math.max(0, Math.min(1, left)));
         }
 
         root.setOpacity(view.isAlive() ? 1.0 : 0.35);
@@ -142,6 +159,63 @@ final class FighterCard
         animation.play();
     }
 
+    // The animation with this name ("hit", "dodge", "parry"...) once, and then idle again. Nothing if it has none
+    void play(String animation)
+    {
+        if (animated != null) animated.playOnce(animation);
+    }
+
+    // It strikes: its "attack" animation, or a lunge toward the enemies if it has none yet
+    void attack()
+    {
+        if (animated != null && animated.has("attack"))
+            animated.playOnce("attack");
+        else
+            lunge();
+    }
+
+    // How long BEFORE its blow lands the strike has to start, so that the blow of the animation (or the end of the
+    // lunge) is on the moment the engine says
+    long attackLeadMs()
+    {
+        if (animated != null && animated.has("attack"))
+            return Math.round(animated.durationMs("attack") * ATTACK_IMPACT_AT);
+
+        return LUNGE_MS;
+    }
+
+    // It has been defeated: the animation plays and its last frame stays
+    void defeat()
+    {
+        if (animated != null) animated.play("defeat");
+    }
+
+    // The animations stop (the card is not going to be used any more)
+    void dispose()
+    {
+        if (animated != null) animated.stop();
+        if (lunge != null) lunge.stop();
+    }
+
+    // A step toward the enemies and back (the party is on the left, the enemies on the right)
+    private void lunge()
+    {
+        if (lunge != null) lunge.stop();
+
+        double direction = view.isPartyMember() ? 1 : -1;
+
+        TranslateTransition forward = new TranslateTransition(Duration.millis(LUNGE_MS), sprite);
+        forward.setToX(direction * LUNGE_DISTANCE);
+        forward.setInterpolator(Interpolator.EASE_OUT);
+
+        TranslateTransition back = new TranslateTransition(Duration.millis(LUNGE_BACK_MS), sprite);
+        back.setToX(0);
+        back.setInterpolator(Interpolator.EASE_BOTH);
+
+        lunge = new SequentialTransition(forward, back);
+        lunge.play();
+    }
+
     // A quick step to the side and back: it dodged
     void sidestep()
     {
@@ -164,19 +238,56 @@ final class FighterCard
 
     // ---------- Inside ----------
 
-    // The picture if there is one, otherwise a silhouette: a head over a pair of shoulders (eyes if it faces us)
+    // A life bar that is drawn, not a control: a dark box, a red fill and a thin border
+    private Node buildLifeBar()
+    {
+        Rectangle track = new Rectangle(HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        track.setFill(Color.web("#24232b"));
+
+        hpFill.setFill(Color.web("#c0392b"));
+
+        Rectangle border = new Rectangle(HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        border.setFill(Color.TRANSPARENT);
+        border.setStroke(Color.web("#e8e8f0"));
+        border.setStrokeWidth(2);
+        border.setStrokeType(StrokeType.INSIDE);
+
+        Pane bar = new Pane(track, hpFill, border);
+        bar.setMinSize(HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        bar.setPrefSize(HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        bar.setMaxSize(HP_BAR_WIDTH, HP_BAR_HEIGHT);
+        return bar;
+    }
+
+    // The animations if there are (at least idle), otherwise the picture if there is one, otherwise a silhouette:
+    // a head over a pair of shoulders (eyes if it faces us)
     private Node buildSprite(double width, double height)
     {
         boolean party = view.isPartyMember();
-        Image image = SpriteArt.find(view.getName(), party ? "back" : "front");
 
-        if (image != null)
+        SpriteSheet idle = SpriteArt.sheet(view.getName(), AnimatedSprite.IDLE);
+        Image still = idle == null ? SpriteArt.find(view.getName(), party ? "back" : "front") : null;
+
+        if (idle != null || still != null)
         {
-            ImageView picture = new ImageView(image);
-            picture.setFitWidth(width);
-            picture.setFitHeight(height);
-            picture.setPreserveRatio(true);
-            return picture;
+            // The animated art looks to the right: the enemies, that are on the right, are mirrored.
+            // A still picture is shown as it is
+            animated = new AnimatedSprite(width, height, idle != null && !party);
+
+            if (idle == null)
+                animated.add(AnimatedSprite.IDLE, new SpriteSheet(still, 1), AnimatedSprite.DEFAULT_FPS, true);
+            else
+            {
+                for (String name : ANIMATIONS)
+                {
+                    SpriteSheet sheet = name.equals(AnimatedSprite.IDLE) ? idle : SpriteArt.sheet(view.getName(), name);
+                    if (sheet != null)
+                        animated.add(name, sheet, AnimatedSprite.DEFAULT_FPS, name.equals(AnimatedSprite.IDLE));
+                }
+            }
+
+            animated.play(AnimatedSprite.IDLE);
+            return animated;
         }
 
         Color color = Color.web(party ? PARTY_COLOR : ENEMY_COLOR);

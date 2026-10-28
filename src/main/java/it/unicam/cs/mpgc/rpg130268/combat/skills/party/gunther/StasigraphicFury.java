@@ -20,7 +20,7 @@ public class StasigraphicFury extends PartyAbility<Gunther>
     private static final int MIN_INK = 4;
     private static final int AP_COST = 4;
     private static final String NAME = "Stasigraphic Fury";
-    private static final String DESCRIPTION = "A fury of 3 light cuts followed by 1 normal cut. The greater the amount of ink, the greater the damage dealt to the target.";
+    private static final String DESCRIPTION = "Light damage based on the amount of INK. 4 hits.";
 
     private static final TargetType TARGET_TYPE = TargetType.ONE_ENEMY;
 
