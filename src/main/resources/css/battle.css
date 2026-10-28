@@ -1,0 +1,45 @@
+/* --- Battle stylesheet: src/main/resources/css/battle.css ---
+   The menu buttons: an elongated hexagon with a gold border (.rpg-button) and a dark inside (.rpg-button-inner).
+   The hexagon (-fx-shape) is NOT here: it is calculated in BattleScreen for the real size of every button, so the
+   slanted ends always have the same angle, however wide or tall the button is. */
+
+.rpg-button {
+    -fx-background-color: linear-gradient(to bottom right, #f0d278, #785f28, #d2b45a);
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 2px;                      /* = the thickness of the gold border */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.55), 8, 0.2, 0, 2);
+}
+
+.rpg-button-inner {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, #1c1f24, #111316);
+}
+
+.rpg-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #fae6a0, #9b7a34, #f0d278);
+}
+
+.rpg-button:hover .rpg-button-inner {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, #272b32, #171a1e);
+}
+
+.rpg-button:disabled {
+    -fx-opacity: 0.4;
+}
+
+/* Custom styling for game progress bars */
+.progress-bar > .bar {
+    -fx-background-color: #c0392b; /* Solid red fill */
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.progress-bar > .track {
+    -fx-background-color: #16161d; /* Dark background track */
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
