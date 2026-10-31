@@ -6,7 +6,7 @@ Java RPG project for the *Metodologie di Programmazione* course (A.Y. 2025/26, U
 - **Package:** `it.unicam.cs.mpgc.rpg130268`
 - **Documentation:** see the [Wiki](https://github.com/Luv3rc/MDP----A-Stasigrapher-Tale/wiki)
 
-> **Status: work in progress.** The combat data model (fighters, AP, Ink, abilities) is implemented and tested. There is no playable game or user interface yet, so `./gradlew run` currently starts a placeholder `Main`.
+> **Status: work in progress.** The combat data model (fighters, AP, Ink, abilities) is implemented and tested. `./gradlew run` currently starts a placeholder combat with placeholder sprites.
 
 ## The game
 *A Stasigrapher Tale* is a story-driven JRPG with turn-based combat, built around Gunther, one of the last surviving Thesmosians able to wield Stasigraphy.
@@ -38,17 +38,18 @@ I used **Claude** and **Gemini** during the project. In particular, it helped me
 - discuss the architecture;
 - review my code and find bugs;
 - suggest architectural or code changes;
-- review code.
+- review code;
+- help me throught difficult section that got me stuck (mostly UI).
 
-The game concept, the story and the mechanics (AP, Ink, Gunther's abilities) are my own, and so are the decisions between the alternatives that were proposed.
+The game concept, the story and the mechanics (AP, Ink, Gunther's abilities) are my own (even tho' I basically copied expedition for the battle and the menus), and so are the decisions between the alternatives that were proposed.
 
 ## Roadmap
 
 - [x] Fighters, stats, XP and levels (more or less)
 - [x] AP and Ink mechanics
 - [x] Abilities with costs and requirements
-- [ ] Enemy attacks and timed dodge/parry
-- [ ] Combat engine
+- [x] Enemy attacks and timed dodge/parry
+- [x] Combat engine
 - [ ] Story and exploration
 - [ ] Save and load
 - [ ] JavaFX interface
