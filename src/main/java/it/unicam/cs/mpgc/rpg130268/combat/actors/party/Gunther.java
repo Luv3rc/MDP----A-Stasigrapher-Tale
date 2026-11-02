@@ -51,7 +51,7 @@ public final class Gunther extends PartyMember
     {
         Ability ability = factory.apply(this);
         boolean alreadyKnown = abilities.stream()
-                .anyMatch(a -> a.getName().equals(ability.getName()));
+                .anyMatch(a -> a.getId().equals(ability.getId()));
 
         if (!alreadyKnown) abilities.add(ability);
     }

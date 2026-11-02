@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.combat.skills;
 
+import it.unicam.cs.mpgc.rpg130268.combat.Ids;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageCalculator;
 import java.util.List;
@@ -11,20 +12,31 @@ import java.util.stream.Collectors;
 public abstract class AbstractAbility<USER extends Fighter> implements Ability
 {
     protected final USER user;
+    private final String abilityId;
     private final String abilityName;
     private final TargetType targetType;
     private String announcement = null;     // not every ability announces itself
 
-    protected AbstractAbility (USER user, String abilityName, TargetType targetType)
+    protected AbstractAbility (USER user, String abilityId, String abilityName, TargetType targetType)
     {
         Objects.requireNonNull(user, "user must not be null");
         Objects.requireNonNull(abilityName, "name must not be null");
         Objects.requireNonNull(targetType, "targetType must not be null");
 
         this.user = user;
+        this.abilityId = Ids.require(abilityId);
         this.abilityName = abilityName;
         this.targetType = targetType;
     }
+
+    // Without an id of its own, the ability takes the one its name gives ("Club swing" -> "club-swing"):
+    protected AbstractAbility (USER user, String abilityName, TargetType targetType)
+    {
+        this(user, Ids.slug(Objects.requireNonNull(abilityName, "name must not be null")), abilityName, targetType);
+    }
+
+    @Override
+    public String getId() { return abilityId; }
 
     @Override
     public String getName() { return abilityName; }

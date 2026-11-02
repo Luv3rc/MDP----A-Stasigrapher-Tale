@@ -16,16 +16,28 @@ public class EnemyAttack extends EnemyAbility
 {
     private final List<Hit> sequence; // The sequence of strikes in this attack
 
+    // With the id chosen on purpose (what enemies.xml does), the attack patterns and the saves point to it
+    public EnemyAttack(Enemy user, String id, String name, TargetType targetType, List<Hit> sequence)
+    {
+        super(user, id, name, targetType);
+        this.sequence = checked(sequence);
+    }
+
+    // The id is the one the name gives ("Club swing" -> "club-swing"), same as always
     public EnemyAttack(Enemy user, String name, TargetType targetType, List<Hit> sequence)
     {
         super(user, name, targetType);
+        this.sequence = checked(sequence);
+    }
 
+    private static List<Hit> checked(List<Hit> sequence)
+    {
         Objects.requireNonNull(sequence, "sequence must not be null");
 
         if (sequence.isEmpty())
             throw new IllegalArgumentException("an attack needs at least one hit");
 
-        this.sequence = List.copyOf(sequence);
+        return List.copyOf(sequence);
     }
 
     @Override

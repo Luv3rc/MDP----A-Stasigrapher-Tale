@@ -7,6 +7,11 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.TargetType;
 // Base class of everything an enemy can do (attacks, heals...). Enemies don't use AP
 public abstract class EnemyAbility extends AbstractAbility<Enemy>
 {
+    protected EnemyAbility(Enemy user, String id, String name, TargetType targetType)
+    {
+        super(user, id, name, targetType);
+    }
+
     protected EnemyAbility(Enemy user, String name, TargetType targetType)
     {
         super(user, name, targetType);

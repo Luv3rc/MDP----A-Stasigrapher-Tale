@@ -69,7 +69,7 @@ class WeightedBehaviorTest
     @Test void theHeavierAbilitiesAreChosenMoreOften()
     {
         // A has weight 3 and B weight 1: the rolls 0, 1, 2 are A and the roll 3 is B
-        WeightedBehavior behavior = new WeightedBehavior(weights("A", 3, "B", 1), new Rolls(0, 1, 2, 3));
+        WeightedBehavior behavior = new WeightedBehavior(weights("a", 3, "b", 1), new Rolls(0, 1, 2, 3));
         Enemy enemy = enemy();
 
         assertEquals("A", choose(behavior, enemy));
@@ -82,7 +82,7 @@ class WeightedBehaviorTest
     {
         Rolls rolls = new Rolls(0);
         // At full health the heal can't be used, so the total is 3 + 1 and the heavy weight of the heal is ignored
-        WeightedBehavior behavior = new WeightedBehavior(weights("A", 3, "B", 1, "Mend", 10), rolls);
+        WeightedBehavior behavior = new WeightedBehavior(weights("a", 3, "b", 1, "mend", 10), rolls);
 
         assertEquals("A", choose(behavior, enemy()));
         assertEquals(4, rolls.lastBound);
@@ -93,21 +93,21 @@ class WeightedBehaviorTest
         Enemy enemy = enemy();
         enemy.setHp(10);
         // The total is 3 + 1 + 10: the roll 4 is already in the heal
-        WeightedBehavior behavior = new WeightedBehavior(weights("A", 3, "B", 1, "Mend", 10), new Rolls(4));
+        WeightedBehavior behavior = new WeightedBehavior(weights("a", 3, "b", 1, "mend", 10), new Rolls(4));
 
         assertEquals("Mend", choose(behavior, enemy));
     }
 
     @Test void itPassesWhenNothingCanBeUsed()
     {
-        WeightedBehavior behavior = new WeightedBehavior(weights("Mend", 5, "Ghost", 5), new Rolls(0));
+        WeightedBehavior behavior = new WeightedBehavior(weights("mend", 5, "ghost", 5), new Rolls(0));
 
         assertEquals("-", choose(behavior, enemy()));
     }
 
     @Test void theDefaultRandomSourceWorks()
     {
-        WeightedBehavior behavior = new WeightedBehavior(weights("A", 1));
+        WeightedBehavior behavior = new WeightedBehavior(weights("a", 1));
 
         assertEquals("A", choose(behavior, enemy()));
     }
@@ -115,9 +115,10 @@ class WeightedBehaviorTest
     @Test void theWeightsMustMakeSense()
     {
         assertThrows(IllegalArgumentException.class, () -> new WeightedBehavior(Map.of(), new Rolls(0)));
-        assertThrows(IllegalArgumentException.class, () -> new WeightedBehavior(weights("A", 0), new Rolls(0)));
-        assertThrows(IllegalArgumentException.class, () -> new WeightedBehavior(weights("A", -2), new Rolls(0)));
+        assertThrows(IllegalArgumentException.class, () -> new WeightedBehavior(weights("a", 0), new Rolls(0)));
+        assertThrows(IllegalArgumentException.class, () -> new WeightedBehavior(weights("a", -2), new Rolls(0)));
+        assertThrows(IllegalArgumentException.class, () -> new WeightedBehavior(weights("Club swing", 1), new Rolls(0)));   // a name, not an id
         assertThrows(NullPointerException.class, () -> new WeightedBehavior(null, new Rolls(0)));
-        assertThrows(NullPointerException.class, () -> new WeightedBehavior(weights("A", 1), null));
+        assertThrows(NullPointerException.class, () -> new WeightedBehavior(weights("a", 1), null));
     }
 }

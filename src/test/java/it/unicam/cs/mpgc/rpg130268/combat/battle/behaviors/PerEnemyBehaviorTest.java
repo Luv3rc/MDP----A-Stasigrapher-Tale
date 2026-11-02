@@ -40,8 +40,8 @@ class PerEnemyBehaviorTest
         Enemy goblin = enemy("Goblin");
         Enemy brute = enemy("Brute");
         PerEnemyBehavior behavior = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(goblin, new RotationBehavior(List.of("Second")))
-                .assign(brute, new RotationBehavior(List.of("First")));
+                .assign(goblin, new RotationBehavior(List.of("second")))
+                .assign(brute, new RotationBehavior(List.of("first")));
 
         assertEquals("Second", choose(behavior, goblin));
         assertEquals("First", choose(behavior, brute));
@@ -51,7 +51,7 @@ class PerEnemyBehaviorTest
     {
         Enemy stranger = enemy("Stranger");
         PerEnemyBehavior behavior = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(enemy("Goblin"), new RotationBehavior(List.of("Second")));
+                .assign(enemy("Goblin"), new RotationBehavior(List.of("second")));
 
         assertEquals("First", choose(behavior, stranger));   // the first ability it knows
     }
@@ -60,8 +60,8 @@ class PerEnemyBehaviorTest
     {
         Enemy goblin = enemy("Goblin");
         PerEnemyBehavior behavior = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(goblin, new RotationBehavior(List.of("First")))
-                .assign(goblin, new RotationBehavior(List.of("Second")));
+                .assign(goblin, new RotationBehavior(List.of("first")))
+                .assign(goblin, new RotationBehavior(List.of("second")));
 
         assertEquals("Second", choose(behavior, goblin));
     }

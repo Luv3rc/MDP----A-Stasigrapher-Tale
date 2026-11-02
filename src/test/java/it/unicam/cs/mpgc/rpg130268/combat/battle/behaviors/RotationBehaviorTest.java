@@ -51,7 +51,7 @@ class RotationBehaviorTest
 
     @Test void itUsesTheAbilitiesOneAfterTheOtherAndThenStartsAgain()
     {
-        RotationBehavior rotation = new RotationBehavior(List.of("A", "B"));
+        RotationBehavior rotation = new RotationBehavior(List.of("a", "b"));
 
         assertEquals(List.of("A", "B", "A", "B", "A"), choices(rotation, enemy(), 5));
     }
@@ -59,7 +59,7 @@ class RotationBehaviorTest
     @Test void anAbilityThatCannotBeUsedIsSkippedForTheNextOne()
     {
         Enemy enemy = enemy();
-        RotationBehavior rotation = new RotationBehavior(List.of("Mend", "A"));
+        RotationBehavior rotation = new RotationBehavior(List.of("mend", "a"));
 
         // At full health the heal can't be used: it goes on to the next one, twice
         assertEquals(List.of("A", "A"), choices(rotation, enemy, 2));
@@ -70,18 +70,18 @@ class RotationBehaviorTest
 
     @Test void itPassesWhenNothingCanBeUsed()
     {
-        assertEquals(List.of("-"), choices(new RotationBehavior(List.of("Mend")), enemy(), 1));
+        assertEquals(List.of("-"), choices(new RotationBehavior(List.of("mend")), enemy(), 1));
     }
 
     @Test void anAbilityTheEnemyDoesNotKnowIsSkipped()
     {
-        assertEquals(List.of("A"), choices(new RotationBehavior(List.of("Ghost", "A")), enemy(), 1));
+        assertEquals(List.of("A"), choices(new RotationBehavior(List.of("ghost", "a")), enemy(), 1));
     }
 
     @Test void everyRotationRemembersItsOwnPlace()
     {
-        RotationBehavior first = new RotationBehavior(List.of("A", "B"));
-        RotationBehavior second = new RotationBehavior(List.of("A", "B"));
+        RotationBehavior first = new RotationBehavior(List.of("a", "b"));
+        RotationBehavior second = new RotationBehavior(List.of("a", "b"));
         Enemy enemy = enemy();
 
         choices(first, enemy, 1);
@@ -90,10 +90,24 @@ class RotationBehaviorTest
         assertEquals(List.of("A"), choices(second, enemy, 1));
     }
 
+    @Test void aRotationPointsToTheIdAndNotToTheName()
+    {
+        Enemy goblin = new Enemy("Goblin", new Stats(40, 5, 2, 3, 0));
+        goblin.learn(e -> new EnemyAttack(e, "club-swing", "Heavy club swing", TargetType.ONE_ENEMY, swing()));
+
+        // The name was rewritten and the pattern still works, because it never knew the name
+        assertEquals(List.of("Heavy club swing"), choices(new RotationBehavior(List.of("club-swing")), goblin, 1));
+    }
+
+    @Test void aNameWhereAnIdIsExpectedIsRefusedAtOnce()
+    {
+        assertThrows(IllegalArgumentException.class, () -> new RotationBehavior(List.of("Club swing")));
+    }
+
     @Test void aRotationNeedsAbilities()
     {
         assertThrows(IllegalArgumentException.class, () -> new RotationBehavior(List.of()));
         assertThrows(NullPointerException.class, () -> new RotationBehavior(null));
-        assertThrows(NullPointerException.class, () -> new RotationBehavior(Arrays.asList("A", null)));
+        assertThrows(NullPointerException.class, () -> new RotationBehavior(Arrays.asList("a", null)));
     }
 }

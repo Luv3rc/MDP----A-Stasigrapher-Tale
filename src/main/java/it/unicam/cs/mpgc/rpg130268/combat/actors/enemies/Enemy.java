@@ -55,7 +55,7 @@ public class Enemy extends Fighter
         EnemyAbility ability = Objects.requireNonNull(factory.apply(this), "The factory must not return null");
 
         boolean alreadyKnow = listOfAbility.stream()
-                .anyMatch(a -> a.getName().equals(ability.getName()));
+                .anyMatch(a -> a.getId().equals(ability.getId()));
 
         if (!alreadyKnow) listOfAbility.add(ability);
     }

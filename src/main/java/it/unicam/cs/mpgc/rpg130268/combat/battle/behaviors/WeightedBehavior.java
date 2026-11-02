@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.combat.battle.behaviors;
 
+import it.unicam.cs.mpgc.rpg130268.combat.Ids;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.EnemyAction;
@@ -19,24 +20,28 @@ public class WeightedBehavior implements EnemyBehavior
     private final Map<String, Integer> weights;
     private final RandomGenerator random;
 
-    public WeightedBehavior(Map<String, Integer> weightsByAbilityName, RandomGenerator random)
+    public WeightedBehavior(Map<String, Integer> weightsByAbilityId, RandomGenerator random)
     {
-        Objects.requireNonNull(weightsByAbilityName, "weights must not be null");
+        Objects.requireNonNull(weightsByAbilityId, "weights must not be null");
         this.random = Objects.requireNonNull(random, "random must not be null");
 
-        if (weightsByAbilityName.isEmpty())
+        if (weightsByAbilityId.isEmpty())
             throw new IllegalArgumentException("it needs at least one ability");
 
-        for (Map.Entry<String, Integer> entry : weightsByAbilityName.entrySet())
+        for (Map.Entry<String, Integer> entry : weightsByAbilityId.entrySet())
+        {
+            Ids.require(entry.getKey());        // a name ("Club swing") by mistake must fail now, not skip the ability forever
+
             if (entry.getValue() <= 0)
                 throw new IllegalArgumentException("the weight of " + entry.getKey() + " must be greater than 0");
+        }
 
-        this.weights = new LinkedHashMap<>(weightsByAbilityName);
+        this.weights = new LinkedHashMap<>(weightsByAbilityId);
     }
 
-    public WeightedBehavior(Map<String, Integer> weightsByAbilityName)
+    public WeightedBehavior(Map<String, Integer> weightsByAbilityId)
     {
-        this(weightsByAbilityName, RandomGenerator.getDefault());
+        this(weightsByAbilityId, RandomGenerator.getDefault());
     }
 
     @Override
@@ -49,7 +54,7 @@ public class WeightedBehavior implements EnemyBehavior
 
         for (Map.Entry<String, Integer> entry : weights.entrySet())
         {
-            Optional<EnemyAction> action = EnemyTargeting.abilityNamed(self, entry.getKey())
+            Optional<EnemyAction> action = EnemyTargeting.abilityWithId(self, entry.getKey())
                     .flatMap(ability -> EnemyTargeting.actionFor(self, ability, allies, foes));
 
             if (action.isEmpty()) continue;

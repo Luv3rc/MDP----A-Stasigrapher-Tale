@@ -14,11 +14,12 @@ import java.util.List;
 public class ThirstForInk extends PartyAbility<Gunther>
 {
     private static final int AP_COST = 1;
+    public static final String ID = "thirst-for-ink";
     private static final String NAME = "Thirst for Ink";
     private static final String DESCRIPTION = "Puts Gunther at 1HP, completely refilling his AP and his INK gauge.";
     private static final TargetType TARGET_TYPE = TargetType.SELF;
 
-    public ThirstForInk(Gunther user) { super(user, NAME, DESCRIPTION, TARGET_TYPE); }
+    public ThirstForInk(Gunther user) { super(user, ID, NAME, DESCRIPTION, TARGET_TYPE); }
 
     @Override
     public int getApCost() { return AP_COST; }

@@ -18,6 +18,7 @@ import java.util.List;
 public class CutsForInk extends PartyAbility<Gunther>
 {
     private static final int AP_COST = 3;
+    public static final String ID = "cuts-for-ink";
     private static final String NAME = "Cuts for Ink";
     private static final String DESCRIPTION = "Light damage. 3 hits. Each hit generates 1 INK.";
 
@@ -32,7 +33,7 @@ public class CutsForInk extends PartyAbility<Gunther>
                     new Hit(600, ReactionOptions.NONE, StrikeWeight.NORMAL)
             );
 
-    public CutsForInk(Gunther user) { super(user, NAME, DESCRIPTION, TARGET_TYPE); }
+    public CutsForInk(Gunther user) { super(user, ID, NAME, DESCRIPTION, TARGET_TYPE); }
 
     @Override
     public int getApCost() { return AP_COST; }

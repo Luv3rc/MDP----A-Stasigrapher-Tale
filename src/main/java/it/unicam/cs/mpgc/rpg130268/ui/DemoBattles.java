@@ -66,9 +66,9 @@ public final class DemoBattles
                 new Hit(450, ReactionOptions.PARRY_OR_DODGE, StrikeWeight.LIGHT))));
 
         EnemyBehavior patterns = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(goblin, new RotationBehavior(List.of("Club swing", "Quick jab")))
-                .assign(brute, new PhasedBehavior(new RotationBehavior(List.of("Smash")))
-                        .below(0.5, new RotationBehavior(List.of("Smash", "Frenzy"))));
+                .assign(goblin, new RotationBehavior(List.of("club-swing", "quick-jab")))
+                .assign(brute, new PhasedBehavior(new RotationBehavior(List.of("smash")))
+                        .below(0.5, new RotationBehavior(List.of("smash", "frenzy"))));
         */
 
         Enemy Mattias27 = new Enemy("Mattias27", new Stats(1400, 8, 2, 10, 0),
@@ -109,9 +109,9 @@ public final class DemoBattles
         List<Enemy> enemies = List.of(Mattias27, Alex);
 
         EnemyBehavior patterns = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(Mattias27, new RotationBehavior(List.of("Tagli a croce", "Taglio del Rumeno", "Heal Allay")))
-                .assign(Alex, new PhasedBehavior(new RotationBehavior(List.of("Attacco Pendel")))
-                        .below(0.5, new RotationBehavior(List.of("Puzza della Legge con Tagli", "Furia Legislativa"))));
+                .assign(Mattias27, new RotationBehavior(List.of("tagli-a-croce", "taglio-del-rumeno", "heal-allay")))
+                .assign(Alex, new PhasedBehavior(new RotationBehavior(List.of("attacco-pendel")))
+                        .below(0.5, new RotationBehavior(List.of("puzza-della-legge-con-tagli", "furia-legislativa"))));
 
         BattleRules rules = new BattleRules(StrikeWeight.HEAVY, DEAD_ZONE_MS, ANNOUNCEMENT_MS);
         LiveBattleContext context = new LiveBattleContext(new DamageCalculator(), ReactionWindows.defaults(),

@@ -12,6 +12,12 @@ public abstract class PartyAbility<USER extends PartyMember> extends AbstractAbi
 {
     private final String description;
 
+    protected PartyAbility(USER user, String id, String name, String description, TargetType targetType)
+    {
+        super(user, id, name, targetType);
+        this.description = description;
+    }
+
     protected PartyAbility(USER user, String name, String description, TargetType targetType)
     {
         super(user, name, targetType);

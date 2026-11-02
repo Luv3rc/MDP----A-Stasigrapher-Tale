@@ -7,6 +7,10 @@ import java.util.Optional;
 
 public interface Ability
 {
+    // What identifies the ability for saves, XML files and attack patterns. It never changes (see Ids)
+    String getId();
+
+    // What the player reads. It can change freely, nothing outside the screen depends on it
     String getName();
     String getDescription();
     int getApCost();

@@ -1,19 +1,28 @@
 package it.unicam.cs.mpgc.rpg130268.combat.mechanics;
 
+import it.unicam.cs.mpgc.rpg130268.combat.Ids;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.Scaling;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingGrade;
 import java.util.Objects;
 
-public record Weapon(String name, WeaponType type, int baseDamage, Scaling scaling)
+// The id is what saves and files point to (see Ids); the name is what the player reads
+public record Weapon(String id, String name, WeaponType type, int baseDamage, Scaling scaling)
 {
     public Weapon
     {
+        Ids.require(id);
         Objects.requireNonNull(name, "name must not be null");
         Objects.requireNonNull(type, "weaponType must not be null");
         Objects.requireNonNull(scaling, "scaling must not be null");
         if (baseDamage < 0)
             throw new IllegalArgumentException("baseDamage must be non-negative");
+    }
+
+    // A weapon with no id of its own takes the one its name gives ("Iron Broadsword" -> "iron-broadsword")
+    public Weapon(String name, WeaponType type, int baseDamage, Scaling scaling)
+    {
+        this(Ids.slug(Objects.requireNonNull(name, "name must not be null")), name, type, baseDamage, scaling);
     }
 
     // Weapons with no scaling at all (Only base one that's strength)

@@ -92,7 +92,7 @@ class BattlePatternTest
         Gunther g = gunther();
         Enemy goblin = goblin(1000);
         EnemyBehavior behavior = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(goblin, new RotationBehavior(List.of("Two hits", "One hit")));
+                .assign(goblin, new RotationBehavior(List.of("two-hits", "one-hit")));
 
         assertEquals(List.of(2, 1, 2, 1), hitsOfTheAttacks(battle(g, goblin, behavior), g, goblin, 4));
     }
@@ -102,8 +102,8 @@ class BattlePatternTest
         Gunther g = gunther();
         Enemy boss = goblin(40);                         // Gunther hits for 18: 40 -> 22 (55%) -> 4 (10%)
         EnemyBehavior behavior = new PerEnemyBehavior(new FirstUsableAbility())
-                .assign(boss, new PhasedBehavior(new RotationBehavior(List.of("One hit")))
-                        .below(0.5, new RotationBehavior(List.of("Two hits"))));
+                .assign(boss, new PhasedBehavior(new RotationBehavior(List.of("one-hit")))
+                        .below(0.5, new RotationBehavior(List.of("two-hits"))));
 
         assertEquals(List.of(1, 2), hitsOfTheAttacks(battle(g, boss, behavior), g, boss, 2));
     }

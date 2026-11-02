@@ -26,10 +26,10 @@ public final class EnemyTargeting
         return targets.isEmpty() ? Optional.empty() : Optional.of(new EnemyAction(ability, targets));
     }
 
-    // The ability of the enemy with this name, if it knows it
-    public static Optional<EnemyAbility> abilityNamed(Enemy self, String name)
+    // The ability of the enemy with this id, if it knows it
+    public static Optional<EnemyAbility> abilityWithId(Enemy self, String id)
     {
-        return self.getListOfAbility().stream().filter(ability -> ability.getName().equals(name)).findFirst();
+        return self.getListOfAbility().stream().filter(ability -> ability.getId().equals(id)).findFirst();
     }
 
     private static List<Fighter> targetsFor(TargetType type, Enemy self, List<Fighter> allies, List<Fighter> foes)

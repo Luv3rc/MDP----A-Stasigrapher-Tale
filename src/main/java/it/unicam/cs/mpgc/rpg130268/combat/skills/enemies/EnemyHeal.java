@@ -11,16 +11,26 @@ public class EnemyHeal extends EnemyAbility
 {
     private final double fractionOfMaxHealth;
 
+    public EnemyHeal(Enemy user, String id, String name, TargetType targetType, double fractionOfMaxHealth)
+    {
+        super(user, id, name, targetType);
+        this.fractionOfMaxHealth = checked(targetType, fractionOfMaxHealth);
+    }
+
     public EnemyHeal(Enemy user, String name, TargetType targetType, double fractionOfMaxHealth)
     {
         super(user, name, targetType);
+        this.fractionOfMaxHealth = checked(targetType, fractionOfMaxHealth);
+    }
 
+    private static double checked(TargetType targetType, double fractionOfMaxHealth)
+    {
         if (targetType == TargetType.ONE_ENEMY || targetType == TargetType.ALL_ENEMIES)
             throw new IllegalArgumentException("a heal cannot target enemies");
         if (fractionOfMaxHealth <= 0 || fractionOfMaxHealth > 1)
             throw new IllegalArgumentException("fractionOfMaxHealth must be in (0, 1]");
 
-        this.fractionOfMaxHealth = fractionOfMaxHealth;
+        return fractionOfMaxHealth;
     }
 
     // Heal on itself is only worth using when wounded

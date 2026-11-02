@@ -32,10 +32,10 @@ class PhasedBehaviorTest
 
     private final Fighter foe = new Enemy("Foe", new Stats(40, 5, 2, 3, 0));
 
-    // A behavior that always uses the ability with this name
-    private static EnemyBehavior using(String name)
+    // A behavior that always uses the ability with this id
+    private static EnemyBehavior using(String id)
     {
-        return (self, allies, foes) -> EnemyTargeting.abilityNamed(self, name)
+        return (self, allies, foes) -> EnemyTargeting.abilityWithId(self, id)
                 .flatMap(ability -> EnemyTargeting.actionFor(self, ability, allies, foes));
     }
 
@@ -47,14 +47,14 @@ class PhasedBehaviorTest
 
     @Test void aHealthyEnemyFollowsTheFirstBehavior()
     {
-        PhasedBehavior behavior = new PhasedBehavior(using("Calm")).below(0.5, using("Angry"));
+        PhasedBehavior behavior = new PhasedBehavior(using("calm")).below(0.5, using("angry"));
 
         assertEquals("Calm", choose(behavior, boss()));
     }
 
     @Test void whenHalfOfItsHealthIsGoneItChanges()
     {
-        PhasedBehavior behavior = new PhasedBehavior(using("Calm")).below(0.5, using("Angry"));
+        PhasedBehavior behavior = new PhasedBehavior(using("calm")).below(0.5, using("angry"));
         Enemy boss = boss();
 
         boss.setHp(21);                                  // just above half
@@ -66,9 +66,9 @@ class PhasedBehaviorTest
 
     @Test void withSeveralPhasesTheLowestOneThatAppliesWins()
     {
-        PhasedBehavior behavior = new PhasedBehavior(using("Calm"))
-                .below(0.5, using("Angry"))
-                .below(0.2, using("Desperate"));
+        PhasedBehavior behavior = new PhasedBehavior(using("calm"))
+                .below(0.5, using("angry"))
+                .below(0.2, using("desperate"));
         Enemy boss = boss();
 
         boss.setHp(40);
@@ -83,9 +83,9 @@ class PhasedBehaviorTest
 
     @Test void thePhasesCanBeAddedInAnyOrder()
     {
-        PhasedBehavior behavior = new PhasedBehavior(using("Calm"))
-                .below(0.2, using("Desperate"))
-                .below(0.5, using("Angry"));
+        PhasedBehavior behavior = new PhasedBehavior(using("calm"))
+                .below(0.2, using("desperate"))
+                .below(0.5, using("angry"));
         Enemy boss = boss();
 
         boss.setHp(15);
@@ -96,9 +96,9 @@ class PhasedBehaviorTest
     @Test void thePhasesMustMakeSense()
     {
         assertThrows(NullPointerException.class, () -> new PhasedBehavior(null));
-        assertThrows(NullPointerException.class, () -> new PhasedBehavior(using("Calm")).below(0.5, null));
-        assertThrows(IllegalArgumentException.class, () -> new PhasedBehavior(using("Calm")).below(0, using("Angry")));
-        assertThrows(IllegalArgumentException.class, () -> new PhasedBehavior(using("Calm")).below(1, using("Angry")));
-        assertThrows(IllegalArgumentException.class, () -> new PhasedBehavior(using("Calm")).below(-0.5, using("Angry")));
+        assertThrows(NullPointerException.class, () -> new PhasedBehavior(using("calm")).below(0.5, null));
+        assertThrows(IllegalArgumentException.class, () -> new PhasedBehavior(using("calm")).below(0, using("angry")));
+        assertThrows(IllegalArgumentException.class, () -> new PhasedBehavior(using("calm")).below(1, using("angry")));
+        assertThrows(IllegalArgumentException.class, () -> new PhasedBehavior(using("calm")).below(-0.5, using("angry")));
     }
 }

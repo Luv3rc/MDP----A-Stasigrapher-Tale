@@ -19,6 +19,7 @@ public class StasigraphicFury extends PartyAbility<Gunther>
 {
     private static final int MIN_INK = 4;
     private static final int AP_COST = 4;
+    public static final String ID = "stasigraphic-fury";
     private static final String NAME = "Stasigraphic Fury";
     private static final String DESCRIPTION = "Light damage based on the amount of INK. 4 hits.";
 
@@ -32,7 +33,7 @@ public class StasigraphicFury extends PartyAbility<Gunther>
                     new Hit(500, ReactionOptions.NONE, StrikeWeight.NORMAL)
             );
 
-    public StasigraphicFury(Gunther user) { super(user, NAME, DESCRIPTION, TARGET_TYPE); }
+    public StasigraphicFury(Gunther user) { super(user, ID, NAME, DESCRIPTION, TARGET_TYPE); }
 
     @Override
     public int getApCost() { return AP_COST; }
