@@ -64,12 +64,10 @@ public class BattlePresenter
         public int getAp() { return fighter instanceof PartyMember member ? member.getAp().getCurrentAp() : 0; }
         public int getMaxAp() { return fighter instanceof PartyMember member ? member.getAp().getMaxAp() : 0; }
 
-        // Inside BattlePresenter.FighterView class:
         public int getInk()
         {
-            // Check if the fighter is Gunther or has an Ink pool mechanism
             if (fighter instanceof Gunther gunther) {
-                return gunther.getInk().getCurrentInk(); // Adjust to match your actual Ink method name (e.g., getCurrentAmount() or similar)
+                return gunther.getInk().getCurrentInk();
             }
             return 0;
         }
@@ -77,7 +75,7 @@ public class BattlePresenter
         public int getMaxInk()
         {
             if (fighter instanceof Gunther gunther) {
-                return gunther.getInk().getMaxInk(); // Adjust to match your max ink method name
+                return gunther.getInk().getMaxInk();
             }
             return 0;
         }

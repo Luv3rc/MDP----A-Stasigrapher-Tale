@@ -97,6 +97,17 @@ class BattleContextTest
     private static ReactionInput goodDodge() { return new ReactionInput(ReactionType.DODGE, 300); }
     private static ReactionInput earlyParry() { return new ReactionInput(ReactionType.PARRY, 100); }
 
+    // A strike of the player is two events: the Swing (it begins) and the HitResolved (it lands, when its wind-up is over)
+    private static List<BattleEvent> swings(List<BattleEvent> events)
+    {
+        return events.stream().filter(event -> event instanceof BattleEvent.Swing).toList();
+    }
+
+    private static List<Long> landings(List<BattleEvent> events)
+    {
+        return events.stream().filter(event -> event instanceof BattleEvent.HitResolved).map(BattleEvent::atMs).toList();
+    }
+
     // ---------- resolveHit: the player's own strikes ----------
 
     @Test void resolveHitAppliesTheDamageAndReturnsTheResult()
@@ -129,8 +140,9 @@ class BattleContextTest
         battle.resolveHit(g, target, hit(200, ReactionOptions.NONE, StrikeWeight.LIGHT));
         battle.resolveHit(g, target, hit(600, ReactionOptions.NONE, StrikeWeight.NORMAL));
 
-        List<Long> times = battle.drainEvents().stream().map(BattleEvent::atMs).toList();
-        assertEquals(List.of(400L, 600L, 1200L), times);
+        List<BattleEvent> events = battle.drainEvents();
+        assertEquals(List.of(400L, 600L, 1200L), landings(events));
+        assertEquals(List.of(0L, 400L, 600L), swings(events).stream().map(BattleEvent::atMs).toList());   // each swing begins where the last hit ended
     }
 
     @Test void theBonusMultiplierRaisesTheDamage()
@@ -150,9 +162,13 @@ class BattleContextTest
         Gunther g = gunther();
         Enemy target = goblin();
 
-        battle.resolveHit(g, target, hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
+        Hit strike = hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL);
 
-        assertEquals(List.of(new BattleEvent.HitResolved(g, target, ReactionOutcome.noReaction(), 18, false, 400)),
+        battle.resolveHit(g, target, strike);
+
+        assertEquals(List.of(
+                new BattleEvent.Swing(g, List.of(target), strike, 0),
+                new BattleEvent.HitResolved(g, target, ReactionOutcome.noReaction(), 18, false, 400)),
                 battle.drainEvents());
     }
 
@@ -164,7 +180,7 @@ class BattleContextTest
 
         battle.resolveHit(gunther(), goblin(), hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
 
-        assertEquals(1, battle.drainEvents().size());
+        assertEquals(2, battle.drainEvents().size());                    // the swing and the hit
         assertTrue(battle.drainEvents().isEmpty());
     }
 
@@ -177,14 +193,16 @@ class BattleContextTest
         Enemy target = goblin(500);
 
         battle.resolveHit(g, target, hit(400, ReactionOptions.NONE, StrikeWeight.NORMAL));
-        assertEquals(400, battle.drainEvents().getFirst().atMs());
+        assertEquals(List.of(400L), landings(battle.drainEvents()));
 
         battle.resolveHit(g, target, hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
-        assertEquals(700, battle.drainEvents().getFirst().atMs());        // it starts where the last one ended
+        assertEquals(List.of(700L), landings(battle.drainEvents()));      // it starts where the last one ended
 
         clock.advance(2000);                                              // the UI let time pass
         battle.resolveHit(g, target, hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
-        assertEquals(2300, battle.drainEvents().getFirst().atMs());       // it starts now, not in the past
+        List<BattleEvent> events = battle.drainEvents();
+        assertEquals(List.of(2000L), swings(events).stream().map(BattleEvent::atMs).toList());   // it starts now, not in the past
+        assertEquals(List.of(2300L), landings(events));
     }
 
     @Test void theDrainedEventsCannotBeChanged()
@@ -519,7 +537,9 @@ class BattleContextTest
         assertEquals(2, results.size());
         assertEquals(40 - 18, first.getHp());
         assertEquals(40 - 18, second.getHp());
-        assertEquals(List.of(400L, 400L), battle.drainEvents().stream().map(BattleEvent::atMs).toList());
+        List<BattleEvent> events = battle.drainEvents();
+        assertEquals(List.of(400L, 400L), landings(events));
+        assertEquals(1, swings(events).size());                          // the group is struck with one swing
     }
 
     @Test void aGroupHitMovesTheClockOnlyOnce()
@@ -531,7 +551,7 @@ class BattleContextTest
         battle.drainEvents();
         battle.resolveHit(g, goblin(), hit(300, ReactionOptions.NONE, StrikeWeight.NORMAL));
 
-        assertEquals(700, battle.drainEvents().getFirst().atMs());       // not 400 * 3 + 300
+        assertEquals(List.of(700L), landings(battle.drainEvents()));     // not 400 * 3 + 300
     }
 
     @Test void aGroupHitSkipsTheFallen()
