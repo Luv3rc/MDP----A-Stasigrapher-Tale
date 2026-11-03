@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The weapons the party can wield (see weapons.xsd). A save and members.xml point to them by id.
+  damage: the base damage. strengthGrade: how much it scales with strength (S, A, B, C, D or NONE).
+  extraStat/extraGrade: one more stat it scales with, if any.
+-->
+<weapons>
+  <weapon id="thesmosia" name="Thesmosia" type="SWORD" damage="32" strengthGrade="NONE" extraStat="AGILITY" extraGrade="D"/>
+</weapons>

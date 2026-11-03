@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="idType">
+    <xs:restriction base="xs:string"><xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*"/></xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="textType">
+    <xs:restriction base="xs:string"><xs:minLength value="1"/></xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="weaponTypeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SWORD"/><xs:enumeration value="DAGGER"/><xs:enumeration value="CATALYST"/>
+      <xs:enumeration value="CLUB"/><xs:enumeration value="UNARMED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="gradeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="S"/><xs:enumeration value="A"/><xs:enumeration value="B"/>
+      <xs:enumeration value="C"/><xs:enumeration value="D"/><xs:enumeration value="NONE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="statType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MAX_HEALTH"/><xs:enumeration value="STRENGTH"/><xs:enumeration value="DEFENSE"/>
+      <xs:enumeration value="AGILITY"/><xs:enumeration value="LUCK"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- without extraStat and extraGrade the weapon scales only with strength; one of them alone is refused by the loader -->
+  <xs:element name="weapons">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="weapon" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="id" type="idType" use="required"/>
+            <xs:attribute name="name" type="textType" use="required"/>
+            <xs:attribute name="type" type="weaponTypeType" use="required"/>
+            <xs:attribute name="damage" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="strengthGrade" type="gradeType" default="NONE"/>
+            <xs:attribute name="extraStat" type="statType"/>
+            <xs:attribute name="extraGrade" type="gradeType"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:key name="weaponKey">
+      <xs:selector xpath="weapon"/><xs:field xpath="@id"/>
+    </xs:key>
+  </xs:element>
+
+</xs:schema>
