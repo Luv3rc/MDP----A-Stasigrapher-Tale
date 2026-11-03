@@ -11,7 +11,7 @@ import java.util.Set;
 public abstract class Fighter
 {
     private final String name;
-    private final Stats stats;
+    private Stats stats;
     private int hp;
     private Weapon weapon;
     private final Set<WeaponType> allowedWeapons;
@@ -38,6 +38,20 @@ public abstract class Fighter
             throw new IllegalArgumentException(name + " cannot equip a " + weapon.type());
 
         this.weapon = weapon;
+    }
+
+    // For who can change stats (a party member that spends points). The current HP follows the max HP
+    // If the max goes up by 15 the HP goes up by 15 (so it never makes the fighter proportionally weaker,
+    // it does not heal); a fighter that is down stays down
+    protected void changeStats(Stats newStats)
+    {
+        Objects.requireNonNull(newStats, "stats must not be null");
+
+        int gained = newStats.maxHealth() - stats.maxHealth();
+        this.stats = newStats;
+
+        if (hp > 0)
+            hp = Math.max(1, Math.min(newStats.maxHealth(), hp + gained));
     }
 
     public boolean isAlive() { return hp > 0; }
