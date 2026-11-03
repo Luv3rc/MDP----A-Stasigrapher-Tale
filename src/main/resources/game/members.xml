@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The party members; what is written here are his numbers and what he starts with:
+  baseHealth: his max HP with no points in health
+  healthPerPoint: the max HP that each point in health gives
+  pointsPerLevel: the points he gets to spend at every level
+  statCap: the most points a stat can have
+  ap: his maximum AP and the AP he starts every battle with
+  weapon and abilities point to weapons.xml and to the abilities of the code, always by id
+-->
+<members>
+  <member id="gunther" baseHealth="164" healthPerPoint="15" pointsPerLevel="3" statCap="60">
+    <ap max="9" start="3"/>
+    <weapon ref="thesmosia"/>
+    <abilities>
+      <learn ref="basic-attack"/>
+      <learn ref="cuts-for-ink"/>
+      <learn ref="stasigraphic-fury"/>
+      <learn ref="thirst-for-ink"/>
+    </abilities>
+  </member>
+</members>

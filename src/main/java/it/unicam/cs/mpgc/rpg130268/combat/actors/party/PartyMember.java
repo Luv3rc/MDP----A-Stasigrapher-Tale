@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.combat.actors.party;
 
+import it.unicam.cs.mpgc.rpg130268.combat.Ids;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
@@ -11,6 +12,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +32,21 @@ public abstract class PartyMember extends Fighter
     private final ApPool ap;
     private final ApRules apRules;
 
-    public abstract List<Ability> getListOfAbility();
+    private final List<Ability> abilities = new ArrayList<>();
+
+    public String getId() { return Ids.slug(getName()); }
+
+    public List<Ability> getListOfAbility() { return List.copyOf(abilities); }
+
+    // He knows an ability from now on
+    // If he already knows one with the same id nothing happens
+    public void learn(Ability ability)
+    {
+        Objects.requireNonNull(ability, "ability must not be null");
+
+        if (abilities.stream().noneMatch(known -> known.getId().equals(ability.getId())))
+            abilities.add(ability);
+    }
 
 
     // A member with ready-made stats (they are his points, on top of a base health), and nothing to spend.

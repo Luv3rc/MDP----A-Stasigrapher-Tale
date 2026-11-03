@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="idType">
+    <xs:restriction base="xs:string"><xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*"/></xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="memberType">
+    <xs:sequence>
+      <xs:element name="ap">
+        <xs:complexType>
+          <xs:attribute name="max" type="xs:positiveInteger" use="required"/>
+          <xs:attribute name="start" type="xs:nonNegativeInteger" use="required"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="weapon">
+        <xs:complexType><xs:attribute name="ref" type="idType" use="required"/></xs:complexType>
+      </xs:element>
+      <xs:element name="abilities">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="learn" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType><xs:attribute name="ref" type="idType" use="required"/></xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="baseHealth" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="healthPerPoint" type="xs:nonNegativeInteger" use="required"/>
+    <xs:attribute name="pointsPerLevel" type="xs:nonNegativeInteger" use="required"/>
+    <xs:attribute name="statCap" type="xs:positiveInteger" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="members">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="member" type="memberType" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:key name="memberKey">
+      <xs:selector xpath="member"/><xs:field xpath="@id"/>
+    </xs:key>
+  </xs:element>
+
+</xs:schema>

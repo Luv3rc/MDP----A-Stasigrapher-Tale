@@ -7,6 +7,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +27,19 @@ class PartyMemberStatPointsTest
         assertEquals(164, gunther.getHp());
         assertEquals(0, gunther.getUnspentPoints());
         assertEquals(StatPoints.NONE, gunther.getStatPoints());
+    }
+
+    @Test void aGuntherOfTheGameKnowsNothingUntilHeLearns()
+    {
+        Gunther gunther = fresh();
+
+        assertTrue(gunther.getListOfAbility().isEmpty());
+
+        gunther.learn(CutsForInk::new);
+        gunther.learn(CutsForInk::new);              // the second time nothing happens
+
+        assertEquals(1, gunther.getListOfAbility().size());
+        assertEquals("gunther", gunther.getId());
     }
 
     @Test void everyLevelGivesPointsToSpend()
