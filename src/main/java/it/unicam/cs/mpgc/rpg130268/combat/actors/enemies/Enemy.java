@@ -44,6 +44,14 @@ public class Enemy extends Fighter
     public int getLevel() { return level; }
     public int getXpReward() { return xpReward; }
 
+    // The pictures of the enemy are looked for with this name and not with the one that is shown
+    // This is useful for storytelling purposes--in this case, at least
+    public Enemy withArtName(String artName)
+    {
+        setArtName(artName);
+        return this;
+    }
+
     public List<EnemyAbility> getListOfAbility() { return List.copyOf(listOfAbility); }
 
     // Same idea as Gunther.learn: the factory receives the enemy, because an ability needs to know its user

@@ -11,6 +11,7 @@ import java.util.Set;
 public abstract class Fighter
 {
     private final String name;
+    private String artName;
     private Stats stats;
     private int hp;
     private Weapon weapon;
@@ -19,6 +20,7 @@ public abstract class Fighter
     protected Fighter(String name, Stats stats, Set<WeaponType> allowedWeapons)
     {
         this.name = name;
+        this.artName = name;
         this.stats = stats;
         this.hp = stats.maxHealth();
         this.allowedWeapons = Objects.requireNonNull(allowedWeapons, "allowedWeapons must not be null");
@@ -26,6 +28,11 @@ public abstract class Fighter
     }
 
     public String getName() { return name; }
+
+    // The name of the pictures of the fighter (the folder in sprites/characters)
+    public String getArtName() { return artName; }
+
+    protected void setArtName(String artName) { this.artName = Objects.requireNonNull(artName, "artName must not be null"); }
     public Stats getStats() { return stats; }
     public int getHp() { return hp; }
     public Weapon getWeapon() { return weapon; }

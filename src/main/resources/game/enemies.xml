@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Every ability has an id (the attack patterns point to it, it never changes) and a name (what the player reads).
+  Sariel's numbers are a placeholder (they still have to be balanced); the others come from the old demos I did
+-->
+<enemies>
+
+  <!-- The tutorial -->
+  <enemy id="sariel" name="???" art="sariel" level="2" xp="250">
+    <stats health="260" strength="8" defense="2" agility="8" luck="0"/>
+    <weapon name="Dagger" type="SWORD" damage="20" strengthGrade="NONE" extraStat="AGILITY" extraGrade="C"/>
+    <abilities>
+      <attack id="quick-slash" name="Quick slash" target="ONE_ENEMY">
+        <hit windUpMs="900" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+      </attack>
+      <attack id="lunge" name="Lunge" target="ONE_ENEMY">
+        <hit windUpMs="1300" reaction="PARRY_ONLY" weight="HEAVY"/>
+      </attack>
+    </abilities>
+    <pattern>
+      <rotation><use ability="quick-slash"/><use ability="lunge"/></rotation>
+    </pattern>
+  </enemy>
+
+  <enemy id="goblin" name="Goblin" level="2" xp="130">
+    <stats health="730" strength="14" defense="8" agility="3" luck="0"/>
+    <weapon name="Club" type="UNARMED" damage="53" strengthGrade="NONE"/>
+    <abilities>
+      <attack id="club-swing" name="Club swing" target="ONE_ENEMY">
+        <hit windUpMs="3000" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+      </attack>
+    </abilities>
+  </enemy>
+
+  <enemy id="bandit" name="Bandit" level="3" xp="200">
+    <stats health="500" strength="12" defense="6" agility="9" luck="5"/>
+    <weapon name="Dagger" type="DAGGER" damage="27" strengthGrade="NONE" extraStat="AGILITY" extraGrade="B"/>
+    <abilities>
+      <attack id="daggers-fury" name="Daggers fury" target="ONE_ENEMY">
+        <hit windUpMs="1200" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+      </attack>
+    </abilities>
+  </enemy>
+
+  <enemy id="mattias27" name="Mattias27" level="4" xp="800">
+    <stats health="1400" strength="8" defense="2" agility="10" luck="0"/>
+    <weapon name="Shortsword" type="SWORD" damage="36" strengthGrade="NONE" extraStat="AGILITY" extraGrade="B"/>
+    <abilities>
+      <attack id="tagli-a-croce" name="Tagli a croce" target="ONE_ENEMY">
+        <hit windUpMs="1500" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+      </attack>
+      <attack id="taglio-del-rumeno" name="Taglio del Rumeno" target="ONE_ENEMY">
+        <hit windUpMs="2000" reaction="PARRY_ONLY" weight="HEAVY"/>
+        <hit windUpMs="700" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+      </attack>
+      <heal id="heal-allay" name="Heal Allay" target="ONE_ALLY" fraction="0.3" announcement="{user} heals {target}!"/>
+    </abilities>
+    <pattern>
+      <rotation>
+        <use ability="tagli-a-croce"/><use ability="taglio-del-rumeno"/><use ability="heal-allay"/>
+      </rotation>
+    </pattern>
+  </enemy>
+
+  <!-- Boss with multiple phases -->
+  <enemy id="alex" name="Alex" level="3" xp="500">
+    <stats health="800" strength="12" defense="10" agility="4" luck="6"/>
+    <weapon name="Greatsword" type="SWORD" damage="67" strengthGrade="NONE" extraStat="STRENGTH" extraGrade="C"/>
+    <abilities>
+      <attack id="attacco-pendel" name="Attacco Pendel" target="ONE_ENEMY">
+        <hit windUpMs="2000" reaction="PARRY_ONLY" weight="HEAVY"/>
+        <hit windUpMs="700" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+      </attack>
+      <attack id="puzza-della-legge-con-tagli" name="Puzza della Legge con Tagli" target="ONE_ENEMY" announcement="{user} attacks with Puzza della Legge!">
+        <hit windUpMs="1300" reaction="PARRY_OR_DODGE" weight="HEAVY"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+      </attack>
+      <attack id="furia-legislativa" name="Furia Legislativa" target="ONE_ENEMY" announcement="{user} attacks with Furia Legislativa!">
+        <hit windUpMs="2000" reaction="PARRY_OR_DODGE" weight="HEAVY"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="1400" reaction="PARRY_OR_DODGE" weight="HEAVY"/>
+      </attack>
+    </abilities>
+    <pattern>
+      <rotation><use ability="attacco-pendel"/></rotation>
+      <below hp="0.5">
+        <rotation><use ability="puzza-della-legge-con-tagli"/><use ability="furia-legislativa"/></rotation>
+      </below>
+    </pattern>
+  </enemy>
+
+  <encounter id="sariel" area="arena"><enemy ref="sariel"/></encounter>
+  <encounter id="goblin" area="forest"><enemy ref="goblin"/></encounter>
+  <encounter id="bandit" area="forest"><enemy ref="bandit"/></encounter>
+  <encounter id="goblin-and-bandit" area="forest"><enemy ref="goblin"/><enemy ref="bandit"/></encounter>
+  <encounter id="mattias-and-alex" area="arena"><enemy ref="mattias27"/><enemy ref="alex"/></encounter>
+
+</enemies>

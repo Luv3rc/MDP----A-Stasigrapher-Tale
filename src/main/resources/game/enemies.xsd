@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- ===== Simple types ===== -->
+
+  <xs:simpleType name="idType">
+    <xs:restriction base="xs:string"><xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*"/></xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="textType">
+    <xs:restriction base="xs:string"><xs:minLength value="1"/></xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="weaponTypeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SWORD"/><xs:enumeration value="DAGGER"/><xs:enumeration value="CATALYST"/>
+      <xs:enumeration value="CLUB"/><xs:enumeration value="UNARMED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="gradeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="S"/><xs:enumeration value="A"/><xs:enumeration value="B"/>
+      <xs:enumeration value="C"/><xs:enumeration value="D"/><xs:enumeration value="NONE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="statType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MAX_HEALTH"/><xs:enumeration value="STRENGTH"/><xs:enumeration value="DEFENSE"/>
+      <xs:enumeration value="AGILITY"/><xs:enumeration value="LUCK"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="targetType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SELF"/><xs:enumeration value="ONE_ENEMY"/><xs:enumeration value="ALL_ENEMIES"/>
+      <xs:enumeration value="ONE_ALLY"/><xs:enumeration value="ALL_ALLIES"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="reactionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PARRY_ONLY"/><xs:enumeration value="DODGE_ONLY"/><xs:enumeration value="PARRY_OR_DODGE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="weightType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LIGHT"/><xs:enumeration value="NORMAL"/>
+      <xs:enumeration value="HEAVY"/><xs:enumeration value="EXTREME"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- a part of the maximum health: more than 0, up to 1 (all of it) -->
+  <xs:simpleType name="fractionType">
+    <xs:restriction base="xs:decimal">
+      <xs:minExclusive value="0"/><xs:maxInclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- the moment a phase starts: between 0 and 1, both excluded -->
+  <xs:simpleType name="phaseType">
+    <xs:restriction base="xs:decimal">
+      <xs:minExclusive value="0"/><xs:maxExclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ===== Parts of an enemy ===== -->
+
+  <xs:complexType name="statsType">
+    <xs:attribute name="health" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="strength" type="xs:nonNegativeInteger" use="required"/>
+    <xs:attribute name="defense" type="xs:nonNegativeInteger" use="required"/>
+    <xs:attribute name="agility" type="xs:nonNegativeInteger" use="required"/>
+    <xs:attribute name="luck" type="xs:nonNegativeInteger" use="required"/>
+  </xs:complexType>
+
+  <!-- written as in weapons.xsd, but without an id: the weapon of an enemy is not saved, and it is not shared.
+       Without extraStat and extraGrade the weapon scales only with strength -->
+  <xs:complexType name="weaponType">
+    <xs:attribute name="name" type="textType" use="required"/>
+    <xs:attribute name="type" type="weaponTypeType" use="required"/>
+    <xs:attribute name="damage" type="xs:nonNegativeInteger" use="required"/>
+    <xs:attribute name="strengthGrade" type="gradeType" default="NONE"/>
+    <xs:attribute name="extraStat" type="statType"/>
+    <xs:attribute name="extraGrade" type="gradeType"/>
+  </xs:complexType>
+
+  <xs:complexType name="hitType">
+    <xs:attribute name="windUpMs" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="reaction" type="reactionType" use="required"/>
+    <xs:attribute name="weight" type="weightType" use="required"/>
+  </xs:complexType>
+
+  <!-- id: never changes, the attack patterns point to it. name: what the player reads.
+       announcement: the text shown before the ability starts; {user} and {target} are replaced by the names -->
+  <xs:complexType name="attackType">
+    <xs:sequence>
+      <xs:element name="hit" type="hitType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="name" type="textType" use="required"/>
+    <xs:attribute name="target" type="targetType" use="required"/>
+    <xs:attribute name="announcement" type="textType"/>
+  </xs:complexType>
+
+  <xs:complexType name="healType">
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="name" type="textType" use="required"/>
+    <xs:attribute name="target" type="targetType" use="required"/>
+    <xs:attribute name="fraction" type="fractionType" use="required"/>
+    <xs:attribute name="announcement" type="textType"/>
+  </xs:complexType>
+
+  <xs:complexType name="abilitiesType">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="attack" type="attackType"/>
+      <xs:element name="heal" type="healType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- the abilities (by id) used one after the other, in turn; they have to be abilities of the enemy -->
+  <xs:complexType name="rotationType">
+    <xs:sequence>
+      <xs:element name="use" maxOccurs="unbounded">
+        <xs:complexType><xs:attribute name="ability" type="idType" use="required"/></xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="belowType">
+    <xs:sequence>
+      <xs:element name="rotation" type="rotationType"/>
+    </xs:sequence>
+    <xs:attribute name="hp" type="phaseType" use="required"/>
+  </xs:complexType>
+
+  <!-- a rotation and, when the health goes down to a fraction of the maximum, another one -->
+  <xs:complexType name="patternType">
+    <xs:sequence>
+      <xs:element name="rotation" type="rotationType"/>
+      <xs:element name="below" type="belowType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="enemyType">
+    <xs:sequence>
+      <xs:element name="stats" type="statsType"/>
+      <xs:element name="weapon" type="weaponType" minOccurs="0"/>
+      <xs:element name="abilities" type="abilitiesType"/>
+      <xs:element name="pattern" type="patternType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="name" type="textType" use="required"/>
+    <!-- the name of the pictures (a folder in sprites/characters/), if it is not the name that is shown: "???" -->
+    <xs:attribute name="art" type="idType"/>
+    <xs:attribute name="level" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="xp" type="xs:nonNegativeInteger" use="required"/>
+  </xs:complexType>
+
+  <!-- ===== The document ===== -->
+
+  <xs:element name="enemies">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="enemy" type="enemyType" maxOccurs="unbounded"/>
+        <xs:element name="encounter" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="enemy" maxOccurs="unbounded">
+                <xs:complexType><xs:attribute name="ref" type="idType" use="required"/></xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="id" type="idType" use="required"/>
+            <xs:attribute name="area" type="textType" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:key name="enemyKey">
+      <xs:selector xpath="enemy"/><xs:field xpath="@id"/>
+    </xs:key>
+    <xs:key name="encounterKey">
+      <xs:selector xpath="encounter"/><xs:field xpath="@id"/>
+    </xs:key>
+    <xs:keyref name="enemyRef" refer="enemyKey">
+      <xs:selector xpath="encounter/enemy"/><xs:field xpath="@ref"/>
+    </xs:keyref>
+  </xs:element>
+
+</xs:schema>

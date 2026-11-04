@@ -4,6 +4,7 @@ public final class GameData
 {
     public static final String WEAPONS_FILE = "/game/weapons.xml";
     public static final String MEMBERS_FILE = "/game/members.xml";
+    public static final String ENEMIES_FILE = "/game/enemies.xml";
 
     private GameData() { }
 }
