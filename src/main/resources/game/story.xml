@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The text of the dialogues is a placeholder -->
+<story>
+  <dialogue id="intro" area="road">
+    <line speaker="Gunther">Pant... pant... pant...</line>
+    <line speaker="Gunther">(Why are there so many etherbeasts around here...?! There must have been a thousand of them!)</line>
+    <line speaker="Gunther">(I didn't expect the Garuda to be this dangerous at night...)</line>
+    <line speaker="Gunther">(Almost makes me miss the assassins hunting me.)</line>
+    <line speaker="Gunther">(Still... I suppose it's preferable to the Behemoth. I never want to return to that cursed land...)</line>
+    <line speaker="Gunther">Hah... marvelous, truly marvelous... I can only hope the small town that beastman mentioned isn't much further.</line>
+    <line speaker="Gunther">.........</line>
+    <line speaker="Gunther">...It appears I have a more pressing matter to attend to, do I not?</line>
+    <line>.........</line>
+    <line speaker="Gunther">You've been tailing me since I left the last town, haven't you?</line>
+    <line>.........</line>
+    <line speaker="Gunther">I know you're there, stop trying to hi—!</line>
+    <line>A figure clad entirely in black leaps out in front of you, wielding two curved daggers, their face hidden beneath a hood.</line>
+    <line>They attack you.</line>
+  </dialogue>
+
+  <battle id="tutorial" encounter="sariel"/>
+
+  <dialogue id="sariel-flees" area="road" partner="sariel">
+    <line>The figure falls to their knees, clutching their stomach in pain.</line>
+    <line speaker="Gunther">A commendable effort, I must admit. Crossing a single sword against twin daggers is hardly the most elegant of encounters.</line>
+    <line speaker="???">Nggh...!</line>
+    <line speaker="Gunther">Who are you? Do you work for *them*?</line>
+    <line speaker="???">Ahh... Ahahah! Do you really think... I'd tell you that?</line>
+    <line speaker="Gunther">You're... a woman?</line>
+    <line speaker="???">Oh dear... is your fragile ego hurt?</line>
+    <line speaker="Gunther">Hardly. Though I would point out that you are the one currently resting in the dirt, not I.</line>
+    <line speaker="???">Ngrrh! How dare you...</line>
+    <line speaker="Gunther">I don't really care about your identity, but deliver this message to your employer: your reign of terror over the people of Thesmos is drawing to a close.</line>
+    <line speaker="Gunther">Have I made myself clear?</line>
+    <line speaker="???">This... isn't over!</line>
+    <line speaker="Gunther">I am afraid it is. This time, I merely brought you to your knees. Should we cross blades again, I will ensure you do not rise.</line>
+    <line speaker="???">I'll kill you...</line>
+    <line>The woman gets back to her feet, her piercing light blue eyes glaring into yours as she grits her teeth.</line>
+    <line>A blonde lock slips from beneath her hood, falling across her face.</line>
+    <line speaker="???">I swear I'll kill you...</line>
+    <line speaker="Gunther">Do you have any idea how many times I have been promised the very same thing?</line>
+    <line>With a final, hate-filled glare, the woman darts away toward the woods.</line>
+    <line speaker="Gunther">(Will they ever get tired of sending these assassins after me?)</line>
+    <line speaker="Gunther">(Haah... Let's keep moving and hope that town is truly close.)</line>
+  </dialogue>
+
+  <trek id="forest" area="forest" length="5" chance="0.5">
+    <encounter ref="goblin"/>
+    <encounter ref="bandit"/>
+  </trek>
+
+  <end id="demo-end">The city gates are open. End of the demo.</end>
+</story>

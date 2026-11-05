@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Every step has an id (used by the save files, so it must not change) that is different from all the others.
+  The story finishes with an <end>. The encounters named in <battle> and <trek> have to be in enemies.xml
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="idType">
+    <xs:restriction base="xs:string"><xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*"/></xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="textType">
+    <xs:restriction base="xs:string"><xs:minLength value="1"/></xs:restriction>
+  </xs:simpleType>
+
+  <!-- the chance to meet an enemy at each step: from 0 (never) to 1 (always) -->
+  <xs:simpleType name="chanceType">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0"/><xs:maxInclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- one line of a dialogue. Without a speaker it is a narration -->
+  <xs:complexType name="lineType">
+    <xs:simpleContent>
+      <xs:extension base="textType">
+        <xs:attribute name="speaker" type="xs:string" default=""/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- area: the background of the scene (a picture in sprites/backgrounds/);
+       partner: the character shown in front of the protagonist (a folder in sprites/characters/). Both are optional -->
+  <xs:complexType name="dialogueType">
+    <xs:sequence>
+      <xs:element name="line" type="lineType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="area" type="idType"/>
+    <xs:attribute name="partner" type="idType"/>
+  </xs:complexType>
+
+  <xs:complexType name="battleType">
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="encounter" type="idType" use="required"/>
+  </xs:complexType>
+
+  <!-- a walk of "length" steps through a place (a forest, a cave, a road...);
+       area: the background to show. At each step but the last there is a chance to meet one of the encounters -->
+  <xs:complexType name="trekType">
+    <xs:sequence>
+      <xs:element name="encounter" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType><xs:attribute name="ref" type="idType" use="required"/></xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="area" type="idType" use="required"/>
+    <xs:attribute name="length" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="chance" type="chanceType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="endType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="id" type="idType" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:element name="story">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element name="dialogue" type="dialogueType"/>
+        <xs:element name="battle" type="battleType"/>
+        <xs:element name="trek" type="trekType"/>
+        <xs:element name="end" type="endType"/>
+      </xs:choice>
+    </xs:complexType>
+
+    <xs:unique name="stepId">
+      <xs:selector xpath="*"/><xs:field xpath="@id"/>
+    </xs:unique>
+  </xs:element>
+
+</xs:schema>
