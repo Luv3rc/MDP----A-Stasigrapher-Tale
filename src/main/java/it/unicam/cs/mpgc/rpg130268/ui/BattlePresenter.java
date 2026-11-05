@@ -407,7 +407,7 @@ public class BattlePresenter
             case BattleEvent.Defeated e -> e.fighter().getName() + " is defeated!";
             case BattleEvent.BattleEnded e -> switch (e.outcome())
             {
-                case VICTORY -> "VICTORY! Every survivor gains " + e.xp() + " XP.";
+                case VICTORY -> "VICTORY! The party gains " + e.totalXp() + " XP.";
                 case DEFEAT -> "DEFEAT... the party has fallen.";
                 case ONGOING -> "The battle is over.";
             };

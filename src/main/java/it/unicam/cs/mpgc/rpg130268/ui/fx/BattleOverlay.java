@@ -77,7 +77,7 @@ final class BattleOverlay
     {
         String text = switch (e.outcome())
         {
-            case VICTORY -> "VICTORY!   +" + e.xp() + " XP";
+            case VICTORY -> "VICTORY!   +" + e.totalXp() + " XP";
             case DEFEAT -> "DEFEAT";
             case ONGOING -> "";
         };

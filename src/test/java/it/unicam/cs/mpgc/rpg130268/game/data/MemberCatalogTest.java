@@ -30,7 +30,7 @@ class MemberCatalogTest
     // A small valid file where one detail can be changed
     private static String file(String id, String weapon, String abilities)
     {
-        return "<members><member id=\"" + id + "\" baseHealth=\"164\" healthPerPoint=\"15\" pointsPerLevel=\"3\" statCap=\"60\">"
+        return "<members startingParty=\"" + id + "\"><member id=\"" + id + "\" baseHealth=\"164\" healthPerPoint=\"15\" pointsPerLevel=\"3\" statCap=\"60\">"
                 + "<ap max=\"9\" start=\"3\"/><weapon ref=\"" + weapon + "\"/><abilities>" + abilities + "</abilities>"
                 + "</member></members>";
     }
@@ -49,6 +49,11 @@ class MemberCatalogTest
         assertTrue(CATALOG.contains("gunther"));
         assertFalse(CATALOG.contains("dragon"));
         assertEquals(1, CATALOG.ids().size());
+    }
+
+    @Test void aNewGameStartsWithGuntherInTheParty()
+    {
+        assertEquals(List.of("gunther"), CATALOG.startingParty());
     }
 
     @Test void aNewGameStartsGuntherAtLevelOneWithNothingSpentAndFullHealth()
@@ -117,7 +122,7 @@ class MemberCatalogTest
 
     @Test void aMemberWithHisOwnNumbers()
     {
-        MemberCatalog catalog = load("<members><member id=\"gunther\" baseHealth=\"120\" healthPerPoint=\"8\" pointsPerLevel=\"5\" statCap=\"30\">"
+        MemberCatalog catalog = load("<members startingParty=\"gunther\"><member id=\"gunther\" baseHealth=\"120\" healthPerPoint=\"8\" pointsPerLevel=\"5\" statCap=\"30\">"
                 + "<ap max=\"6\" start=\"2\"/><weapon ref=\"thesmosia\"/><abilities>" + learn("basic-attack") + "</abilities></member></members>");
 
         PartyMember gunther = catalog.newMember("gunther");
@@ -173,6 +178,30 @@ class MemberCatalogTest
         assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("</members>",
                 "<member id=\"gunther\" baseHealth=\"1\" healthPerPoint=\"1\" pointsPerLevel=\"1\" statCap=\"1\"><ap max=\"1\" start=\"0\"/>"
                 + "<weapon ref=\"thesmosia\"/><abilities/></member></members>")));
+    }
+
+    @Test void theStartingPartyMustBeMadeOfMembersOfTheFileEachOnceAtLeastOne()
+    {
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("startingParty=\"gunther\"", "startingParty=\"dragon\"")));
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("startingParty=\"gunther\"", "startingParty=\"gunther gunther\"")));
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace(" startingParty=\"gunther\"", "")));
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("startingParty=\"gunther\"", "startingParty=\"\"")));
+    }
+
+    @Test void theCodeOfTheMembersCanBeGivenAndTheOrderOfThePartyIsKept()
+    {
+        String xml = "<members startingParty=\"squire gunther\">"
+                + "<member id=\"gunther\" baseHealth=\"164\" healthPerPoint=\"15\" pointsPerLevel=\"3\" statCap=\"60\"><ap max=\"9\" start=\"3\"/>"
+                + "<weapon ref=\"thesmosia\"/><abilities/></member>"
+                + "<member id=\"squire\" baseHealth=\"100\" healthPerPoint=\"10\" pointsPerLevel=\"3\" statCap=\"60\"><ap max=\"6\" start=\"2\"/>"
+                + "<weapon ref=\"thesmosia\"/><abilities>" + learn("basic-attack") + "</abilities></member></members>";
+
+        MemberCatalog catalog = MemberCatalog.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "test.xml",
+                WEAPONS, PartyAbilities.standard(), TestMembers.withSquire());
+
+        assertEquals(List.of("squire", "gunther"), catalog.startingParty());
+        assertEquals("Squire", catalog.newMember("squire").getName());
+        assertEquals(100, catalog.newMember("squire").getStats().maxHealth());
     }
 
     @Test void somethingThatIsNotXmlAndAMissingFileAreRefused()

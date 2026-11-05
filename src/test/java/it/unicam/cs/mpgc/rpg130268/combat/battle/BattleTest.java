@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.random.RandomGenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -408,7 +409,7 @@ class BattleTest
 
     // ---------- The end ----------
 
-    @Test void victoryGivesTheXpToThePartyThatIsStillStanding()
+    @Test void victoryGivesTheXpToTheWholePartyAndTheFallenGetLess()
     {
         Gunther g = gunther();
         Gunther fallen = gunther();
@@ -423,10 +424,42 @@ class BattleTest
 
         assertEquals(BattlePhase.OVER, battle.getPhase());
         assertEquals(BattleOutcome.VICTORY, battle.getOutcome());
-        assertEquals(30, g.getCurrentXp());
-        assertEquals(0, fallen.getCurrentXp());
+        assertEquals(18, g.getCurrentXp());              // his 15 and the 3 that the fallen lost (20% of 15)
+        assertEquals(12, fallen.getCurrentXp());
         assertTrue(battle.getCurrentActor().isEmpty());
-        assertEquals(List.of(new BattleEvent.BattleEnded(BattleOutcome.VICTORY, 30, 400)), battle.drainEvents());
+        assertEquals(List.of(new BattleEvent.BattleEnded(BattleOutcome.VICTORY, Map.of(g, 18, fallen, 12), 400)), battle.drainEvents());
+    }
+
+    @Test void theFallenComeBackWithOneHpAfterAVictory()
+    {
+        Gunther g = gunther();
+        Gunther fallen = gunther();
+        fallen.setHp(0);
+        Enemy goblin = goblin(10, 30);
+        Battle battle = battle(List.of(g, fallen), List.of(goblin));
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+
+        battle.update(400);
+
+        assertTrue(fallen.isAlive());
+        assertEquals(1, fallen.getHp());
+    }
+
+    @Test void theXpOfTheBattleIsAlwaysGivenAllTogether()
+    {
+        Gunther g = gunther();
+        Gunther fallen = gunther();
+        Gunther another = gunther();
+        fallen.setHp(0);
+        Enemy goblin = goblin(10, 100);
+        Battle battle = battle(List.of(g, fallen, another), List.of(goblin));
+        battle.start();
+        battle.perform(basicAttack(g), List.of(goblin));
+        battle.update(400);
+
+        assertEquals(100, g.getCurrentXp() + fallen.getCurrentXp() + another.getCurrentXp());
+        assertEquals(100, ((BattleEvent.BattleEnded) battle.drainEvents().getLast()).totalXp());
     }
 
     @Test void theRewardIsTheSumOfAllTheEnemies()
@@ -454,7 +487,7 @@ class BattleTest
         assertEquals(BattleOutcome.DEFEAT, battle.getOutcome());
         assertEquals(0, fragile.getCurrentXp());
         assertTrue(battle.drainEvents().stream().anyMatch(e -> e instanceof BattleEvent.BattleEnded ended
-                && ended.outcome() == BattleOutcome.DEFEAT && ended.xp() == 0));
+                && ended.outcome() == BattleOutcome.DEFEAT && ended.totalXp() == 0));
     }
 
     @Test void aWholeBattleFromStartToXp()

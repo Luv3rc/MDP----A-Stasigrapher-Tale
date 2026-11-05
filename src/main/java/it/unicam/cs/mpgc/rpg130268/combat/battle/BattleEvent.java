@@ -1,10 +1,12 @@
 package it.unicam.cs.mpgc.rpg130268.combat.battle;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
+import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionOutcome;
 
 import java.util.List;
+import java.util.Map;
 
 // What happened in a battle, told to whoever shows it (the UI). The engine has already resolved all of it,
 // the events only say what happened and WHEN, so the UI can replay it with "animations"
@@ -32,8 +34,17 @@ public sealed interface BattleEvent
     // The turn of a fighter begins; a party member waits for the choice of the player, an enemy acts at once
     record TurnStarted(Fighter actor, long atMs) implements BattleEvent {}
 
-    // The battle is over. xp is what every party member who is still standing received (0 if the party lost)
-    record BattleEnded(BattleOutcome outcome, int xp, long atMs) implements BattleEvent {}
+    // The battle is over. xpByMember is what every member of the party received (empty if the party lost); the
+    // members who had fallen come back with 1 HP. totalXp() is what the party got in all
+    record BattleEnded(BattleOutcome outcome, Map<PartyMember, Integer> xpByMember, long atMs) implements BattleEvent
+    {
+        public BattleEnded
+        {
+            xpByMember = Map.copyOf(xpByMember);
+        }
+
+        public int totalXp() { return xpByMember.values().stream().mapToInt(Integer::intValue).sum(); }
+    }
 
     // After parrying every hit of an attack, the defender strikes back
     record Countered(Fighter defender, Fighter attacker, int damage, boolean critical, long atMs) implements BattleEvent {}

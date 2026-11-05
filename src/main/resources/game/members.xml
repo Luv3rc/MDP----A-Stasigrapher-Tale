@@ -8,7 +8,7 @@
   ap: his maximum AP and the AP he starts every battle with
   weapon and abilities point to weapons.xml and to the abilities of the code, always by id
 -->
-<members>
+<members startingParty="gunther">
   <member id="gunther" baseHealth="164" healthPerPoint="15" pointsPerLevel="3" statCap="60">
     <ap max="9" start="3"/>
     <weapon ref="thesmosia"/>

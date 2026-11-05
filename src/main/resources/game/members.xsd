@@ -6,6 +6,14 @@
     <xs:restriction base="xs:string"><xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*"/></xs:restriction>
   </xs:simpleType>
 
+  <!-- one or more ids separated by spaces -->
+  <xs:simpleType name="idListType">
+    <xs:restriction>
+      <xs:simpleType><xs:list itemType="idType"/></xs:simpleType>
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="memberType">
     <xs:sequence>
       <xs:element name="ap">
@@ -39,6 +47,7 @@
       <xs:sequence>
         <xs:element name="member" type="memberType" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="startingParty" type="idListType" use="required"/>
     </xs:complexType>
 
     <xs:key name="memberKey">

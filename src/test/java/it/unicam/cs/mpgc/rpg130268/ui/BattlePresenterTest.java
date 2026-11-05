@@ -300,10 +300,10 @@ class BattlePresenterTest
         presenter.advance(1);
 
         assertTrue(presenter.isOver());
-        assertEquals(30, presenter.getEnd().orElseThrow().xp());
+        assertEquals(30, presenter.getEnd().orElseThrow().totalXp());
         assertEquals(BattlePhase.OVER, presenter.getPhase());
         assertFalse(presenter.getEnemies().get(0).isAlive());
-        assertTrue(presenter.getLog().contains("VICTORY! Every survivor gains 30 XP."));
+        assertTrue(presenter.getLog().contains("VICTORY! The party gains 30 XP."));
     }
 
     // ---------- Construction ----------
