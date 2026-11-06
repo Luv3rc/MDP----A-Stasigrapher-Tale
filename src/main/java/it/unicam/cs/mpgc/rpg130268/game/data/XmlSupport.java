@@ -75,6 +75,31 @@ final class XmlSupport
         }
     }
 
+    // Reads a document without checking it against any schema. It is only meant to look at a few things before the
+    // real reading, like the version of a save, so it never gives the document to anyone else
+    static Document parseLoosely(InputStream in, String source)
+    {
+        try (in)
+        {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(new StrictErrorHandler());
+
+            return builder.parse(in);
+        }
+        catch (SAXParseException e)
+        {
+            throw new GameDataException(source + ", line " + e.getLineNumber() + ": " + e.getMessage(), e);
+        }
+        catch (SAXException | IOException | ParserConfigurationException e)
+        {
+            throw new GameDataException("can't read " + source + ": " + e.getMessage(), e);
+        }
+    }
+
     // Warnings are ignored, any error stops the reading
     private static final class StrictErrorHandler implements ErrorHandler
     {
