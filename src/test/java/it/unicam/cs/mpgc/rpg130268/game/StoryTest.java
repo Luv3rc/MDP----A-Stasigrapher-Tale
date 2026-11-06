@@ -33,6 +33,14 @@ class StoryTest
         assertThrows(IllegalArgumentException.class, () -> new Story(List.of(TALK, TALK, END)));
     }
 
+    @Test void rewardAndDefeatAreMadeByTheGameAndCannotBeWrittenInTheStory()
+    {
+        Reward reward = new Reward(List.of(new MemberReward("gunther", 0, 1, 0, 1, 0, 0)));
+
+        assertThrows(IllegalArgumentException.class, () -> new Story(List.of(new StoryNode("r", new RewardStep(reward)), END)));
+        assertThrows(IllegalArgumentException.class, () -> new Story(List.of(new StoryNode("d", new DefeatStep()), END)));
+    }
+
     @Test void theNodesAreCopied()
     {
         Story story = new Story(List.of(TALK, END));

@@ -27,6 +27,9 @@ public record Story(List<StoryNode> nodes)
             if (!ids.add(node.id()))
                 throw new IllegalArgumentException("the id '" + node.id() + "' is used twice");
 
+            if (node.step() instanceof StoryStep.RewardStep || node.step() instanceof StoryStep.DefeatStep)
+                throw new IllegalArgumentException("reward and defeat steps are made by the game, not written in the story");
+
             if (node.step() instanceof StoryStep.EndStep && !last)
                 throw new IllegalArgumentException("nothing can come after the end");
 

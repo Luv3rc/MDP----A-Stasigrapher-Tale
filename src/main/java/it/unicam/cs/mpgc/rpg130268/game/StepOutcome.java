@@ -7,7 +7,8 @@ import java.util.Map;
     DialogueStep -> Finished
     BattleStep   -> BattleWon, BattleLost
     TrekStep     -> Walked (the player went one step further)
-    (the steps that come after a battle, and their outcomes Retry and GoBack, come with GameFlow)
+    DefeatStep   -> Retry  (same battle again)
+                    GoBack (back to the last safe moment, before the battle)
 * */
 public sealed interface StepOutcome
 {
@@ -29,4 +30,8 @@ public sealed interface StepOutcome
     }
 
     record BattleLost() implements StepOutcome { }
+
+    record Retry() implements StepOutcome { }
+
+    record GoBack() implements StepOutcome { }
 }

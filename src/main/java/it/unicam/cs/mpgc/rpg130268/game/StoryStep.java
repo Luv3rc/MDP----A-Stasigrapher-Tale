@@ -65,7 +65,14 @@ public sealed interface StoryStep
         }
     }
 
-    // The end of the demo
+    record RewardStep(Reward reward) implements StoryStep
+    {
+        public RewardStep { Objects.requireNonNull(reward, "reward must not be null"); }
+    }
+
+    // After a defeat, the player chooses between trying the battle again and going back to the last safe moment
+    record DefeatStep() implements StoryStep { }
+
     record EndStep(String message) implements StoryStep
     {
         public EndStep { Objects.requireNonNull(message, "message must not be null"); }
