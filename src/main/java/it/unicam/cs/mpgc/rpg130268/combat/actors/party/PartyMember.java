@@ -92,6 +92,11 @@ public abstract class PartyMember extends Fighter
     public int getLevel () { return level; }
     public int getCurrentXp() { return currentXp; }
     public ApPool getAp() { return ap; }
+
+    public int getXpForNextLevel()
+    {
+        return level >= levelRules.maxLevel() ? 0 : levelRules.requiredXpForLevel(level + 1);
+    }
     public StatRules getStatRules() { return statRules; }
     public StatPoints getStatPoints() { return statPoints; }
     public int getUnspentPoints() { return unspentPoints; }

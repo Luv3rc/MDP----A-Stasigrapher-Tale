@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleEvent;
+import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleOutcome;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
 import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
 import javafx.animation.AnimationTimer;
@@ -60,6 +61,7 @@ public class BattleScreen implements GameScreen
 {
     private static final long NANOS_PER_MS = 1_000_000;
     private static final long MAX_STEP_MS = 100;       // a long pause (the window was dragged...) is not played at once
+    private static final long END_PAUSE_NANOS = 1_200_000_000L;    // in the story, how long the end of a battle stays on screen
 
     private static final double HUD_MARGIN = 14;
     private static final double BOTTOM_MARGIN = 40;          // under it there is room for the keys that work now
@@ -69,6 +71,7 @@ public class BattleScreen implements GameScreen
     private static final double ENEMIES_BOTTOM = 150;        // the feet of the enemies in front: above the head of Gunther
 
     private final Supplier<BattlePresenter> factory;
+    private final BattleExit exit;                // how the battle leaves the screen in the story, or null for a battle on its own
 
     private final BorderPane root = new BorderPane();
     private final Pane slashLayer = new Pane();
@@ -102,11 +105,22 @@ public class BattleScreen implements GameScreen
     private BattlePresenter presenter;
     private long lastNanos;
     private int logShown;
-    private boolean timingBarOn = true;
+    private boolean timingBarOn = false;          // the bar with the windows of parry and dodge. T key shows it
+    private long endSeenNanos;                    // when the end of the battle was first seen, or 0 if it is not over
+    private boolean exitDone;
 
+    // A battle on its own
     public BattleScreen(Supplier<BattlePresenter> factory)
     {
+        this(factory, null);
+    }
+
+    // A battle of the story. When it ends, after a moment, the exit is told how it went
+    BattleScreen(Supplier<BattlePresenter> factory, BattleExit exit)
+    {
         this.factory = Objects.requireNonNull(factory, "factory must not be null");
+        this.exit = exit;
+        overlay.setOutcomeBanner(exit == null);
 
         // The look of the buttons (src/main/resources/css/battle.css). If it is not there the buttons are plain
         URL stylesheet = BattleScreen.class.getResource("/css/battle.css");
@@ -114,7 +128,7 @@ public class BattleScreen implements GameScreen
             stage.getStylesheets().add(stylesheet.toExternalForm());
 
         // The pieces that need "the battle of now" get a way to ask for it: a new presenter is made at every battle
-        menu = new BattleMenu(new RpgButtons(stylesheet != null), () -> presenter, this::startNewBattle, Platform::exit);
+        menu = new BattleMenu(new RpgButtons(stylesheet != null), () -> presenter, this::startNewBattle, Platform::exit, exit == null);
         targeting = new TargetSelection(cards, () -> presenter);
         animator = new BattleAnimator(cards, new SlashEffect(slashLayer), overlay, () -> presenter.getTimeMs());
 
@@ -208,6 +222,9 @@ public class BattleScreen implements GameScreen
         timer.stop();
 
         presenter = factory.get();
+        endSeenNanos = 0;
+        exitDone = false;
+
         presenter.setAlwaysAskTarget(true);     // even with a single enemy, the player confirms it
         presenter.start();
 
@@ -276,6 +293,30 @@ public class BattleScreen implements GameScreen
         }
 
         render();
+        checkEnd(nowNanos);
+    }
+
+    private void checkEnd(long nowNanos)
+    {
+        if (exit == null || exitDone || !presenter.isOver())
+            return;
+
+        if (endSeenNanos == 0)
+        {
+            endSeenNanos = nowNanos;
+            return;
+        }
+
+        if (nowNanos - endSeenNanos < END_PAUSE_NANOS)
+            return;
+
+        exitDone = true;
+        BattleEvent.BattleEnded end = presenter.getEnd().orElseThrow();
+
+        if (end.outcome() == BattleOutcome.VICTORY)
+            exit.onWon(end);
+        else
+            exit.onLost();
     }
 
     // ---------- Keys ----------
@@ -307,6 +348,9 @@ public class BattleScreen implements GameScreen
 
     private void retryKey(KeyCode code)
     {
+        if (exit != null)
+            return;                         // in the story nobody asks anything here
+
         if (code == KeyCode.Y)
             startNewBattle();
         else if (code == KeyCode.N)

@@ -144,6 +144,15 @@ class PartyMemberStatPointsTest
         assertTrue(gunther.canIncrease(ScalingStat.AGILITY));          // one more point to spend elsewhere
     }
 
+    @Test void theXpNeededForTheNextLevelIsZeroAtTheHighestLevel()
+    {
+        Gunther gunther = fresh();
+        Gunther highest = new Gunther(StatRules.of(164, 15), StatPoints.NONE, 0, 9, 3, ApRules.defaults(), InkRules.defaults(), 60, 0);
+
+        assertEquals(200, gunther.getXpForNextLevel());
+        assertEquals(0, highest.getXpForNextLevel());
+    }
+
     @Test void withNothingToSpendNoStatCanIncrease()
     {
         Gunther gunther = fresh();

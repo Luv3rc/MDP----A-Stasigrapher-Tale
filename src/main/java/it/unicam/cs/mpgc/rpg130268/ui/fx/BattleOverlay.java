@@ -27,6 +27,7 @@ final class BattleOverlay
     private final Label bannerLabel = new Label();
 
     private SequentialTransition announcement = null;        // the one that is on the screen now, if any
+    private boolean outcomeBanner = true;                    // false in the story, where the next screen says how it ended
 
     BattleOverlay()
     {
@@ -73,8 +74,15 @@ final class BattleOverlay
         announcement.play();
     }
 
+    // Whether the banner with the end of the battle is shown. In the story it is not, since the reward and the
+    // defeat have their own screens
+    void setOutcomeBanner(boolean shown) { outcomeBanner = shown; }
+
     void showOutcome(BattleEvent.BattleEnded e)
     {
+        if (!outcomeBanner)
+            return;
+
         String text = switch (e.outcome())
         {
             case VICTORY -> "VICTORY!   +" + e.totalXp() + " XP";

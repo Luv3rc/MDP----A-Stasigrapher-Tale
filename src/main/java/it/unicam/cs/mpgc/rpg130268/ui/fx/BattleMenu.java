@@ -39,12 +39,20 @@ final class BattleMenu
     private final Supplier<BattlePresenter> current;      // the battle of now (it is a new one at every retry)
     private final Runnable onRetry;
     private final Runnable onQuit;
+    private final boolean asksToRetry;                    // false in the story, where the defeat has a screen for it
 
     private String commandMode = "";
     private String page = PAGE_MAIN;
 
     BattleMenu(RpgButtons buttons, Supplier<BattlePresenter> current, Runnable onRetry, Runnable onQuit)
     {
+        this(buttons, current, onRetry, onQuit, true);
+    }
+
+    BattleMenu(RpgButtons buttons, Supplier<BattlePresenter> current, Runnable onRetry, Runnable onQuit,
+               boolean asksToRetry)
+    {
+        this.asksToRetry = asksToRetry;
         this.buttons = Objects.requireNonNull(buttons, "buttons must not be null");
         this.current = Objects.requireNonNull(current, "current must not be null");
         this.onRetry = Objects.requireNonNull(onRetry, "onRetry must not be null");
@@ -149,7 +157,10 @@ final class BattleMenu
         box.getChildren().clear();
 
         if (presenter.isOver())
-            buildRetryMenu();
+        {
+            if (asksToRetry)
+                buildRetryMenu();
+        }
         else if (presenter.isTargeting())
             return;
         else if (presenter.isChoosing())

@@ -55,6 +55,7 @@ public class BattlePresenter
 
         public Fighter getFighter() { return fighter; }
         public String getName() { return fighter.getName(); }
+        public String getArtName() { return fighter.getArtName(); }
         public int getMaxHp() { return maxHp; }
         public int getShownHp() { return shownHp; }
         public boolean isAlive() { return shownHp > 0; }

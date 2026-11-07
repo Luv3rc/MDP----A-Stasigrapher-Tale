@@ -265,8 +265,8 @@ final class FighterCard
     {
         boolean party = view.isPartyMember();
 
-        SpriteSheet idle = SpriteArt.sheet(view.getName(), AnimatedSprite.IDLE);
-        Image still = idle == null ? SpriteArt.find(view.getName(), party ? "back" : "front") : null;
+        SpriteSheet idle = SpriteArt.sheet(view.getArtName(), AnimatedSprite.IDLE);
+        Image still = idle == null ? SpriteArt.find(view.getArtName(), party ? "back" : "front") : null;
 
         if (idle != null || still != null)
         {
@@ -280,7 +280,7 @@ final class FighterCard
             {
                 for (String name : ANIMATIONS)
                 {
-                    SpriteSheet sheet = name.equals(AnimatedSprite.IDLE) ? idle : SpriteArt.sheet(view.getName(), name);
+                    SpriteSheet sheet = name.equals(AnimatedSprite.IDLE) ? idle : SpriteArt.sheet(view.getArtName(), name);
                     if (sheet != null)
                         animated.add(name, sheet, AnimatedSprite.DEFAULT_FPS, name.equals(AnimatedSprite.IDLE));
                 }
