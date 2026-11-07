@@ -82,6 +82,9 @@ final class QuestionPopup
         RpgButtons.setText(confirm, question.confirmLabel());
         RpgButtons.setText(cancel, question.cancelLabel());
 
+        cancel.setVisible(question.hasCancel());
+        cancel.setManaged(question.hasCancel());
+
         GameStyle.setSelected(confirm, question.selected() == Choice.CONFIRM);
         GameStyle.setSelected(cancel, question.selected() == Choice.CANCEL);
 

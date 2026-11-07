@@ -23,6 +23,16 @@ class QuestionViewTest
         assertEquals("No", question.cancelLabel());
     }
 
+    @Test void aNoticeHasOnlyAnOk()
+    {
+        QuestionView notice = QuestionView.notice("The saved game can't be loaded", "It is damaged.");
+
+        assertEquals("OK", notice.confirmLabel());
+        assertFalse(notice.hasCancel());
+        assertEquals(Choice.CONFIRM, notice.selected());
+        assertTrue(new QuestionView("Title", "", Choice.CANCEL).hasCancel());
+    }
+
     @Test void nothingInAQuestionCanBeMissing()
     {
         assertThrows(NullPointerException.class, () -> new QuestionView(null, "", Choice.CANCEL));

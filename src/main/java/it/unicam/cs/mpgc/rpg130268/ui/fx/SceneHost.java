@@ -1,8 +1,12 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -29,9 +33,12 @@ final class SceneHost
     private static final double START_WIDTH = 1152;           // 16:9 and small enough for a laptop screen
     private static final double MIN_WIDTH = 640;
     private static final double FADE_MS = 250;
+    private static final double NOTICE_SECONDS = 6;
 
     private final Stage stage;
     private final Group holder = new Group();
+    private final Label notice = new Label();
+    private final PauseTransition noticeTimer = new PauseTransition(Duration.seconds(NOTICE_SECONDS));
     private final Scene scene;
 
     private GameScreen current;
@@ -41,7 +48,18 @@ final class SceneHost
     {
         this.stage = stage;
 
-        StackPane window = new StackPane(holder);
+        // The notice stays at the bottom of the window, over whatever is shown, and the mouse goes through it
+        notice.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8); -fx-text-fill: #f5ebd0; -fx-font-size: 14px; "
+                + "-fx-padding: 8 16 8 16; -fx-background-radius: 6;");
+        notice.setVisible(false);
+        notice.setMouseTransparent(true);
+        notice.setWrapText(true);
+        notice.setMaxWidth(720);
+        StackPane.setAlignment(notice, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(notice, new Insets(0, 0, 12, 0));
+        noticeTimer.setOnFinished(event -> notice.setVisible(false));
+
+        StackPane window = new StackPane(holder, notice);
         window.setStyle("-fx-background-color: black;");
 
         scene = new Scene(window, START_WIDTH, START_WIDTH / ASPECT);
@@ -92,6 +110,16 @@ final class SceneHost
         screen.onShow();
     }
 
+    // Tells the player something without interrupting the game, like "the automatic save failed". It stays a few
+    // seconds at the bottom of the window and then goes away
+    void showMessage(String text)
+    {
+        notice.setText(text);
+        notice.setVisible(true);
+        noticeTimer.playFromStart();
+    }
+
+    // The program ends, so the screen on view has to stop what it is doing
     void stop()
     {
         if (current != null)
