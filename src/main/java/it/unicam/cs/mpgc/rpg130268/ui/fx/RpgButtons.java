@@ -27,6 +27,8 @@ final class RpgButtons
     private static final double ABILITY_WIDTH = 272;              // with more than three abilities: ABILITY_WIDTH_NARROW
     private static final double ABILITY_WIDTH_NARROW = 262;       // (two columns must not reach Gunther)
     private static final double ABILITY_HEIGHT = 75;              // three of them (with the gaps) are not taller than Gunther
+    private static final double COMPACT_WIDTH = 150;
+    private static final double COMPACT_HEIGHT = 40;
     private static final double BORDER = 1;                       // the thin border of a button (see battle.css)
 
     private static final String BUTTON_STYLE = "-fx-background-color: #14141d; -fx-text-fill: white; -fx-font-size: 20px; "
@@ -46,6 +48,22 @@ final class RpgButtons
         label.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 14px; -fx-font-weight: bold;");
 
         return rpgButton(label, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT, Pos.CENTER);
+    }
+
+    // A smaller button for the questions, like Confirm and Cancel
+    Button compact(String text)
+    {
+        Label label = new Label(text);
+        label.setStyle("-fx-text-fill: #f5ebd0; -fx-font-size: 14px; -fx-font-weight: bold;");
+
+        return rpgButton(label, COMPACT_WIDTH, COMPACT_HEIGHT, Pos.CENTER);
+    }
+
+    // Changes the text of a button made by menu or compact. The text is the label that the button holds
+    static void setText(Button button, String text)
+    {
+        StackPane inner = (StackPane) button.getGraphic();
+        ((Label) inner.getChildren().getFirst()).setText(text);
     }
 
     // The name with its key and AP cost, and under it what the ability does. The size is fixed: a long description

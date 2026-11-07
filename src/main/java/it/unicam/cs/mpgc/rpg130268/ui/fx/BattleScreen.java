@@ -33,15 +33,15 @@ import java.util.function.Supplier;
     The window of a battle: it draws what the BattlePresenter says and tells it what the player does.
     There is no game logic here. This class only puts the pieces together and decides what happens at every frame:
 
-        BattleBackground   the picture of the area, darkened
-        EnemyFormation     where the enemies stand
-        FighterCard        one sprite with its life bar (one for every fighter)
-        PartyPanel         the HUD of a party member (face, life, AP, ink)
-        BattleMenu         ATTACK / ABILITIES / ITEMS, and the question to retry
-        TargetSelection    A / D / Enter: which target is selected
-        BattleAnimator     what the events of the battle look like (cuts, numbers, shakes)
-        BattleOverlay      the announcement of an ability and the banner of the end
-        RpgButtons         the hexagon buttons (css/battle.css, in the resources)
+    BattleBackground   the picture of the area, darkened
+    EnemyFormation     where the enemies stand
+    FighterCard        one sprite with its life bar (one for every fighter)
+    PartyPanel         the HUD of a party member (face, life, AP, ink)
+    BattleMenu         ATTACK / ABILITIES / ITEMS, and the question to retry
+    TargetSelection    A / D / Enter: which target is selected
+    BattleAnimator     what the events of the battle look like (cuts, numbers, shakes)
+    BattleOverlay      the announcement of an ability and the banner of the end
+    RpgButtons         the hexagon buttons (css/battle.css, in the resources)
 
     How it works:
     - A timer calls frame() every frame: time goes on (the presenter returns the events that have just become
@@ -56,7 +56,7 @@ import java.util.function.Supplier;
     - The pictures of the background and of the characters are looked for in the resources, see SpriteArt.
       Without them the game draws plain shapes
 * */
-public class BattleScreen
+public class BattleScreen implements GameScreen
 {
     private static final long NANOS_PER_MS = 1_000_000;
     private static final long MAX_STEP_MS = 100;       // a long pause (the window was dragged...) is not played at once
@@ -196,7 +196,11 @@ public class BattleScreen
         root.setCenter(field);
     }
 
+    @Override
     public Region getRoot() { return stage; }
+
+    @Override
+    public void onShow() { startNewBattle(); }
 
     // A new fight: the presenter is built again, and the sprites, the HUD, the log and the menu with it
     public void startNewBattle()
@@ -238,6 +242,7 @@ public class BattleScreen
         timer.start();
     }
 
+    @Override
     public void stop()
     {
         timer.stop();
@@ -275,6 +280,7 @@ public class BattleScreen
 
     // ---------- Keys ----------
 
+    @Override
     public void onKeyPressed(KeyEvent event)
     {
         if (presenter == null) return;

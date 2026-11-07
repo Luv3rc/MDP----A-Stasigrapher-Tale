@@ -12,7 +12,7 @@ import java.util.Objects;
 
 /* *
     The background of the battle: the picture of the area, a bit darkened so the rest is easy to read.
-    It fills the whole window, from its corner. It is outside of the layout (not managed): nothing that changes in the
+    It fills the whole window, from its corner. It is outside of the layout (not managed); nothing that changes in the
     menu can move it or change its size.
     The screen adds nodes() under everything else.
 * */
@@ -24,7 +24,9 @@ final class BattleBackground
     private final Rectangle dim = new Rectangle();
     private final Region content;       // what is drawn over the background: it is see-through only if there is a picture
 
-    BattleBackground(Region window, Region content)
+    BattleBackground(Region window, Region content) { this(window, content, DIM); }
+
+    BattleBackground(Region window, Region content, double darkness)
     {
         Objects.requireNonNull(window, "window must not be null");
         this.content = Objects.requireNonNull(content, "content must not be null");
@@ -37,7 +39,7 @@ final class BattleBackground
 
         dim.setManaged(false);
         dim.setMouseTransparent(true);
-        dim.setFill(Color.rgb(0, 0, 0, DIM));
+        dim.setFill(Color.rgb(0, 0, 0, darkness));
         dim.widthProperty().bind(window.widthProperty());
         dim.heightProperty().bind(window.heightProperty());
     }
