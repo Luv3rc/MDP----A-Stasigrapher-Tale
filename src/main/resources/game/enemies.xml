@@ -5,21 +5,40 @@
 -->
 <enemies>
 
-  <!-- The tutorial -->
-  <enemy id="sariel" name="???" art="sariel" level="2" xp="250">
-    <stats health="260" strength="8" defense="2" agility="8" luck="0"/>
-    <weapon name="Dagger" type="SWORD" damage="20" strengthGrade="NONE" extraStat="AGILITY" extraGrade="C"/>
+    <enemy id="sariel" name="???" art="sariel" level="2" xp="250">
+    <stats health="640" strength="1" defense="2" agility="2" luck="4"/>
+    <weapon name="Dagger" type="SWORD" damage="31" strengthGrade="NONE" extraStat="AGILITY" extraGrade="C"/>
     <abilities>
-      <attack id="quick-slash" name="Quick slash" target="ONE_ENEMY">
+      <attack id="double-slash" name="Double Slash" target="ONE_ENEMY">
         <hit windUpMs="900" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
         <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="400" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
       </attack>
-      <attack id="lunge" name="Lunge" target="ONE_ENEMY">
-        <hit windUpMs="1300" reaction="PARRY_ONLY" weight="HEAVY"/>
+      <attack id="heavy-slashes" name="Heavy Slashes" target="ONE_ENEMY">
+        <hit windUpMs="1400" reaction="PARRY_OR_DODGE" weight="HEAVY"/>
+        <hit windUpMs="500" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+      </attack>
+      <attack id="assassin-fury" name="Assassin's Fury" target="ONE_ENEMY" announcement="{user} attacks with a 6 hits combo!">
+        <hit windUpMs="2000" reaction="PARRY_OR_DODGE" weight="HEAVY"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="800" reaction="PARRY_OR_DODGE" weight="NORMAL"/>
+        <hit windUpMs="1400" reaction="PARRY_OR_DODGE" weight="HEAVY"/>
+      </attack>
+      <attack id="quick-slashes" name="Quick Slashes" target="ONE_ENEMY" announcement="{user} attacks with a 5 hits rapid combo!">
+        <hit windUpMs="600" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="300" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="300" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="700" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
+        <hit windUpMs="300" reaction="PARRY_OR_DODGE" weight="LIGHT"/>
       </attack>
     </abilities>
     <pattern>
-      <rotation><use ability="quick-slash"/><use ability="lunge"/></rotation>
+      <rotation><use ability="double-slash"/><use ability="heavy-slashes"/></rotation>
+      <below hp="0.4">
+        <rotation><use ability="assassin-fury"/><use ability="quick-slashes"/></rotation>
+      </below>
     </pattern>
   </enemy>
 
