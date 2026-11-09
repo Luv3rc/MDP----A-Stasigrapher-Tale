@@ -31,7 +31,10 @@ import java.util.random.RandomGenerator;
     the screen of the step that the GameFlow says (showStep) and tells the flow how the step ended. The window,
     the canvas and the keys belong to the SceneHost.
 
-    For now the only steps with a screen are the dialogues. The battles, the reward, the trek are still TODO
+    For now the steps with a screen are the dialogues, the battles, the reward and the defeat. The trek and the end
+    don't have one yet, and the game goes back to the main menu when it reaches one of them.
+    The steps are listed one by one, with no default, so when a new kind of step appears the compiler says that it
+    has no screen yet.
 * */
 public class GameApp extends Application
 {
@@ -113,9 +116,21 @@ public class GameApp extends Application
                 showStep();
             }));
 
+            // After a lost battle the player decides between the same battle again and the last safe moment
+            case DefeatStep ignored -> host.show(new DefeatScreen(battleArea,
+                    () ->
+                    {
+                        flow.complete(new StepOutcome.Retry());
+                        showStep();
+                    },
+                    () ->
+                    {
+                        flow.complete(new StepOutcome.GoBack());
+                        showStep();
+                    }));
+
             // These have no screen yet
             case TrekStep ignored -> showMainMenu();
-            case DefeatStep ignored -> showMainMenu();
             case EndStep ignored -> showMainMenu();
         }
     }

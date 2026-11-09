@@ -3,6 +3,8 @@ package it.unicam.cs.mpgc.rpg130268.ui.fx;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleEvent;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleOutcome;
+import it.unicam.cs.mpgc.rpg130268.ui.question.Choice;
+import it.unicam.cs.mpgc.rpg130268.ui.question.QuestionPrompt;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
 import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
 import javafx.animation.AnimationTimer;
@@ -52,7 +54,7 @@ import java.util.function.Supplier;
     - The keys that can be used now are written in the bottom-left corner (ESC -- go back, E -- parry...):
       there are no buttons for them
     - Keys: F, E, W = the first, second, third entry of the menu, Esc = back, E = parry, Q = dodge (the menu and the
-      attacks never happen together), A / D (or the arrows) and Enter = the target, Y / N = retry the battle or not,
+      attacks never happen together), A / D (or the arrows) and Enter = the target, Y / N = retry the battle or not (A / D and Enter in the question),
       T = show/hide the timing bar, L = show/hide the log
     - The pictures of the background and of the characters are looked for in the resources, see SpriteArt.
       Without them the game draws plain shapes
@@ -93,6 +95,8 @@ public class BattleScreen implements GameScreen
     private final List<PartyPanel> panels = new ArrayList<>();
 
     private final BattleMenu menu;
+    private final QuestionPopup retryPopup;                // only used by a battle on its own
+    private final QuestionPrompt retryPrompt = new QuestionPrompt();
     private final TargetSelection targeting;
     private final BattleAnimator animator;
 
@@ -128,7 +132,8 @@ public class BattleScreen implements GameScreen
             stage.getStylesheets().add(stylesheet.toExternalForm());
 
         // The pieces that need "the battle of now" get a way to ask for it: a new presenter is made at every battle
-        menu = new BattleMenu(new RpgButtons(stylesheet != null), () -> presenter, this::startNewBattle, Platform::exit, exit == null);
+        menu = new BattleMenu(new RpgButtons(stylesheet != null), () -> presenter);
+        retryPopup = new QuestionPopup(new RpgButtons(stylesheet != null), () -> answerRetry(true), () -> answerRetry(false));
         targeting = new TargetSelection(cards, () -> presenter);
         animator = new BattleAnimator(cards, new SlashEffect(slashLayer), overlay, () -> presenter.getTimeMs());
 
@@ -207,6 +212,7 @@ public class BattleScreen implements GameScreen
         // The announcement and the HUD are over the WHOLE window (the HUD over the top bar), but under the cuts
         stage.getChildren().add(stage.getChildren().indexOf(slashLayer), overlay.announcementNode());
         stage.getChildren().add(stage.getChildren().indexOf(slashLayer), hudBox);
+        stage.getChildren().add(retryPopup.getRoot());      // the question is over everything
         root.setCenter(field);
     }
 
@@ -224,6 +230,8 @@ public class BattleScreen implements GameScreen
         presenter = factory.get();
         endSeenNanos = 0;
         exitDone = false;
+        retryPrompt.close();
+        retryPopup.hide();
 
         presenter.setAlwaysAskTarget(true);     // even with a single enemy, the player confirms it
         presenter.start();
@@ -298,7 +306,7 @@ public class BattleScreen implements GameScreen
 
     private void checkEnd(long nowNanos)
     {
-        if (exit == null || exitDone || !presenter.isOver())
+        if (exitDone || !presenter.isOver())
             return;
 
         if (endSeenNanos == 0)
@@ -313,10 +321,34 @@ public class BattleScreen implements GameScreen
         exitDone = true;
         BattleEvent.BattleEnded end = presenter.getEnd().orElseThrow();
 
-        if (end.outcome() == BattleOutcome.VICTORY)
+        if (exit == null)
+            askToRetry(end);
+        else if (end.outcome() == BattleOutcome.VICTORY)
             exit.onWon(end);
         else
             exit.onLost();
+    }
+
+    // The question of a battle on its own
+    private void askToRetry(BattleEvent.BattleEnded end)
+    {
+        retryPrompt.ask("Do you want to retry the battle?", end.outcome() == BattleOutcome.VICTORY ? "Victory!" : "Defeat.",
+                "Yes", "No");
+        showRetry();
+    }
+
+    private void showRetry() { retryPopup.show(retryPrompt.view().orElseThrow()); }
+
+    // Yes starts a new fight and No closes the program
+    private void answerRetry(boolean yes)
+    {
+        retryPrompt.close();
+        retryPopup.hide();
+
+        if (yes)
+            startNewBattle();
+        else
+            Platform.exit();
     }
 
     // ---------- Keys ----------
@@ -348,13 +380,21 @@ public class BattleScreen implements GameScreen
 
     private void retryKey(KeyCode code)
     {
-        if (exit != null)
+        if (exit != null || !retryPrompt.isAsking())
             return;                         // in the story nobody asks anything here
 
-        if (code == KeyCode.Y)
-            startNewBattle();
-        else if (code == KeyCode.N)
-            Platform.exit();
+        switch (code)
+        {
+            case A, LEFT, D, RIGHT ->
+            {
+                retryPrompt.toggle();
+                showRetry();
+            }
+            case ENTER, SPACE -> answerRetry(retryPrompt.selected() == Choice.CONFIRM);
+            case Y -> answerRetry(true);
+            case N -> answerRetry(false);
+            default -> { }
+        }
     }
 
     private void targetKey(KeyCode code)

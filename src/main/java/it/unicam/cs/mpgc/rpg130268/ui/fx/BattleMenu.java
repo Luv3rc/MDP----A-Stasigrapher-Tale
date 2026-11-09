@@ -18,11 +18,9 @@ import java.util.stream.Collectors;
 
 /* *
     The menu next to Gunther: ATTACK / ABILITIES / ITEMS. ABILITIES opens a second page (two columns of three).
-    When the battle is over it shows the question "Retry battle?" instead.
 
     The menu is built again only when what it depends on changes (commandMode), so a button is never replaced while
-    the mouse is on it. It does not decide anything: it asks the presenter, and tells the screen what to do
-    when the player wants to retry (or to quit) with the two Runnables.
+    the mouse is on it. It does not decide anything, and it asks the presenter what to show.
 * */
 final class BattleMenu
 {
@@ -37,26 +35,14 @@ final class BattleMenu
     private final VBox box = new VBox(10);
     private final RpgButtons buttons;
     private final Supplier<BattlePresenter> current;      // the battle of now (it is a new one at every retry)
-    private final Runnable onRetry;
-    private final Runnable onQuit;
-    private final boolean asksToRetry;                    // false in the story, where the defeat has a screen for it
 
     private String commandMode = "";
     private String page = PAGE_MAIN;
 
-    BattleMenu(RpgButtons buttons, Supplier<BattlePresenter> current, Runnable onRetry, Runnable onQuit)
+    BattleMenu(RpgButtons buttons, Supplier<BattlePresenter> current)
     {
-        this(buttons, current, onRetry, onQuit, true);
-    }
-
-    BattleMenu(RpgButtons buttons, Supplier<BattlePresenter> current, Runnable onRetry, Runnable onQuit,
-               boolean asksToRetry)
-    {
-        this.asksToRetry = asksToRetry;
         this.buttons = Objects.requireNonNull(buttons, "buttons must not be null");
         this.current = Objects.requireNonNull(current, "current must not be null");
-        this.onRetry = Objects.requireNonNull(onRetry, "onRetry must not be null");
-        this.onQuit = Objects.requireNonNull(onQuit, "onQuit must not be null");
 
         box.setAlignment(Pos.BOTTOM_LEFT);
     }
@@ -156,33 +142,13 @@ final class BattleMenu
 
         box.getChildren().clear();
 
-        if (presenter.isOver())
-        {
-            if (asksToRetry)
-                buildRetryMenu();
-        }
-        else if (presenter.isTargeting())
+        if (!presenter.isChoosing())
             return;
-        else if (presenter.isChoosing())
-        {
-            if (page.equals(PAGE_ABILITIES))
-                buildAbilitiesMenu();
-            else
-                buildMainMenu();
-        }
-    }
 
-    private void buildRetryMenu()
-    {
-        box.getChildren().add(prompt("Retry battle?"));
-
-        Button yes = buttons.menu("Yes   (Y)");
-        yes.setOnAction(event -> onRetry.run());
-
-        Button no = buttons.menu("No   (N)");
-        no.setOnAction(event -> onQuit.run());
-
-        box.getChildren().addAll(yes, no);
+        if (page.equals(PAGE_ABILITIES))
+            buildAbilitiesMenu();
+        else
+            buildMainMenu();
     }
 
     // ATTACK / ABILITIES / ITEMS
@@ -224,13 +190,5 @@ final class BattleMenu
         }
 
         box.getChildren().add(grid);
-    }
-
-    private Label prompt(String text)
-    {
-        Label label = new Label(text);
-        label.setStyle("-fx-text-fill: #ccccdd; -fx-font-size: 14px; -fx-effect: dropshadow(gaussian, black, 4, 0.8, 0, 0);");
-        label.setWrapText(true);
-        return label;
     }
 }
