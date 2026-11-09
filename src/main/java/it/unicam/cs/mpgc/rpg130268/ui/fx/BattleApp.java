@@ -15,9 +15,12 @@ public class BattleApp extends Application
     @Override
     public void start(Stage stage)
     {
+        String encounter = DemoBattles.encounterFrom(getParameters().getRaw());
+        DemoBattles.encounter(encounter);               // an encounter that does not exist is found here, before the window opens
+
         host = new SceneHost(stage, "A Stasigrapher Tale");
         host.start();
-        host.show(new BattleScreen(DemoBattles::create));
+        host.show(new BattleScreen(() -> DemoBattles.create(encounter)));
     }
 
     @Override

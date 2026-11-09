@@ -56,11 +56,21 @@ class MemberCatalogTest
         assertEquals(List.of("gunther"), CATALOG.startingParty());
     }
 
-    @Test void aNewGameStartsGuntherAtLevelOneWithNothingSpentAndFullHealth()
+    @Test void aNewGameStartsGuntherAtLevelOneWithThreePointsToSpendAndFullHealth()
     {
         MemberState state = CATALOG.startingState("gunther");
 
-        assertEquals(new MemberState("gunther", 1, 0, 164, StatPoints.NONE, 0, "thesmosia", ALL_FOUR), state);
+        assertEquals(new MemberState("gunther", 1, 0, 164, StatPoints.NONE, 3, "thesmosia", ALL_FOUR), state);
+    }
+
+    @Test void theFileSaysThatGuntherStartsAtLevelOneWithNoPointsInAnyStatAndThreeToSpend()
+    {
+        PartyMember gunther = CATALOG.newMember("gunther");
+
+        assertEquals(1, gunther.getLevel());
+        assertEquals(StatPoints.NONE, gunther.getStatPoints());
+        assertEquals(3, gunther.getUnspentPoints());
+        assertEquals(new Stats(164, 0, 0, 0, 0), gunther.getStats());
     }
 
     @Test void theNewGuntherIsWhatTheFileSays()
@@ -133,6 +143,51 @@ class MemberCatalogTest
         assertEquals(30, gunther.getStatRules().statCap());
         assertEquals(6, gunther.getAp().getMaxAp());
         assertEquals(1, gunther.getListOfAbility().size());
+    }
+
+    @Test void aMemberCanStartWithItsOwnLevelPointsAndPointsToSpend()
+    {
+        MemberCatalog catalog = load("<members startingParty=\"gunther\"><member id=\"gunther\" level=\"4\" unspentPoints=\"1\""
+                + " baseHealth=\"164\" healthPerPoint=\"15\" pointsPerLevel=\"3\" statCap=\"60\">"
+                + "<startingPoints health=\"2\" strength=\"1\" agility=\"2\"/>"
+                + "<ap max=\"9\" start=\"3\"/><weapon ref=\"thesmosia\"/><abilities>" + learn("basic-attack") + "</abilities></member></members>");
+
+        MemberState state = catalog.startingState("gunther");
+        PartyMember gunther = catalog.newMember("gunther");
+
+        assertEquals(new MemberState("gunther", 4, 0, 194, new StatPoints(2, 1, 0, 2, 0), 1, "thesmosia", List.of("basic-attack")), state);
+        assertEquals(new Stats(194, 1, 0, 2, 0), gunther.getStats());
+        assertEquals(194, gunther.getHp());
+        assertEquals(4, gunther.getLevel());
+        assertEquals(1, gunther.getUnspentPoints());
+    }
+
+    @Test void whatTheFileDoesNotSayAboutTheStartIsLevelOneAndNothing()
+    {
+        MemberState state = load(file("gunther", "thesmosia", learn("basic-attack"))).startingState("gunther");
+
+        assertEquals(1, state.level());
+        assertEquals(0, state.unspentPoints());
+        assertEquals(StatPoints.NONE, state.points());
+        assertEquals(164, state.hp());
+    }
+
+    @Test void aMemberCannotStartWithMorePointsInAStatThanItsCap()
+    {
+        String xml = "<members startingParty=\"gunther\"><member id=\"gunther\" baseHealth=\"164\" healthPerPoint=\"15\""
+                + " pointsPerLevel=\"3\" statCap=\"10\"><startingPoints strength=\"11\"/><ap max=\"9\" start=\"3\"/>"
+                + "<weapon ref=\"thesmosia\"/><abilities/></member></members>";
+
+        GameDataException error = assertThrows(GameDataException.class, () -> load(xml));
+
+        assertTrue(error.getMessage().contains("STRENGTH"));
+    }
+
+    @Test void startingValuesThatMakeNoSenseAreRefusedByTheSchema()
+    {
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("<member id=\"gunther\"", "<member id=\"gunther\" level=\"0\"")));
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("<member id=\"gunther\"", "<member id=\"gunther\" unspentPoints=\"-1\"")));
+        assertThrows(GameDataException.class, () -> load(file("gunther", "thesmosia", "").replace("<ap ", "<startingPoints strength=\"-2\"/><ap ")));
     }
 
     @Test void aMemberCanStartWithNoAbilities()

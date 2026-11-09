@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.rpg130268.game.data;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
+import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatPoints;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
@@ -116,7 +117,13 @@ public final class MemberCatalog
             List<String> abilityIds = children(child(member, "abilities"), "learn").stream()
                     .map(learn -> string(learn, "ref")).toList();
 
-            return new MemberDefinition(id, rules, integer(ap, "max"), integer(ap, "start"),
+            Element points = child(member, "startingPoints");
+            StatPoints startingPoints = points == null ? StatPoints.NONE
+                    : new StatPoints(integer(points, "health"), integer(points, "strength"), integer(points, "defense"),
+                            integer(points, "agility"), integer(points, "luck"));
+
+            return new MemberDefinition(id, rules, integer(member, "level"), integer(member, "unspentPoints"),
+                    startingPoints, integer(ap, "max"), integer(ap, "start"),
                     string(child(member, "weapon"), "ref"), abilityIds);
         }
         catch (IllegalArgumentException e)       // a number the game does not accept
@@ -131,6 +138,11 @@ public final class MemberCatalog
     {
         if (!builders.containsKey(definition.id()))
             throw new GameDataException("member '" + definition.id() + "' has no code: nobody knows how to make him");
+
+        for (ScalingStat stat : ScalingStat.values())
+            if (definition.points().get(stat) > definition.rules().statCap())
+                throw new GameDataException("member '" + definition.id() + "' starts with " + definition.points().get(stat)
+                        + " points in " + stat + ", and the cap is " + definition.rules().statCap());
 
         Set<String> known = new HashSet<>();
         for (String ability : definition.abilityIds())
@@ -169,8 +181,8 @@ public final class MemberCatalog
     {
         MemberDefinition definition = definition(id);
 
-        return new MemberState(id, 1, 0, definition.rules().statsFor(StatPoints.NONE).maxHealth(), StatPoints.NONE, 0,
-                definition.weaponId(), definition.abilityIds());
+        return new MemberState(id, definition.level(), 0, definition.rules().statsFor(definition.points()).maxHealth(),
+                definition.points(), definition.unspentPoints(), definition.weaponId(), definition.abilityIds());
     }
 
     public PartyMember newMember(String id) { return create(startingState(id)); }

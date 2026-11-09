@@ -321,15 +321,14 @@ class BattlePresenterTest
         assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, List.of(g), enemies, ReactionWindows.defaults(), null));
     }
 
-    @Test void theDemoBattleStartsAndWaitsForTheFastest()
+    @Test void theDemoBattleIsMadeWithTheDataOfTheGame()
     {
-        BattlePresenter presenter = DemoBattles.create();
+        BattlePresenter presenter = DemoBattles.create("mattias-and-alex");
 
         presenter.start();
-        presenter.advance(0);
 
-        assertTrue(presenter.isChoosing());
         assertEquals(1, presenter.getParty().size());
         assertEquals(2, presenter.getEnemies().size());
+        assertFalse(presenter.isOver());
     }
 }

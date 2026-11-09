@@ -107,7 +107,7 @@ class RewardPresenterTest
         MemberView member = first(afterTheTutorial(), tutorialReward());
 
         assertEquals(3, member.pointsGained());
-        assertEquals(3, member.unspentPoints());
+        assertEquals(6, member.unspentPoints());                      // the 3 he had at the start and the 3 of the level
     }
 
     @Test void everyStatHasItsValueAndABarThatIsFullAtTheEndOfTheMember()

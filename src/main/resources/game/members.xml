@@ -3,13 +3,18 @@
   The party members; what is written here are his numbers and what he starts with:
   baseHealth: his max HP with no points in health
   healthPerPoint: the max HP that each point in health gives
-  pointsPerLevel: the points he gets to spend at every level
-  statCap: the most points a stat can have
-  ap: his maximum AP and the AP he starts every battle with
-  weapon and abilities point to weapons.xml and to the abilities of the code, always by id
+  pointsPerLevel: the points he gets to spend at every level (3 always basically)
+  statCap: the most points a stat can have.
+  level: his level when a new game begins (1 if it is not written)
+  unspentPoints: the points he can spend at the start (3 cause of lvl 1)
+  startingPoints: the points he has already put in each stat when a new game begins (all 0 if it is not written)
+  ap: his maximum AP and the AP he starts every battle with.
+  startingParty: who is in the party when a new game begins, in order (the first one is the one the story is about).
+  weapon and abilities point to weapons.xml and to the abilities of the code, by id.
 -->
 <members startingParty="gunther">
-  <member id="gunther" baseHealth="164" healthPerPoint="15" pointsPerLevel="3" statCap="60">
+  <member id="gunther" level="1" unspentPoints="3" baseHealth="164" healthPerPoint="15" pointsPerLevel="3" statCap="60">
+    <startingPoints health="0" strength="0" defense="0" agility="0" luck="0"/>
     <ap max="9" start="3"/>
     <weapon ref="thesmosia"/>
     <abilities>

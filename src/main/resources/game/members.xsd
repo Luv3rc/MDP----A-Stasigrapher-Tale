@@ -14,8 +14,17 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:complexType name="pointsType">
+    <xs:attribute name="health" type="xs:nonNegativeInteger" default="0"/>
+    <xs:attribute name="strength" type="xs:nonNegativeInteger" default="0"/>
+    <xs:attribute name="defense" type="xs:nonNegativeInteger" default="0"/>
+    <xs:attribute name="agility" type="xs:nonNegativeInteger" default="0"/>
+    <xs:attribute name="luck" type="xs:nonNegativeInteger" default="0"/>
+  </xs:complexType>
+
   <xs:complexType name="memberType">
     <xs:sequence>
+      <xs:element name="startingPoints" type="pointsType" minOccurs="0"/>
       <xs:element name="ap">
         <xs:complexType>
           <xs:attribute name="max" type="xs:positiveInteger" use="required"/>
@@ -36,6 +45,8 @@
       </xs:element>
     </xs:sequence>
     <xs:attribute name="id" type="idType" use="required"/>
+    <xs:attribute name="level" type="xs:positiveInteger" default="1"/>
+    <xs:attribute name="unspentPoints" type="xs:nonNegativeInteger" default="0"/>
     <xs:attribute name="baseHealth" type="xs:positiveInteger" use="required"/>
     <xs:attribute name="healthPerPoint" type="xs:nonNegativeInteger" use="required"/>
     <xs:attribute name="pointsPerLevel" type="xs:nonNegativeInteger" use="required"/>

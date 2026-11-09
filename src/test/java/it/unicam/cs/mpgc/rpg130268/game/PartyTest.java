@@ -65,7 +65,7 @@ class PartyTest
         assertEquals(2, party.protagonist().getLevel());
         assertEquals(50, party.protagonist().getCurrentXp());
         assertEquals(old.getHp(), party.protagonist().getHp());
-        assertEquals(3, party.protagonist().getUnspentPoints());
+        assertEquals(6, party.protagonist().getUnspentPoints());       // the 3 of the start and the 3 of the level
     }
 
     @Test void whatTheMemberCarriesAndDidIsNotLostWhenTheStateIsRestored()
@@ -79,7 +79,7 @@ class PartyTest
         party.restore(saved);
 
         assertEquals(2, party.protagonist().getStats().strength());
-        assertEquals(1, party.protagonist().getUnspentPoints());
+        assertEquals(4, party.protagonist().getUnspentPoints());       // 3 + 3 and two of them spent
         assertEquals("Thesmosia", party.protagonist().getWeapon().name());
         assertEquals(List.of("basic-attack", "cuts-for-ink", "stasigraphic-fury", "thirst-for-ink"),
                 party.protagonist().getListOfAbility().stream().map(Ability::getId).toList());
