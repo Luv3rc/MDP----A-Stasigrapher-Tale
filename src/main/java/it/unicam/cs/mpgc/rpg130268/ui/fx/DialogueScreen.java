@@ -182,7 +182,10 @@ final class DialogueScreen implements GameScreen
         if (view.lineComplete() && bob.getStatus() != Animation.Status.RUNNING)
             bob.play();
         else if (!view.lineComplete())
+        {
             bob.stop();
+            arrow.setTranslateY(0);
+        }
     }
 
     private Node buildBox()
@@ -216,7 +219,8 @@ final class DialogueScreen implements GameScreen
         arrow.setLayoutX(BOX_WIDTH - GoldFrame.BEVEL - 58);
         arrow.setLayoutY(BOX_HEIGHT - 48);
         arrow.setMouseTransparent(true);
-        bob.setByY(7);
+        bob.setFromY(0)
+        bob.setToY(7);
         bob.setCycleCount(Animation.INDEFINITE);
         bob.setAutoReverse(true);
 
