@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg130268.ui;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
 import it.unicam.cs.mpgc.rpg130268.game.EncounterSetup;
 import it.unicam.cs.mpgc.rpg130268.game.data.EncounterCatalog;
@@ -52,6 +53,52 @@ class BattlePresenterFactoryTest
 
         assertEquals("???", sariel.getName());
         assertEquals("sariel", sariel.getArtName());
+    }
+
+    // Plays until it is the turn of the player (the "???" attacks first, because she is faster)
+    private static BattlePresenter untilThePlayerChooses()
+    {
+        BattlePresenter presenter = presenterFor("sariel");
+        presenter.setAlwaysAskTarget(true);
+        presenter.start();
+
+        for (int i = 0; i < 400 && !presenter.isChoosing() && !presenter.isOver(); i++)
+            presenter.advance(50);
+
+        return presenter;
+    }
+
+    @Test void theMenuIsOpenOnTheTurnOfThePlayer()
+    {
+        BattlePresenter presenter = untilThePlayerChooses();
+
+        assertTrue(presenter.isChoosing());
+        assertTrue(presenter.isMenuOpen());
+    }
+
+    @Test void theMenuGoesAwayWhileTheTargetIsChosenAndComesBackIfTheChoiceIsCancelled()
+    {
+        BattlePresenter presenter = untilThePlayerChooses();
+        Ability basic = presenter.getAbilities().stream().filter(a -> a.getId().equals("basic-attack")).findFirst().orElseThrow();
+
+        presenter.chooseAbility(basic);
+
+        assertTrue(presenter.isTargeting());
+        assertTrue(presenter.isChoosing());               // it is still his turn...
+        assertFalse(presenter.isMenuOpen());              // ...but the menu is not there, he is choosing the target
+
+        presenter.cancel();
+
+        assertFalse(presenter.isTargeting());
+        assertTrue(presenter.isMenuOpen());
+    }
+
+    @Test void theMenuIsNotOpenWhenItIsNotTheTurnOfThePlayer()
+    {
+        BattlePresenter presenter = presenterFor("sariel");
+        presenter.start();                                // the "???" is faster, so the first turn is hers
+
+        assertFalse(presenter.isMenuOpen());
     }
 
     @Test void theArtNameOfAPartyMemberIsHisName()

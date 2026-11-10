@@ -27,6 +27,15 @@
     -fx-background-color: radial-gradient(center 50% 50%, radius 50%, #272b32, #171a1e);
 }
 
+/* The button chosen with the keyboard (in the menus and in the questions). It looks like the one under the mouse, a bit brighter */
+.rpg-button.rpg-selected {
+    -fx-background-color: linear-gradient(to bottom right, #fff0b8, #b58f3e, #f7dc8c);
+}
+
+.rpg-button.rpg-selected .rpg-button-inner {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 60%, #3a404a, #1f232a);
+}
+
 .rpg-button:disabled {
     -fx-opacity: 0.4;
 }

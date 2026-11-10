@@ -142,7 +142,7 @@ final class BattleMenu
 
         box.getChildren().clear();
 
-        if (!presenter.isChoosing())
+        if (!presenter.isMenuOpen())
             return;
 
         if (page.equals(PAGE_ABILITIES))

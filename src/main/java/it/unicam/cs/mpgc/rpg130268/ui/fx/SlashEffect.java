@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
+import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionOptions;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
@@ -59,7 +60,9 @@ final class SlashEffect
     private static final double[] ANGLES = {215, 325, 270, 190, 350, 240, 300};
 
     private static final Color PARTY_COLOR = Color.web("#7fe0ff");
-    private static final Color ENEMY_COLOR = Color.web("#ff5a4f");
+    private static final Color ENEMY_COLOR = Color.web("#ff5a4f");               // red, it can be parried or dodged
+    private static final Color PARRY_ONLY_COLOR = Color.web("#b57bff");          // violet, only a parry works
+    private static final Color DODGE_ONLY_COLOR = Color.web("#ffc43d");          // amber, only a dodge works
 
     private final Pane layer;
     private final List<Strike> strikes = new ArrayList<>();
@@ -72,11 +75,25 @@ final class SlashEffect
 
     // A hit that is going to land on the target at impactMs (battle clock)
     void schedule(Fighter attacker, Fighter target, Node targetNode,
-                  long startMs, long impactMs, StrikeWeight weight, boolean fromParty)
+                  long startMs, long impactMs, StrikeWeight weight, ReactionOptions options, boolean fromParty)
     {
         long travel = Math.max(MIN_TRAVEL_MS, Math.min(TRAVEL_MS, impactMs - startMs));
 
-        add(new Strike(attacker, target, targetNode, startMs, impactMs, travel, PATH, halfWidth(weight), fromParty));
+        add(new Strike(attacker, target, targetNode, startMs, impactMs, travel, PATH, halfWidth(weight),
+                colorOf(options, fromParty)));
+    }
+
+    private static Color colorOf(ReactionOptions options, boolean fromParty)
+    {
+        if (fromParty)
+            return PARTY_COLOR;
+
+        return switch (options)
+        {
+            case PARRY_ONLY -> PARRY_ONLY_COLOR;
+            case DODGE_ONLY -> DODGE_ONLY_COLOR;
+            default -> ENEMY_COLOR;
+        };
     }
 
     // The hit has been judged. If it was announced its strike finishes, otherwise a fast cut is drawn now
@@ -136,7 +153,7 @@ final class SlashEffect
     private void instant(Fighter target, Node targetNode, Outcome outcome, boolean critical, boolean fromParty, long nowMs)
     {
         Strike strike = new Strike(null, target, targetNode, nowMs, nowMs + INSTANT_MS, INSTANT_MS,
-                INSTANT_PATH, critical ? 20 : 13, fromParty);
+                INSTANT_PATH, critical ? 20 : 13, fromParty ? PARTY_COLOR : ENEMY_COLOR);
 
         strike.outcome = outcome;
         strike.resolvedAtMs = strike.impactMs;
@@ -193,7 +210,7 @@ final class SlashEffect
         private final Polygon blade = new Polygon();
 
         Strike(Fighter attacker, Fighter target, Node targetNode, long startMs, long impactMs,
-               long travelMs, double path, double halfWidth, boolean fromParty)
+               long travelMs, double path, double halfWidth, Color color)
         {
             this.attacker = attacker;
             this.target = target;
@@ -203,7 +220,7 @@ final class SlashEffect
             this.travelMs = travelMs;
             this.path = path;
             this.halfWidth = halfWidth;
-            this.color = fromParty ? PARTY_COLOR : ENEMY_COLOR;
+            this.color = color;
 
             double angle = Math.toRadians(ANGLES[nextAngle++ % ANGLES.length]);
             this.dx = Math.cos(angle);

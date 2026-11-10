@@ -282,6 +282,8 @@ public class BattlePresenter
     // An ability has been chosen and it needs a target among these
     public boolean isTargeting() { return chosenAbility != null; }
 
+    public boolean isMenuOpen() { return isChoosing() && !isTargeting(); }
+
     public List<Fighter> getTargetCandidates() { return candidates; }
 
     public boolean isLocked() { return lockout.isLocked(timeMs); }

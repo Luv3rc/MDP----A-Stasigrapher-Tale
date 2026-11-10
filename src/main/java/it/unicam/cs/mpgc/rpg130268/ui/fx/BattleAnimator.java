@@ -117,7 +117,7 @@ final class BattleAnimator
             {
                 FighterCard card = cards.get(target);
                 if (card != null)
-                    slashes.schedule(e.attacker(), target, card.getTarget(), start, impact, hit.strikeWeight(), fromParty);
+                    slashes.schedule(e.attacker(), target, card.getTarget(), start, impact, hit.strikeWeight(), hit.options(), fromParty);
             }
 
             queueAttack(e.attacker(), impact);
@@ -136,7 +136,7 @@ final class BattleAnimator
         {
             FighterCard card = cards.get(target);
             if (card != null)
-                slashes.schedule(e.attacker(), target, card.getTarget(), e.atMs(), impact, e.hit().strikeWeight(), fromParty);
+                slashes.schedule(e.attacker(), target, card.getTarget(), e.atMs(), impact, e.hit().strikeWeight(), e.hit().options(), fromParty);
         }
 
         queueAttack(e.attacker(), impact);
