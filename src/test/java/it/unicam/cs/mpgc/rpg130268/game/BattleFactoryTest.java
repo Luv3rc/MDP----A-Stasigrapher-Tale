@@ -3,7 +3,7 @@ package it.unicam.cs.mpgc.rpg130268.game;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.Battle;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattlePhase;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.data.EncounterCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.data.GameData;
 import it.unicam.cs.mpgc.rpg130268.game.data.MemberCatalog;
@@ -19,7 +19,7 @@ class BattleFactoryTest
     private static List<PartyMember> party()
     {
         MemberCatalog members = MemberCatalog.fromResource(GameData.MEMBERS_FILE,
-                WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilities.standard());
+                WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilityCatalog.standard());
 
         return new Party(members).members();
     }

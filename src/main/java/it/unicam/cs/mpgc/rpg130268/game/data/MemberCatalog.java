@@ -7,7 +7,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatPoints;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.MemberState;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,10 +52,10 @@ public final class MemberCatalog
     private final List<String> startingParty;
     private final Map<String, MemberBuilder> builders;
     private final WeaponCatalog weapons;
-    private final PartyAbilities abilities;
+    private final PartyAbilityCatalog abilities;
 
     private MemberCatalog(Map<String, MemberDefinition> members, List<String> startingParty,
-                          Map<String, MemberBuilder> builders, WeaponCatalog weapons, PartyAbilities abilities)
+                          Map<String, MemberBuilder> builders, WeaponCatalog weapons, PartyAbilityCatalog abilities)
     {
         this.members = members;
         this.startingParty = startingParty;
@@ -67,19 +67,19 @@ public final class MemberCatalog
     // ---------- Reading ----------
 
     // A file in the resources of the program, e.g. "/game/members.xml"
-    public static MemberCatalog fromResource(String path, WeaponCatalog weapons, PartyAbilities abilities)
+    public static MemberCatalog fromResource(String path, WeaponCatalog weapons, PartyAbilityCatalog abilities)
     {
         return load(openResource(path), path, weapons, abilities, standardBuilders());
     }
 
     // "source" is the name used in the error messages
-    public static MemberCatalog load(InputStream in, String source, WeaponCatalog weapons, PartyAbilities abilities)
+    public static MemberCatalog load(InputStream in, String source, WeaponCatalog weapons, PartyAbilityCatalog abilities)
     {
         return load(in, source, weapons, abilities, standardBuilders());
     }
 
     // With the members of the code given (another game, or a test, can have other members)
-    public static MemberCatalog load(InputStream in, String source, WeaponCatalog weapons, PartyAbilities abilities,
+    public static MemberCatalog load(InputStream in, String source, WeaponCatalog weapons, PartyAbilityCatalog abilities,
                                      Map<String, MemberBuilder> builders)
     {
         Document document = parse(in, source, SCHEMA);

@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.game.data;
 
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.DialogueLine;
 import it.unicam.cs.mpgc.rpg130268.game.GameFlow;
 import it.unicam.cs.mpgc.rpg130268.game.StepOutcome;
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AutoSaveTest
 {
     private static final MemberCatalog MEMBERS = MemberCatalog.fromResource(GameData.MEMBERS_FILE,
-            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilities.standard());
+            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilityCatalog.standard());
 
     private static Story story()
     {

@@ -8,7 +8,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ap.ApRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ink.InkRules;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.BasicAttack;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +16,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PartyAbilitiesTest
+class PartyAbilityCatalogTest
 {
     // A member that is not Gunther, to see what an ability that is only for him does
     private static final class Squire extends PartyMember
@@ -33,12 +33,12 @@ class PartyAbilitiesTest
 
     @Test void theAbilitiesOfTheGameAreAllThere()
     {
-        assertEquals(Set.of("basic-attack", "cuts-for-ink", "stasigraphic-fury", "thirst-for-ink"), PartyAbilities.standard().ids());
+        assertEquals(Set.of("basic-attack", "cuts-for-ink", "stasigraphic-fury", "thirst-for-ink"), PartyAbilityCatalog.standard().ids());
     }
 
     @Test void everyIdMakesTheAbilityWithThatSameId()
     {
-        PartyAbilities abilities = PartyAbilities.standard();
+        PartyAbilityCatalog abilities = PartyAbilityCatalog.standard();
         Gunther gunther = gunther();
 
         for (String id : abilities.ids())
@@ -49,31 +49,31 @@ class PartyAbilitiesTest
     {
         Gunther gunther = gunther();
 
-        assertInstanceOf(CutsForInk.class, PartyAbilities.standard().createFor("cuts-for-ink", gunther));
+        assertInstanceOf(CutsForInk.class, PartyAbilityCatalog.standard().createFor("cuts-for-ink", gunther));
     }
 
     @Test void anAbilityForAnyMemberCanBeMadeForAnyMember()
     {
-        assertInstanceOf(BasicAttack.class, PartyAbilities.standard().createFor("basic-attack", new Squire()));
+        assertInstanceOf(BasicAttack.class, PartyAbilityCatalog.standard().createFor("basic-attack", new Squire()));
     }
 
     @Test void anAbilityOfGuntherCannotBeMadeForAnotherMember()
     {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> PartyAbilities.standard().createFor("cuts-for-ink", new Squire()));
+                () -> PartyAbilityCatalog.standard().createFor("cuts-for-ink", new Squire()));
 
         assertTrue(e.getMessage().contains("Gunther"));
     }
 
     @Test void anAbilityThatDoesNotExistIsRefused()
     {
-        assertThrows(IllegalArgumentException.class, () -> PartyAbilities.standard().createFor("fireball", gunther()));
-        assertFalse(PartyAbilities.standard().contains("fireball"));
+        assertThrows(IllegalArgumentException.class, () -> PartyAbilityCatalog.standard().createFor("fireball", gunther()));
+        assertFalse(PartyAbilityCatalog.standard().contains("fireball"));
     }
 
     @Test void anIdCannotBeRegisteredTwiceOrBadlyWritten()
     {
-        PartyAbilities abilities = PartyAbilities.standard();
+        PartyAbilityCatalog abilities = PartyAbilityCatalog.standard();
 
         assertThrows(IllegalArgumentException.class, () -> abilities.register("basic-attack", PartyMember.class, BasicAttack::new));
         assertThrows(IllegalArgumentException.class, () -> abilities.register("Basic Attack", PartyMember.class, BasicAttack::new));

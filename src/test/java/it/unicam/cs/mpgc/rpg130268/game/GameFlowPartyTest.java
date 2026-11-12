@@ -3,7 +3,7 @@ package it.unicam.cs.mpgc.rpg130268.game;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.FirstUsableAbility;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.StepOutcome.*;
 import it.unicam.cs.mpgc.rpg130268.game.StoryStep.*;
 import it.unicam.cs.mpgc.rpg130268.game.data.GameData;
@@ -24,7 +24,7 @@ class GameFlowPartyTest
 {
     private static final MemberCatalog TWO = MemberCatalog.load(
             new ByteArrayInputStream(TestMembers.TWO_MEMBERS.getBytes(StandardCharsets.UTF_8)), "test.xml",
-            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilities.standard(), TestMembers.withSquire());
+            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilityCatalog.standard(), TestMembers.withSquire());
 
     private static final Encounter DUMMY = () -> new EncounterSetup(
             List.of(new Enemy("Dummy", new Stats(10, 1, 1, 1, 0), 1, 100)), new FirstUsableAbility(), "arena");

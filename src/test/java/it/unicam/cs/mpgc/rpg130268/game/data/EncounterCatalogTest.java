@@ -4,7 +4,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.EnemyAction;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.EncounterSetup;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +41,7 @@ class EncounterCatalogTest
     {
         WeaponCatalog weapons = WeaponCatalog.fromResource(GameData.WEAPONS_FILE);
 
-        return MemberCatalog.fromResource(GameData.MEMBERS_FILE, weapons, PartyAbilities.standard()).newMember("gunther");
+        return MemberCatalog.fromResource(GameData.MEMBERS_FILE, weapons, PartyAbilityCatalog.standard()).newMember("gunther");
     }
 
     private static List<String> ids(Enemy enemy) { return enemy.getListOfAbility().stream().map(Ability::getId).toList(); }

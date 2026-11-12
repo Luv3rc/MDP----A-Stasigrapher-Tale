@@ -20,7 +20,7 @@ import java.util.function.Function;
     the ability again, made for the member who learns it.
     Every ability is for one kind of member (the ones that spend ink are for Gunther)
 * */
-public final class PartyAbilities
+public final class PartyAbilityCatalog
 {
     private record Entry<U extends PartyMember>(Class<U> user, Function<U, Ability> maker)
     {
@@ -29,16 +29,16 @@ public final class PartyAbilities
 
     private final Map<String, Entry<?>> entries = new LinkedHashMap<>();
 
-    public static PartyAbilities standard()
+    public static PartyAbilityCatalog standard()
     {
-        return new PartyAbilities()
+        return new PartyAbilityCatalog()
                 .register(BasicAttack.ID, PartyMember.class, BasicAttack::new)
                 .register(CutsForInk.ID, Gunther.class, CutsForInk::new)
                 .register(StasigraphicFury.ID, Gunther.class, StasigraphicFury::new)
                 .register(ThirstForInk.ID, Gunther.class, ThirstForInk::new);
     }
 
-    public <U extends PartyMember> PartyAbilities register(String id, Class<U> user, Function<U, Ability> maker)
+    public <U extends PartyMember> PartyAbilityCatalog register(String id, Class<U> user, Function<U, Ability> maker)
     {
         Ids.require(id);
         Objects.requireNonNull(user, "user must not be null");

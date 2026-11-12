@@ -5,7 +5,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatPoints;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.MemberState;
 import org.junit.jupiter.api.Test;
 
@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class MemberCatalogTest
 {
     private static final WeaponCatalog WEAPONS = WeaponCatalog.fromResource(GameData.WEAPONS_FILE);
-    private static final MemberCatalog CATALOG = MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilities.standard());
+    private static final MemberCatalog CATALOG = MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilityCatalog.standard());
 
     private static final List<String> ALL_FOUR = List.of("basic-attack", "cuts-for-ink", "stasigraphic-fury", "thirst-for-ink");
 
     private static MemberCatalog load(String xml)
     {
-        return MemberCatalog.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "test.xml", WEAPONS, PartyAbilities.standard());
+        return MemberCatalog.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "test.xml", WEAPONS, PartyAbilityCatalog.standard());
     }
 
     // A small valid file where one detail can be changed
@@ -224,7 +224,7 @@ class MemberCatalogTest
                 "<weapons><weapon id=\"club\" name=\"Club\" type=\"CLUB\" damage=\"5\"/></weapons>".getBytes(StandardCharsets.UTF_8)), "weapons.xml");
 
         assertThrows(GameDataException.class, () -> MemberCatalog.load(new ByteArrayInputStream(
-                file("gunther", "club", learn("basic-attack")).getBytes(StandardCharsets.UTF_8)), "test.xml", clubs, PartyAbilities.standard()));
+                file("gunther", "club", learn("basic-attack")).getBytes(StandardCharsets.UTF_8)), "test.xml", clubs, PartyAbilityCatalog.standard()));
     }
 
     @Test void numbersThatMakeNoSenseAndTwoMembersWithTheSameIdAreRefused()
@@ -252,7 +252,7 @@ class MemberCatalogTest
                 + "<weapon ref=\"thesmosia\"/><abilities>" + learn("basic-attack") + "</abilities></member></members>";
 
         MemberCatalog catalog = MemberCatalog.load(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "test.xml",
-                WEAPONS, PartyAbilities.standard(), TestMembers.withSquire());
+                WEAPONS, PartyAbilityCatalog.standard(), TestMembers.withSquire());
 
         assertEquals(List.of("squire", "gunther"), catalog.startingParty());
         assertEquals("Squire", catalog.newMember("squire").getName());
@@ -262,6 +262,6 @@ class MemberCatalogTest
     @Test void somethingThatIsNotXmlAndAMissingFileAreRefused()
     {
         assertThrows(GameDataException.class, () -> load("not xml"));
-        assertThrows(GameDataException.class, () -> MemberCatalog.fromResource("/game/nothing.xml", WEAPONS, PartyAbilities.standard()));
+        assertThrows(GameDataException.class, () -> MemberCatalog.fromResource("/game/nothing.xml", WEAPONS, PartyAbilityCatalog.standard()));
     }
 }

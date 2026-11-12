@@ -4,7 +4,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.FirstUsableAbility;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.StepOutcome.*;
 import it.unicam.cs.mpgc.rpg130268.game.StoryStep.*;
 import it.unicam.cs.mpgc.rpg130268.game.data.GameData;
@@ -30,7 +30,7 @@ class GameFlowTest
             List.of(new Enemy("Dummy", new Stats(10, 1, 1, 1, 0), 1, 100)), new FirstUsableAbility(), "arena");
 
     private static final WeaponCatalog WEAPONS = WeaponCatalog.fromResource(GameData.WEAPONS_FILE);
-    private static final MemberCatalog MEMBERS = MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilities.standard());
+    private static final MemberCatalog MEMBERS = MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilityCatalog.standard());
 
     private static final DialogueStep TALK = new DialogueStep(List.of(DialogueLine.narration("...")));
 

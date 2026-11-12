@@ -219,7 +219,7 @@ final class DialogueScreen implements GameScreen
         arrow.setLayoutX(BOX_WIDTH - GoldFrame.BEVEL - 58);
         arrow.setLayoutY(BOX_HEIGHT - 48);
         arrow.setMouseTransparent(true);
-        bob.setFromY(0)
+        bob.setFromY(0);
         bob.setToY(7);
         bob.setCycleCount(Animation.INDEFINITE);
         bob.setAutoReverse(true);

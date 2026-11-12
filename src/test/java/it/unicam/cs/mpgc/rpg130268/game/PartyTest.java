@@ -3,7 +3,7 @@ package it.unicam.cs.mpgc.rpg130268.game;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.data.GameData;
 import it.unicam.cs.mpgc.rpg130268.game.data.MemberCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.data.TestMembers;
@@ -22,13 +22,13 @@ class PartyTest
 
     private static Party ofTheGame()
     {
-        return new Party(MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilities.standard()));
+        return new Party(MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilityCatalog.standard()));
     }
 
     private static Party withTwoMembers()
     {
         return new Party(MemberCatalog.load(new ByteArrayInputStream(TestMembers.TWO_MEMBERS.getBytes(StandardCharsets.UTF_8)),
-                "test.xml", WEAPONS, PartyAbilities.standard(), TestMembers.withSquire()));
+                "test.xml", WEAPONS, PartyAbilityCatalog.standard(), TestMembers.withSquire()));
     }
 
     @Test void thePartyStartsWithGuntherAtLevelOne()

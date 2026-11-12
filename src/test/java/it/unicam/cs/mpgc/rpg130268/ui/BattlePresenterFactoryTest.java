@@ -2,7 +2,7 @@ package it.unicam.cs.mpgc.rpg130268.ui;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.EncounterSetup;
 import it.unicam.cs.mpgc.rpg130268.game.data.EncounterCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.data.GameData;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BattlePresenterFactoryTest
 {
     private static final MemberCatalog MEMBERS = MemberCatalog.fromResource(GameData.MEMBERS_FILE,
-            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilities.standard());
+            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilityCatalog.standard());
     private static final EncounterCatalog ENCOUNTERS = EncounterCatalog.fromResource(GameData.ENEMIES_FILE);
 
     private static BattlePresenter presenterFor(String encounter)

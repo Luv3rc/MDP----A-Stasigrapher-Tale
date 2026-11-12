@@ -2,7 +2,7 @@ package it.unicam.cs.mpgc.rpg130268.ui.reward;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatPoints;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilities;
+import it.unicam.cs.mpgc.rpg130268.combat.skills.party.PartyAbilityCatalog;
 import it.unicam.cs.mpgc.rpg130268.game.MemberReward;
 import it.unicam.cs.mpgc.rpg130268.game.MemberState;
 import it.unicam.cs.mpgc.rpg130268.game.Reward;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RewardPresenterTest
 {
     private static final MemberCatalog MEMBERS = MemberCatalog.fromResource(GameData.MEMBERS_FILE,
-            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilities.standard());
+            WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilityCatalog.standard());
 
     // Gunther after a battle that gave 250 XP, at level 2 with 50 XP of the 300 he needs for the level 3
     private static PartyMember afterTheTutorial()
