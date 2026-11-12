@@ -5,11 +5,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ReactionWindowsTest
 {
+    // The only test that knows the numbers of the game. When the windows are tuned, this is the one to change
     @Test void defaultsMatchTheDesign()
     {
         ReactionWindows windows = ReactionWindows.defaults();
         assertEquals(160, windows.parryWindowMs());
-        assertEquals(300, windows.dodgeWindowMs());
+        assertEquals(200, windows.dodgeWindowMs());
+    }
+
+    @Test void theDefaultDodgeWindowIsLongerThanTheParryWindow()
+    {
+        ReactionWindows windows = ReactionWindows.defaults();
+
+        assertTrue(windows.dodgeWindowMs() > windows.parryWindowMs());
     }
 
     @Test void customWindowsKeepTheirValues()
@@ -37,7 +45,7 @@ class ReactionWindowsTest
 
     @Test void windowIsSplitThreeQuartersBeforeAndOneQuarterAfter()
     {
-        ReactionWindows windows = ReactionWindows.defaults();
+        ReactionWindows windows = new ReactionWindows(160, 300);
 
         assertEquals(120, windows.earlyParryWindowMs());
         assertEquals(40, windows.lateParryWindowMs());

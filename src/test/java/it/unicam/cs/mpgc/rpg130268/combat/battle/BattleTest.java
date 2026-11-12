@@ -43,13 +43,13 @@ class BattleTest
     private LiveBattleContext live()
     {
         return new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()),
-                ReactionWindows.defaults(), BattleRules.defaults(), clock);
+                new ReactionWindows(160, 300), BattleRules.defaults(), clock);
     }
 
     private LiveBattleContext live(BattleRules rules)
     {
         return new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()),
-                ReactionWindows.defaults(), rules, clock);
+                new ReactionWindows(160, 300), rules, clock);
     }
 
     // The numbers: Gunther (strength 10, defense 4, agility 6) hits a goblin (defense 2) for 18 with a normal hit.
@@ -590,7 +590,7 @@ class BattleTest
         Enemy bigGoblin = goblin(100, 30);
         BattleClock bigClock = new BattleClock();
         Battle big = new Battle(List.of(bigG), List.of(bigGoblin),
-                new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()), ReactionWindows.defaults(), BattleRules.defaults(), bigClock),
+                new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()), new ReactionWindows(160, 300), BattleRules.defaults(), bigClock),
                 new FirstUsableAbility());
 
         Gunther smallG = gunther();

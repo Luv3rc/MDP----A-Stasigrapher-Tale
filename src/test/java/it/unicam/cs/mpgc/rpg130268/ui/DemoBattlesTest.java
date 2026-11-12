@@ -1,21 +1,26 @@
 package it.unicam.cs.mpgc.rpg130268.ui;
 
+import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
-import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
+import it.unicam.cs.mpgc.rpg130268.game.data.GameData;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// The demo is made of the files of the game, so these tests ask the files what is in them. The numbers of the game
+// (which are tuned all the time) are not written here
 class DemoBattlesTest
 {
+    private static final GameData DATA = GameData.bundled();
+
     // ---------- Which encounter ----------
 
-    @Test void withNoArgumentsTheDemoIsTheTutorial()
+    @Test void withNoArgumentsTheDemoIsTheDefaultEncounterAndItExists()
     {
-        assertEquals("sariel", DemoBattles.encounterFrom(List.of()));
-        assertEquals("sariel", DemoBattles.DEFAULT_ENCOUNTER);
+        assertEquals(DemoBattles.DEFAULT_ENCOUNTER, DemoBattles.encounterFrom(List.of()));
+        assertTrue(DATA.encounters().contains(DemoBattles.DEFAULT_ENCOUNTER));
     }
 
     @Test void theEncounterCanComeAfterTheBattleFlag()
@@ -26,8 +31,8 @@ class DemoBattlesTest
 
     @Test void withTheFlagAloneOrFollowedByAnotherFlagTheDefaultIsUsed()
     {
-        assertEquals("sariel", DemoBattles.encounterFrom(List.of("--battle")));
-        assertEquals("sariel", DemoBattles.encounterFrom(List.of("--battle", "--verbose")));
+        assertEquals(DemoBattles.DEFAULT_ENCOUNTER, DemoBattles.encounterFrom(List.of("--battle")));
+        assertEquals(DemoBattles.DEFAULT_ENCOUNTER, DemoBattles.encounterFrom(List.of("--battle", "--verbose")));
     }
 
     @Test void withoutTheFlagTheFirstArgumentIsTheEncounter()
@@ -41,26 +46,27 @@ class DemoBattlesTest
     {
         List<PartyMember> party = DemoBattles.newParty();
 
-        assertEquals(1, party.size());
-        assertEquals("Gunther", party.getFirst().getName());
-        assertEquals(new Stats(164, 0, 0, 0, 0), party.getFirst().getStats());
-        assertEquals("Thesmosia", party.getFirst().getWeapon().name());
+        assertEquals(DATA.members().startingParty(), party.stream().map(PartyMember::getId).toList());
+
+        for (PartyMember member : party)
+            assertEquals(DATA.members().startingState(member.getId()), it.unicam.cs.mpgc.rpg130268.game.MemberState.of(member));
     }
 
     @Test void theDemoEnemiesAreTheOnesOfEnemiesXml()
     {
         BattlePresenter presenter = DemoBattles.create();
 
-        BattlePresenter.FighterView sariel = presenter.getEnemies().getFirst();
+        Enemy fromTheFile = DATA.encounters().encounter(DemoBattles.DEFAULT_ENCOUNTER).spawn().enemies().getFirst();
+        BattlePresenter.FighterView shown = presenter.getEnemies().getFirst();
 
-        assertEquals("???", sariel.getName());
-        assertEquals("sariel", sariel.getArtName());
-        assertEquals(260, sariel.getMaxHp());
+        assertEquals(fromTheFile.getName(), shown.getName());
+        assertEquals(fromTheFile.getArtName(), shown.getArtName());
+        assertEquals(fromTheFile.getStats().maxHealth(), shown.getMaxHp());
     }
 
     @Test void everyEncounterOfTheFileCanBeTriedInTheDemo()
     {
-        for (String id : List.of("sariel", "goblin", "bandit", "goblin-and-bandit", "mattias-and-alex"))
+        for (String id : DATA.encounters().ids())
         {
             BattlePresenter presenter = DemoBattles.create(id);
             presenter.start();
@@ -71,19 +77,21 @@ class DemoBattlesTest
 
     @Test void everyCallMakesEverythingNew()
     {
+        String any = DATA.encounters().ids().iterator().next();
         PartyMember first = DemoBattles.newParty().getFirst();
         PartyMember second = DemoBattles.newParty().getFirst();
 
         assertNotSame(first, second);
-        assertNotSame(DemoBattles.encounter("goblin").enemies().getFirst(), DemoBattles.encounter("goblin").enemies().getFirst());
+        assertNotSame(DemoBattles.encounter(any).enemies().getFirst(), DemoBattles.encounter(any).enemies().getFirst());
     }
 
     @Test void anEncounterThatDoesNotExistSaysWhichOnesDo()
     {
-        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> DemoBattles.create("dragon"));
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> DemoBattles.create("no-such-encounter"));
 
-        assertTrue(error.getMessage().contains("dragon"));
-        assertTrue(error.getMessage().contains("sariel"));
-        assertTrue(error.getMessage().contains("goblin-and-bandit"));
+        assertTrue(error.getMessage().contains("no-such-encounter"));
+
+        for (String id : DATA.encounters().ids())
+            assertTrue(error.getMessage().contains(id), id);
     }
 }

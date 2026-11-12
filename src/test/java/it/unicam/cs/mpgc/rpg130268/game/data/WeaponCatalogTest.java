@@ -30,10 +30,11 @@ class WeaponCatalogTest
         assertTrue(CATALOG.contains("thesmosia"));
         assertFalse(CATALOG.contains("excalibur"));
 
-        Weapon expected = new Weapon("thesmosia", "Thesmosia", WeaponType.SWORD, 32,
-                Scaling.of(ScalingStat.STRENGTH, ScalingGrade.NONE).and(ScalingStat.AGILITY, ScalingGrade.D));
+        Weapon thesmosia = CATALOG.weapon("thesmosia");
 
-        assertEquals(expected, CATALOG.weapon("thesmosia"));
+        assertEquals("thesmosia", thesmosia.id());
+        assertEquals(WeaponType.SWORD, thesmosia.type());          // Gunther can wield only swords
+        assertTrue(thesmosia.baseDamage() > 0);
     }
 
     @Test void aWeaponAskedTwiceIsTheSameOne()

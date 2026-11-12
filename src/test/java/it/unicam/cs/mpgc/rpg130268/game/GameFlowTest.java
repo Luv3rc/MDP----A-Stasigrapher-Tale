@@ -78,7 +78,7 @@ class GameFlowTest
         GameFlow flow = newFlow(0);
 
         assertSame(TALK, flow.current());
-        assertEquals(1, flow.getProtagonist().getLevel());
+        assertEquals(MEMBERS.startingState("gunther").level(), flow.getProtagonist().getLevel());
         assertEquals(0, flow.getProtagonist().getCurrentXp());
         assertEquals(List.of(flow.getProtagonist()), flow.getParty());
         assertEquals("Gunther", flow.getProtagonist().getName());
@@ -96,17 +96,20 @@ class GameFlowTest
     {
         GameFlow flow = atTheFirstBattle();
 
-        flow.getProtagonist().gainXp(250);                       // what the battle does
-        flow.complete(new BattleWon(Map.of("gunther", 250)));
+        PartyMember protagonist = flow.getProtagonist();
+        int level = protagonist.getLevel();
+        int xp = protagonist.getXpForNextLevel() + 50;           // enough for one level and 50 more
+        protagonist.gainXp(xp);                                  // what the battle does
+        flow.complete(new BattleWon(Map.of("gunther", xp)));
 
         MemberReward reward = assertInstanceOf(RewardStep.class, flow.current()).reward().of("gunther");
-        assertEquals(250, reward.xpGained());
-        assertEquals(1, reward.levelBefore());
+        assertEquals(xp, reward.xpGained());
+        assertEquals(level, reward.levelBefore());
         assertEquals(0, reward.xpBefore());
-        assertEquals(2, reward.levelAfter());
+        assertEquals(level + 1, reward.levelAfter());
         assertEquals(50, reward.xpAfter());
         assertTrue(reward.leveledUp());
-        assertEquals(3, reward.pointsGained());
+        assertEquals(protagonist.getStatRules().pointsPerLevel(), reward.pointsGained());
     }
 
     @Test void afterTheRewardTheStoryGoesOn()
@@ -306,7 +309,8 @@ class GameFlowTest
     @Test void restoringAGameBringsBackTheStepTheTrekProgressAndGunther()
     {
         GameFlow flow = atTheForest(0.0);
-        flow.getProtagonist().gainXp(230);
+        int level = flow.getProtagonist().getLevel();
+        flow.getProtagonist().gainXp(flow.getProtagonist().getXpForNextLevel() + 30);
         flow.getProtagonist().takeDamage(40);
         flow.complete(new Walked());
 
@@ -321,7 +325,7 @@ class GameFlowTest
 
         assertInstanceOf(TrekStep.class, flow.current());
         assertEquals(1, flow.getTrekProgress());
-        assertEquals(2, flow.getProtagonist().getLevel());
+        assertEquals(level + 1, flow.getProtagonist().getLevel());
         assertEquals(30, flow.getProtagonist().getCurrentXp());
         assertEquals(hp, flow.getProtagonist().getHp());
     }
@@ -381,12 +385,13 @@ class GameFlowTest
     @Test void aNewGameStartsAgainFromTheBeginning()
     {
         GameFlow flow = atTheForest(0.0);
-        flow.getProtagonist().gainXp(300);
+        int level = flow.getProtagonist().getLevel();
+        flow.getProtagonist().gainXp(flow.getProtagonist().getXpForNextLevel());
 
         flow.newGame();
 
         assertSame(TALK, flow.current());
-        assertEquals(1, flow.getProtagonist().getLevel());
+        assertEquals(level, flow.getProtagonist().getLevel());
         assertEquals(0, flow.getTrekProgress());
     }
 

@@ -38,7 +38,7 @@ class LiveBattleContextTest
     private LiveBattleContext live()
     {
         return new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()),
-                ReactionWindows.defaults(), BattleRules.defaults(), clock);
+                new ReactionWindows(160, 300), BattleRules.defaults(), clock);
     }
 
     // strength 10, defense 2: a NORMAL hit of 20 and a HEAVY counter of 30 (the defense lets 30/32 through)

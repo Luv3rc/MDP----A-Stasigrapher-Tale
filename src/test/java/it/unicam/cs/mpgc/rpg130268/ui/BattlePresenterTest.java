@@ -64,11 +64,11 @@ class BattlePresenterTest
     private BattlePresenter presenter(Gunther gunther, List<Enemy> enemies)
     {
         LiveBattleContext live = new LiveBattleContext(new DamageCalculator(DamageRules.defaults(), new NoCrits()),
-                ReactionWindows.defaults(), BattleRules.defaults(), new BattleClock());
+                new ReactionWindows(200, 350), BattleRules.defaults(), new BattleClock());
         List<PartyMember> party = List.of(gunther);
         Battle battle = new Battle(party, enemies, live, new FirstUsableAbility());
 
-        return new BattlePresenter(battle, party, enemies, ReactionWindows.defaults(), new InputLockout(500));
+        return new BattlePresenter(battle, party, enemies, new ReactionWindows(200, 350), new InputLockout(500));
     }
 
     // Started, and the first events shown: the player can choose
@@ -314,11 +314,11 @@ class BattlePresenterTest
         List<Enemy> enemies = List.of(goblin(100, 30));
         Battle battle = new Battle(List.of(g), enemies, new BattleClock());
 
-        assertThrows(NullPointerException.class, () -> new BattlePresenter(null, List.of(g), enemies, ReactionWindows.defaults(), new InputLockout(1)));
-        assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, null, enemies, ReactionWindows.defaults(), new InputLockout(1)));
-        assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, List.of(g), null, ReactionWindows.defaults(), new InputLockout(1)));
+        assertThrows(NullPointerException.class, () -> new BattlePresenter(null, List.of(g), enemies, new ReactionWindows(200, 350), new InputLockout(1)));
+        assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, null, enemies, new ReactionWindows(200, 350), new InputLockout(1)));
+        assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, List.of(g), null, new ReactionWindows(200, 350), new InputLockout(1)));
         assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, List.of(g), enemies, null, new InputLockout(1)));
-        assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, List.of(g), enemies, ReactionWindows.defaults(), null));
+        assertThrows(NullPointerException.class, () -> new BattlePresenter(battle, List.of(g), enemies, new ReactionWindows(200, 350), null));
     }
 
     @Test void theDemoBattleIsMadeWithTheDataOfTheGame()

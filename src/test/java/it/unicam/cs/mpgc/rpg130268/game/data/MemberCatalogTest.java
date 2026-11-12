@@ -42,52 +42,46 @@ class MemberCatalogTest
         return xml.toString();
     }
 
-    // ---------- The data of the game ----------
+    // ---------- The data of the game, whatever its numbers are ----------
 
     @Test void guntherIsTheMemberOfTheGame()
     {
         assertTrue(CATALOG.contains("gunther"));
         assertFalse(CATALOG.contains("dragon"));
-        assertEquals(1, CATALOG.ids().size());
     }
 
     @Test void aNewGameStartsWithGuntherInTheParty()
     {
-        assertEquals(List.of("gunther"), CATALOG.startingParty());
+        assertEquals("gunther", CATALOG.startingParty().getFirst());
     }
 
-    @Test void aNewGameStartsGuntherAtLevelOneWithThreePointsToSpendAndFullHealth()
+    @Test void theStartingStateOfEveryMemberIsConsistentWithWhatTheFileSays()
     {
-        MemberState state = CATALOG.startingState("gunther");
+        for (String id : CATALOG.ids())
+        {
+            MemberState state = CATALOG.startingState(id);
+            PartyMember member = CATALOG.newMember(id);
 
-        assertEquals(new MemberState("gunther", 1, 0, 164, StatPoints.NONE, 3, "thesmosia", ALL_FOUR), state);
+            assertEquals(0, state.xp(), id);
+            assertEquals(state.level(), member.getLevel(), id);
+            assertEquals(state.hp(), member.getStats().maxHealth(), id);                        // he starts at full health
+            assertEquals(state.points(), member.getStatPoints(), id);
+            assertEquals(state.unspentPoints(), member.getUnspentPoints(), id);
+            assertEquals(state, MemberState.of(member), id);                                    // what he is gives the same state
+            assertTrue(WEAPONS.contains(state.weaponId()), id);
+            assertSame(WEAPONS.weapon(state.weaponId()), member.getWeapon(), id);
+            assertEquals(state.abilityIds(), member.getListOfAbility().stream().map(Ability::getId).toList(), id);
+            assertTrue(member.getAp().getCurrentAp() <= member.getAp().getMaxAp(), id);
+        }
     }
 
-    @Test void theFileSaysThatGuntherStartsAtLevelOneWithNoPointsInAnyStatAndThreeToSpend()
-    {
-        PartyMember gunther = CATALOG.newMember("gunther");
-
-        assertEquals(1, gunther.getLevel());
-        assertEquals(StatPoints.NONE, gunther.getStatPoints());
-        assertEquals(3, gunther.getUnspentPoints());
-        assertEquals(new Stats(164, 0, 0, 0, 0), gunther.getStats());
-    }
-
-    @Test void theNewGuntherIsWhatTheFileSays()
+    @Test void guntherIsTheGuntherOfTheCode()
     {
         PartyMember gunther = CATALOG.newMember("gunther");
 
         assertInstanceOf(Gunther.class, gunther);
         assertEquals("Gunther", gunther.getName());
-        assertEquals(new Stats(164, 0, 0, 0, 0), gunther.getStats());
-        assertEquals(164, gunther.getHp());
-        assertEquals(1, gunther.getLevel());
-        assertEquals(9, gunther.getAp().getMaxAp());
-        assertEquals(3, gunther.getAp().getCurrentAp());
-        assertEquals(15, gunther.getStatRules().healthPerPoint());
-        assertEquals(3, gunther.getStatRules().pointsPerLevel());
-        assertSame(WEAPONS.weapon("thesmosia"), gunther.getWeapon());
-        assertEquals(ALL_FOUR, gunther.getListOfAbility().stream().map(Ability::getId).toList());
+        assertEquals("gunther", gunther.getId());
     }
 
     @Test void everyMemberIsNewAndSharesNothing()
@@ -103,29 +97,31 @@ class MemberCatalogTest
 
     @Test void aMemberFarIntoTheGameComesBackAsHeWas()
     {
-        MemberState state = new MemberState("gunther", 5, 120, 100, new StatPoints(2, 4, 0, 6, 1), 3, "thesmosia",
-                List.of("basic-attack", "cuts-for-ink"));
+        MemberState start = CATALOG.startingState("gunther");
+        StatPoints points = new StatPoints(2, 4, 0, 6, 1);
+        MemberState state = new MemberState("gunther", 5, 120, 1, points, 3, start.weaponId(), List.of(start.abilityIds().getFirst()));
 
         PartyMember gunther = CATALOG.create(state);
 
         assertEquals(5, gunther.getLevel());
         assertEquals(120, gunther.getCurrentXp());
-        assertEquals(new Stats(194, 4, 0, 6, 1), gunther.getStats());
-        assertEquals(100, gunther.getHp());
+        assertEquals(gunther.getStatRules().statsFor(points), gunther.getStats());      // the stats are made from his points
+        assertEquals(1, gunther.getHp());
         assertEquals(3, gunther.getUnspentPoints());
-        assertEquals(List.of("basic-attack", "cuts-for-ink"), gunther.getListOfAbility().stream().map(Ability::getId).toList());
+        assertEquals(List.of(start.abilityIds().getFirst()), gunther.getListOfAbility().stream().map(Ability::getId).toList());
         assertEquals(state, MemberState.of(gunther));        // and what he is gives that state again
     }
 
     @Test void aStateThatMakesNoSenseIsRefused()
     {
-        MemberState wounded = CATALOG.startingState("gunther");
+        MemberState start = CATALOG.startingState("gunther");
+        int maxHp = CATALOG.newMember("gunther").getStatRules().statsFor(StatPoints.NONE).maxHealth();    // with no points, as the states below
 
-        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("dragon", 1, 0, 10, StatPoints.NONE, 0, "thesmosia", ALL_FOUR)));
-        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("gunther", 1, 0, 164, StatPoints.NONE, 0, "excalibur", ALL_FOUR)));
-        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("gunther", 1, 0, 164, StatPoints.NONE, 0, "thesmosia", List.of("fireball"))));
-        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("gunther", 1, 0, 165, StatPoints.NONE, 0, "thesmosia", ALL_FOUR)));   // over his max HP
-        assertEquals(164, wounded.hp());
+        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("dragon", 1, 0, 1, StatPoints.NONE, 0, start.weaponId(), start.abilityIds())));
+        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("gunther", 1, 0, 1, StatPoints.NONE, 0, "no-such-weapon", start.abilityIds())));
+        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("gunther", 1, 0, 1, StatPoints.NONE, 0, start.weaponId(), List.of("no-such-ability"))));
+        assertThrows(GameDataException.class, () -> CATALOG.create(new MemberState("gunther", 1, 0, maxHp + 1, StatPoints.NONE, 0, start.weaponId(), start.abilityIds())));   // over his max HP
+        assertDoesNotThrow(() -> CATALOG.create(new MemberState("gunther", 1, 0, maxHp, StatPoints.NONE, 0, start.weaponId(), start.abilityIds())));
     }
 
     // ---------- What a file can say ----------

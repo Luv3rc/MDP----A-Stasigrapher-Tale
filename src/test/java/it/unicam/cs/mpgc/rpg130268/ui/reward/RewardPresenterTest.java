@@ -23,10 +23,19 @@ class RewardPresenterTest
     private static final MemberCatalog MEMBERS = MemberCatalog.fromResource(GameData.MEMBERS_FILE,
             WeaponCatalog.fromResource(GameData.WEAPONS_FILE), PartyAbilityCatalog.standard());
 
+    // Gunther at a level, with the points he has put in his stats and the ones he can still spend. He is made from the
+    // weapon and the abilities of the file, and not from its starting numbers, so tuning the file does not change these tests
+    private static PartyMember gunther(int level, StatPoints points, int unspent)
+    {
+        MemberState start = MEMBERS.startingState("gunther");
+
+        return MEMBERS.create(new MemberState("gunther", level, 0, 1, points, unspent, start.weaponId(), start.abilityIds()));
+    }
+
     // Gunther after a battle that gave 250 XP, at level 2 with 50 XP of the 300 he needs for the level 3
     private static PartyMember afterTheTutorial()
     {
-        PartyMember gunther = MEMBERS.newMember("gunther");
+        PartyMember gunther = gunther(1, StatPoints.NONE, 0);
         gunther.gainXp(250);
 
         return gunther;
@@ -54,7 +63,7 @@ class RewardPresenterTest
 
     @Test void bigAmountsOfXpHaveSeparators()
     {
-        PartyMember gunther = MEMBERS.newMember("gunther");
+        PartyMember gunther = gunther(1, StatPoints.NONE, 0);
         Reward reward = new Reward(List.of(new MemberReward("gunther", 30_392, 1, 0, 1, 0, 0)));
 
         assertEquals("30,392", new RewardPresenter(List.of(gunther), reward).view().totalXp());
@@ -73,7 +82,7 @@ class RewardPresenterTest
 
     @Test void noLevelUpIfTheLevelDidNotChange()
     {
-        PartyMember gunther = MEMBERS.newMember("gunther");
+        PartyMember gunther = gunther(1, StatPoints.NONE, 0);
         gunther.gainXp(30);
 
         MemberView member = first(gunther, new Reward(List.of(new MemberReward("gunther", 30, 1, 0, 1, 30, 0))));
@@ -93,7 +102,7 @@ class RewardPresenterTest
 
     @Test void atTheHighestLevelTheBarIsFull()
     {
-        PartyMember gunther = MEMBERS.create(new MemberState("gunther", 60, 0, 164, StatPoints.NONE, 0, "thesmosia", List.of("basic-attack")));
+        PartyMember gunther = gunther(60, StatPoints.NONE, 0);
 
         MemberView member = first(gunther, new Reward(List.of(new MemberReward("gunther", 0, 60, 0, 60, 0, 0))));
 
@@ -107,36 +116,41 @@ class RewardPresenterTest
         MemberView member = first(afterTheTutorial(), tutorialReward());
 
         assertEquals(3, member.pointsGained());
-        assertEquals(6, member.unspentPoints());                      // the 3 he had at the start and the 3 of the level
+        assertEquals(3, member.unspentPoints());                      // he had none and the level gave him these
     }
 
     @Test void everyStatHasItsValueAndABarThatIsFullAtTheEndOfTheMember()
     {
-        PartyMember gunther = MEMBERS.create(new MemberState("gunther", 4, 0, 194, new StatPoints(2, 30, 0, 15, 60), 0, "thesmosia", List.of()));
+        PartyMember gunther = gunther(4, new StatPoints(2, 30, 0, 15, 60), 0);
+        int cap = gunther.getStatRules().statCap();
+        int healthAtTheCap = gunther.getStatRules().baseHealth() + cap * gunther.getStatRules().healthPerPoint();
 
         MemberView member = first(gunther, new Reward(List.of(new MemberReward("gunther", 0, 4, 0, 4, 0, 0))));
 
         assertEquals(List.of("Max health", "Strength", "Defense", "Agility", "Luck"),
                 member.stats().stream().map(StatView::label).toList());
-        assertEquals(194, stat(member, "Max health").value());
-        assertEquals(194.0 / (164 + 60 * 15), stat(member, "Max health").fraction());     // full at the health that 60 points give
-        assertEquals(0.5, stat(member, "Strength").fraction());                           // half of the cap, which is 60
+        assertEquals(gunther.getStats().maxHealth(), stat(member, "Max health").value());
+        assertEquals((double) gunther.getStats().maxHealth() / healthAtTheCap, stat(member, "Max health").fraction());   // full at the health that the cap gives
+        assertEquals(Math.min(1.0, 30.0 / cap), stat(member, "Strength").fraction());                                  // the part of the cap
         assertEquals(0.0, stat(member, "Defense").fraction());
-        assertEquals(0.25, stat(member, "Agility").fraction());
-        assertEquals(1.0, stat(member, "Luck").fraction());
+        assertEquals(Math.min(1.0, 15.0 / cap), stat(member, "Agility").fraction());
+        assertEquals(Math.min(1.0, 60.0 / cap), stat(member, "Luck").fraction());
     }
 
     @Test void aMemberStartsWithEmptyBars()
     {
-        MemberView member = first(MEMBERS.newMember("gunther"), new Reward(List.of(new MemberReward("gunther", 0, 1, 0, 1, 0, 0))));
+        MemberView member = first(gunther(1, StatPoints.NONE, 0), new Reward(List.of(new MemberReward("gunther", 0, 1, 0, 1, 0, 0))));
+
+        PartyMember gunther = gunther(1, StatPoints.NONE, 0);
+        int healthAtTheCap = gunther.getStatRules().baseHealth() + gunther.getStatRules().statCap() * gunther.getStatRules().healthPerPoint();
 
         assertEquals(0.0, stat(member, "Strength").fraction());
-        assertEquals(164.0 / (164 + 60 * 15), stat(member, "Max health").fraction());
+        assertEquals((double) gunther.getStatRules().baseHealth() / healthAtTheCap, stat(member, "Max health").fraction());
     }
 
     @Test void thereIsAPanelForEveryMemberInTheRewardInOrder()
     {
-        PartyMember gunther = MEMBERS.newMember("gunther");
+        PartyMember gunther = gunther(1, StatPoints.NONE, 0);
         Reward reward = new Reward(List.of(new MemberReward("gunther", 100, 1, 0, 1, 100, 0)));
 
         View view = new RewardPresenter(List.of(gunther), reward).view();
@@ -147,7 +161,7 @@ class RewardPresenterTest
 
     @Test void aRewardNeedsMembersThatAreInTheParty()
     {
-        PartyMember gunther = MEMBERS.newMember("gunther");
+        PartyMember gunther = gunther(1, StatPoints.NONE, 0);
         Reward ofSomeoneElse = new Reward(List.of(new MemberReward("squire", 0, 1, 0, 1, 0, 0)));
 
         assertThrows(IllegalArgumentException.class, () -> new RewardPresenter(List.of(gunther), ofSomeoneElse));

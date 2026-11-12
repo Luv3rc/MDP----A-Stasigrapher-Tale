@@ -7,8 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ReactionResolverTest
 {
-    // Default windows: parry 160 ms (120 early, 40 late), dodge 300 ms (225 early, 75 late)
-    private final ReactionResolver resolver = new ReactionResolver(ReactionWindows.defaults());
+    // The windows of this test are its own, so tuning the ones of the game does not change what it checks.
+    // Parry 160 ms (120 early, 40 late), dodge 300 ms (225 early, 75 late)
+    private final ReactionResolver resolver = new ReactionResolver(new ReactionWindows(160, 300));
     private final Hit hit = new Hit(1000, ReactionOptions.PARRY_OR_DODGE, StrikeWeight.HEAVY);
 
     private ReactionOutcome parryAt(long ms) { return resolver.resolve(new ReactionInput(ReactionType.PARRY, ms), hit); }

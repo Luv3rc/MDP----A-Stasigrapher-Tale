@@ -20,10 +20,9 @@ class PartyTest
 {
     private static final WeaponCatalog WEAPONS = WeaponCatalog.fromResource(GameData.WEAPONS_FILE);
 
-    private static Party ofTheGame()
-    {
-        return new Party(MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilityCatalog.standard()));
-    }
+    private static final MemberCatalog CATALOG = MemberCatalog.fromResource(GameData.MEMBERS_FILE, WEAPONS, PartyAbilityCatalog.standard());
+
+    private static Party ofTheGame() { return new Party(CATALOG); }
 
     private static Party withTwoMembers()
     {
@@ -37,7 +36,7 @@ class PartyTest
 
         assertEquals(1, party.members().size());
         assertEquals("Gunther", party.protagonist().getName());
-        assertEquals(1, party.protagonist().getLevel());
+        assertEquals(CATALOG.startingState("gunther").level(), party.protagonist().getLevel());
         assertEquals(0, party.protagonist().getCurrentXp());
         assertSame(party.protagonist(), party.members().getFirst());
     }
@@ -45,16 +44,19 @@ class PartyTest
     @Test void guntherStartsWithHisWeaponAndHisAbilities()
     {
         PartyMember gunther = ofTheGame().protagonist();
+        MemberState start = CATALOG.startingState("gunther");
 
-        assertEquals("Thesmosia", gunther.getWeapon().name());
-        assertEquals(4, gunther.getListOfAbility().size());
+        assertEquals(WEAPONS.weapon(start.weaponId()).name(), gunther.getWeapon().name());
+        assertEquals(start.abilityIds(), gunther.getListOfAbility().stream().map(Ability::getId).toList());
     }
 
     @Test void restoringMakesGuntherAgainAsHeWas()
     {
         Party party = ofTheGame();
         PartyMember old = party.protagonist();
-        old.gainXp(250);
+        int level = old.getLevel();
+        int unspent = old.getUnspentPoints();
+        old.gainXp(old.getXpForNextLevel() + 50);                 // a level and 50 more
         old.takeDamage(30);
         List<MemberState> saved = party.state();
 
@@ -62,37 +64,41 @@ class PartyTest
         party.restore(saved);
 
         assertNotSame(old, party.protagonist());
-        assertEquals(2, party.protagonist().getLevel());
+        assertEquals(level + 1, party.protagonist().getLevel());
         assertEquals(50, party.protagonist().getCurrentXp());
         assertEquals(old.getHp(), party.protagonist().getHp());
-        assertEquals(6, party.protagonist().getUnspentPoints());       // the 3 of the start and the 3 of the level
+        assertEquals(unspent + old.getStatRules().pointsPerLevel(), party.protagonist().getUnspentPoints());      // what he had and the points of the level
     }
 
     @Test void whatTheMemberCarriesAndDidIsNotLostWhenTheStateIsRestored()
     {
         Party party = ofTheGame();
-        party.protagonist().gainXp(200);
+        int strength = party.protagonist().getStats().strength();
+        int unspent = party.protagonist().getUnspentPoints();
+        String weapon = party.protagonist().getWeapon().name();
+        List<String> abilities = party.protagonist().getListOfAbility().stream().map(Ability::getId).toList();
+        party.protagonist().gainXp(party.protagonist().getXpForNextLevel());       // a level, so there are points to spend
         party.protagonist().spendPoints(ScalingStat.STRENGTH, 2);
         List<MemberState> saved = party.state();
 
         party.reset();
         party.restore(saved);
 
-        assertEquals(2, party.protagonist().getStats().strength());
-        assertEquals(4, party.protagonist().getUnspentPoints());       // 3 + 3 and two of them spent
-        assertEquals("Thesmosia", party.protagonist().getWeapon().name());
-        assertEquals(List.of("basic-attack", "cuts-for-ink", "stasigraphic-fury", "thirst-for-ink"),
-                party.protagonist().getListOfAbility().stream().map(Ability::getId).toList());
+        assertEquals(strength + 2, party.protagonist().getStats().strength());
+        assertEquals(unspent + party.protagonist().getStatRules().pointsPerLevel() - 2, party.protagonist().getUnspentPoints());
+        assertEquals(weapon, party.protagonist().getWeapon().name());
+        assertEquals(abilities, party.protagonist().getListOfAbility().stream().map(Ability::getId).toList());
     }
 
     @Test void resetGoesBackToTheStartOfTheGame()
     {
         Party party = ofTheGame();
+        int level = party.protagonist().getLevel();
         party.protagonist().gainXp(250);
 
         party.reset();
 
-        assertEquals(1, party.protagonist().getLevel());
+        assertEquals(level, party.protagonist().getLevel());
         assertEquals(0, party.protagonist().getCurrentXp());
     }
 
