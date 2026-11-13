@@ -1,10 +1,12 @@
 package it.unicam.cs.mpgc.rpg130268.combat.actors;
 
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Stats;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.Weapon;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 // This is anyone who can take part in a combat. Knows nothing about AP
@@ -82,6 +84,8 @@ public abstract class Fighter
         if (heal < 0) throw new IllegalArgumentException("Heal must be non-negative");
         hp = Math.min(stats.maxHealth(), hp + heal);
     }
+
+    public Optional<ResourceGauge> getExtraGauge() { return Optional.empty(); }
 
     // ? Will I need more here -- Will be Overridden
     public void onBasicAttackLanded() {}

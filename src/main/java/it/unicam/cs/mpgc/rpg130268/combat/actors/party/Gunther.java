@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg130268.combat.actors.party;
 
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatPoints;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
@@ -14,6 +15,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.CutsForInk;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.StasigraphicFury;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.party.gunther.ThirstForInk;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -57,6 +59,12 @@ public final class Gunther extends PartyMember
 
     public InkPool getInk() { return ink; }
     public InkRules getInkRules() { return inkRules; }
+
+    @Override
+    public Optional<ResourceGauge> getExtraGauge()
+    {
+        return Optional.of(new ResourceGauge("INK", ink.getCurrentInk(), ink.getMaxInk()));
+    }
 
     public void learn(Function<Gunther, Ability> factory)
     {

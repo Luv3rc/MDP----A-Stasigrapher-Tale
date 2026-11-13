@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg130268.ui.console;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
-import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.Battle;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleEvent;
@@ -17,6 +17,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -379,8 +380,9 @@ public class ConsoleBattle
         if (fighter instanceof PartyMember member)
             text += "  AP " + member.getAp().getCurrentAp() + "/" + member.getAp().getMaxAp();
 
-        if (fighter instanceof Gunther gunther)
-            text += "  INK " + gunther.getInk().getCurrentInk() + "/" + gunther.getInk().getMaxInk();
+        Optional<ResourceGauge> gauge = fighter.getExtraGauge();
+        if (gauge.isPresent())
+            text += "  " + gauge.get().label() + " " + gauge.get().current() + "/" + gauge.get().max();
 
         return text;
     }

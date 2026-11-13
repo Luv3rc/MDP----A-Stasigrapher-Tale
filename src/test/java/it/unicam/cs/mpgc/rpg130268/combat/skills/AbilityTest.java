@@ -323,4 +323,14 @@ class AbilityTest {
         assertThrows(IllegalStateException.class, () -> new ThirstForInk(g).perform(List.of(g), context));
         assertEquals(3, g.getAp().getCurrentAp());
     }
+
+    @Test
+    void onlyTheBasicAttackIsMarkedAsBasic() {
+        Gunther g = new Gunther(new Stats(50, 8, 4, 6, 3), 9, 3, ApRules.defaults(), InkRules.defaults());
+
+        assertTrue(new it.unicam.cs.mpgc.rpg130268.combat.skills.party.BasicAttack(g).isBasicAttack());
+        assertFalse(new CutsForInk(g).isBasicAttack());
+        assertFalse(new StasigraphicFury(g).isBasicAttack());
+        assertFalse(new ThirstForInk(g).isBasicAttack());
+    }
 }

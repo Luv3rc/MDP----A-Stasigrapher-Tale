@@ -1,7 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.combat.skills.party.BasicAttack;
 import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -110,12 +109,12 @@ final class BattleMenu
     // The plain strike is the ATTACK of the menu; everything else is under ABILITIES
     private Ability basicAttack()
     {
-        return current.get().getAbilities().stream().filter(a -> a instanceof BasicAttack).findFirst().orElse(null);
+        return current.get().getAbilities().stream().filter(Ability::isBasicAttack).findFirst().orElse(null);
     }
 
     private List<Ability> otherAbilities()
     {
-        return current.get().getAbilities().stream().filter(a -> !(a instanceof BasicAttack)).toList();
+        return current.get().getAbilities().stream().filter(a -> !a.isBasicAttack()).toList();
     }
 
     // What the menu depends on: if it is the same as before, it is the same

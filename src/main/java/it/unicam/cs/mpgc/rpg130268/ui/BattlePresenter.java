@@ -2,11 +2,11 @@ package it.unicam.cs.mpgc.rpg130268.ui;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
-import it.unicam.cs.mpgc.rpg130268.combat.actors.party.Gunther;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.Battle;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleEvent;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattlePhase;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.Hit;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionOptions;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
@@ -65,21 +65,8 @@ public class BattlePresenter
         public int getAp() { return fighter instanceof PartyMember member ? member.getAp().getCurrentAp() : 0; }
         public int getMaxAp() { return fighter instanceof PartyMember member ? member.getAp().getMaxAp() : 0; }
 
-        public int getInk()
-        {
-            if (fighter instanceof Gunther gunther) {
-                return gunther.getInk().getCurrentInk();
-            }
-            return 0;
-        }
-
-        public int getMaxInk()
-        {
-            if (fighter instanceof Gunther gunther) {
-                return gunther.getInk().getMaxInk();
-            }
-            return 0;
-        }
+        public int getInk() { return fighter.getExtraGauge().map(ResourceGauge::current).orElse(0); }
+        public int getMaxInk() { return fighter.getExtraGauge().map(ResourceGauge::max).orElse(0); }
 
         public int getLevel()
         {

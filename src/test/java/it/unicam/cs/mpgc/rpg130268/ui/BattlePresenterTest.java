@@ -227,6 +227,18 @@ class BattlePresenterTest
         assertEquals(0, presenter.getEnemies().get(0).getAp());
     }
 
+    @Test void theInkComesFromTheExtraGaugeOfTheFighter()
+    {
+        Gunther g = gunther();
+        g.getInk().gainInk(2);
+        BattlePresenter presenter = ready(g, List.of(goblin(100, 30)));
+
+        assertEquals(g.getInk().getCurrentInk(), presenter.getParty().get(0).getInk());
+        assertEquals(g.getInk().getMaxInk(), presenter.getParty().get(0).getMaxInk());
+        assertEquals(0, presenter.getEnemies().get(0).getInk());
+        assertEquals(0, presenter.getEnemies().get(0).getMaxInk());
+    }
+
     // ---------- The cue ----------
 
     @Test void theCueFollowsTheHitsOfTheEnemyAttack()

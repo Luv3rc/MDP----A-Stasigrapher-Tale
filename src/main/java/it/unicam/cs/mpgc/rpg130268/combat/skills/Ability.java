@@ -18,6 +18,9 @@ public interface Ability
 
     default boolean canPerform() { return true; }
 
+    // The plain strike is the ATTACK of the battle menu; every other ability is listed under ABILITIES
+    default boolean isBasicAttack() { return false; }
+
     // The text that pops up before the ability starts ("Bandit heals!"). Not every ability has one
     default Optional<String> getAnnouncement() { return Optional.empty(); }
 

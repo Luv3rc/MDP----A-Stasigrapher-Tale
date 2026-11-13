@@ -27,6 +27,9 @@ public class BasicAttack extends PartyAbility<PartyMember>
     public int getApCost() { return AP_COST; }
 
     @Override
+    public boolean isBasicAttack() { return true; }
+
+    @Override
     protected void applyEffect(List<Fighter> targets, CombatContext context)
     {
         Fighter target = targets.getFirst();
