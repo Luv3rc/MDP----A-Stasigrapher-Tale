@@ -2,6 +2,8 @@ package it.unicam.cs.mpgc.rpg130268.game;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.random.RandomGenerator;
 
 /* *
     One thing the player is doing at a time. A step is what to show or play
@@ -12,6 +14,19 @@ import java.util.Objects;
 * */
 public sealed interface StoryStep
 {
+    // What GameFlow needs to know about a step
+    default boolean isSafePoint() { return false; }
+
+    default boolean isEnd() { return false; }
+
+    default boolean isMadeByTheGame() { return false; }
+
+    default boolean isPastEnd(int trekProgress) { return false; }
+
+    default Optional<Encounter> startingBattle() { return Optional.empty(); }
+
+    default Optional<Trek> startWalk(int progress, RandomGenerator random) { return Optional.empty(); }
+
     // A conversation. It happens in an "area" (the name of the background, blank if there is none)
     // and the protagonist talks with the "partner" (the name of the character that is shown in front of him, blank
     // if there is nobody)
@@ -31,12 +46,18 @@ public sealed interface StoryStep
 
         // A dialogue with no background and nobody in front of the protagonist
         public DialogueStep(List<DialogueLine> lines) { this("", "", lines); }
+
+        @Override
+        public boolean isSafePoint() { return true; }
     }
 
     // A fight. The UI makes the enemies with encounter().spawn()
     record BattleStep(Encounter encounter) implements StoryStep
     {
         public BattleStep { Objects.requireNonNull(encounter, "encounter must not be null"); }
+
+        @Override
+        public Optional<Encounter> startingBattle() { return Optional.of(encounter); }
     }
 
     // A walk (a trek) of "length" steps through a place, e.g. a forest, a cave, a road. The "area" is the name of the
@@ -63,18 +84,37 @@ public sealed interface StoryStep
 
             encounters = List.copyOf(encounters);
         }
+
+        @Override
+        public boolean isSafePoint() { return true; }
+
+        @Override
+        public boolean isPastEnd(int trekProgress) { return trekProgress >= length; }
+
+        @Override
+        public Optional<Trek> startWalk(int progress, RandomGenerator random) { return Optional.of(new Trek(this, progress, random)); }
     }
 
     record RewardStep(Reward reward) implements StoryStep
     {
         public RewardStep { Objects.requireNonNull(reward, "reward must not be null"); }
+
+        @Override
+        public boolean isMadeByTheGame() { return true; }
     }
 
     // After a defeat, the player chooses between trying the battle again and going back to the last safe moment
-    record DefeatStep() implements StoryStep { }
+    record DefeatStep() implements StoryStep
+    {
+        @Override
+        public boolean isMadeByTheGame() { return true; }
+    }
 
     record EndStep(String message) implements StoryStep
     {
         public EndStep { Objects.requireNonNull(message, "message must not be null"); }
+
+        @Override
+        public boolean isEnd() { return true; }
     }
 }

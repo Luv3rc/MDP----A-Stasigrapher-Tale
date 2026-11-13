@@ -89,7 +89,7 @@ public final class GameFlow
 
         int target = story.indexOf(snapshot.stepId());              // it throws if the step does not exist
 
-        if (story.node(target).step() instanceof TrekStep trek && snapshot.trekProgress() >= trek.length())
+        if (story.node(target).step().isPastEnd(snapshot.trekProgress()))
             throw new IllegalArgumentException("this save is past the end of the trek");
 
         party.restore(snapshot.party());
@@ -102,7 +102,7 @@ public final class GameFlow
     // or walking in a trek); empty during a battle and after it, until the reward and the defeat are closed
     public Optional<GameSnapshot> save()
     {
-        if (current instanceof DialogueStep || current instanceof TrekStep)
+        if (current.isSafePoint())
             return Optional.of(snapshot());
 
         return Optional.empty();
@@ -124,7 +124,7 @@ public final class GameFlow
 
     public int getTrekProgress() { return trek == null ? 0 : trek.progress(); }
 
-    public boolean isOver() { return current instanceof EndStep; }
+    public boolean isOver() { return current.isEnd(); }
 
 
     // ---------- Moving the story ----------
@@ -219,18 +219,18 @@ public final class GameFlow
         trek = null;
         StoryStep step = story.node(stepIndex).step();
 
-        if (step instanceof BattleStep battleStep)
+        Optional<Encounter> opening = step.startingBattle();
+
+        if (opening.isPresent())
         {
-            beginBattle(battleStep.encounter(), false);
+            beginBattle(opening.get(), false);
             return;
         }
 
-        if (step instanceof TrekStep trekStep)
-            trek = new Trek(trekStep, trekProgress, random);
-
+        trek = step.startWalk(trekProgress, random).orElse(null);
         current = step;
 
-        if (step instanceof DialogueStep || step instanceof TrekStep)
+        if (step.isSafePoint())
             markSafePoint();
     }
 
