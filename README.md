@@ -6,17 +6,17 @@ Java RPG project for the *Metodologie di Programmazione* course (A.Y. 2025/26, U
 - **Package:** `it.unicam.cs.mpgc.rpg130268`
 - **Documentation:** see the [Wiki](https://github.com/Luv3rc/MDP----A-Stasigrapher-Tale/wiki)
 
-> **Status: work in progress.** The combat data model (fighters, AP, Ink, abilities) is implemented and tested. `./gradlew run` currently starts a placeholder combat with placeholder sprites.
+> **Status: work in progress.** The combat data model (fighters, AP, Ink, abilities) is implemented and tested. `./gradlew run` currently starts a small demo with some dialogue and a tutorial fight; sprites are placeholder.
 
 ## The game
 *A Stasigrapher Tale* is a story-driven JRPG with turn-based combat, built around Gunther, one of the last surviving Thesmosians able to wield Stasigraphy.
 
-Fleeing from the Elemental Church, Gunther takes a mercenary job to make ends meet: a desperate woman hires him to rescue her merchant husband, kidnapped by a group of bandits. What starts as a simple rescue turns into a dangerous journey into the woods.
+Fleeing from the Elemental Church, Gunther takes a mercenary job to make ends meet: a desperate woman hires him to rescue her merchant husband, kidnapped by a group of bandits. What starts as a simple rescue turns into a dangerous journey into the woods that will change Gunther forever.
 
 The prologue is planned as:
-- **Tutorial:** a first battle that teaches the combat system.
-- **Town:** accept the job, take the upfront payment and spend it on items and equipment.
-- **Forest and bandit camp:** exploration, combat and levelling, ending with a boss fight.
+- **Tutorial:** some dialogues and a first battle that teaches the combat system.
+- **Town:** accept the job, take the upfront payment and spend it on items and equipment (TODO)
+- **Forest and bandit camp:** exploration, combat and levelling, ending with a boss fight (TODO)
 
 Combat is turn-based. Gunther's skills cost AP, while basic attacks are free and give AP back. Using Stasigraphy fills an Ink gauge that powers his strongest attacks. When enemies attack, the player reacts with a dodge or a parry based on timing.
 
@@ -44,12 +44,13 @@ I used **Claude** and **Gemini** during the project. In particular, it helped me
 The game concept, the story and the mechanics (AP, Ink, Gunther's abilities) are my own (even tho' I basically copied expedition for the battle and the menus), and so are the decisions between the alternatives that were proposed.
 
 ## Roadmap
-
 - [x] Fighters, stats, XP and levels (more or less)
 - [x] AP and Ink mechanics
 - [x] Abilities with costs and requirements
 - [x] Enemy attacks and timed dodge/parry
 - [x] Combat engine
-- [ ] Story and exploration
-- [ ] Save and load
-- [ ] JavaFX interface
+- [x] Story
+- [x] Save and load
+- [x] JavaFX interface
+- [ ] Exploration
+- [ ] City
