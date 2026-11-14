@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
-import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
+import it.unicam.cs.mpgc.rpg130268.ui.FighterView;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
@@ -48,7 +48,7 @@ final class FighterCard
     private static final int FLOAT_MS = 2400;      // how long a number stays over the sprite
     private static final int FADE_MS = 700;        // the last part of it, while it fades away
 
-    private final BattlePresenter.FighterView view;
+    private final FighterView view;
     private final Node sprite;
     private AnimatedSprite animated = null;       // the sprite, if it has animations
     private SequentialTransition lunge = null;
@@ -60,7 +60,7 @@ final class FighterCard
 
     private String glow = "?";
 
-    FighterCard(BattlePresenter.FighterView view)
+    FighterCard(FighterView view)
     {
         this.view = view;
 
@@ -96,7 +96,7 @@ final class FighterCard
     // What the cuts aim at: the sprite itself (the middle of the card also holds the name and the bar)
     Node getTarget() { return sprite; }
 
-    BattlePresenter.FighterView getView() { return view; }
+    FighterView getView() { return view; }
 
     // active: it is its turn. targetable: the player can choose it now. selected: it is the one chosen right now
     void update(boolean active, boolean targetable, boolean selected)

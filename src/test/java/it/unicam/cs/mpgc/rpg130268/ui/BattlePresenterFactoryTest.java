@@ -49,7 +49,7 @@ class BattlePresenterFactoryTest
 
     @Test void anEnemyShownWithAnotherNameKeepsItsOwnPictures()
     {
-        BattlePresenter.FighterView sariel = presenterFor("sariel").getEnemies().getFirst();
+        FighterView sariel = presenterFor("sariel").getEnemies().getFirst();
 
         assertEquals("???", sariel.getName());
         assertEquals("sariel", sariel.getArtName());

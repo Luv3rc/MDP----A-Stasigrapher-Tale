@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
-import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
+import it.unicam.cs.mpgc.rpg130268.ui.Cue;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -38,7 +38,7 @@ final class TimingBar extends Pane
         setVisible(false);
     }
 
-    void show(BattlePresenter.Cue cue)
+    void show(Cue cue)
     {
         double from = cue.impactMs() - BEFORE_MS;
 

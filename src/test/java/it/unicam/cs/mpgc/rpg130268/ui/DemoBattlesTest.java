@@ -57,7 +57,7 @@ class DemoBattlesTest
         BattlePresenter presenter = DemoBattles.create();
 
         Enemy fromTheFile = DATA.encounters().encounter(DemoBattles.DEFAULT_ENCOUNTER).spawn().enemies().getFirst();
-        BattlePresenter.FighterView shown = presenter.getEnemies().getFirst();
+        FighterView shown = presenter.getEnemies().getFirst();
 
         assertEquals(fromTheFile.getName(), shown.getName());
         assertEquals(fromTheFile.getArtName(), shown.getArtName());

@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
-import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
+import it.unicam.cs.mpgc.rpg130268.ui.BattleChoices;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -33,12 +33,12 @@ final class BattleMenu
 
     private final VBox box = new VBox(10);
     private final RpgButtons buttons;
-    private final Supplier<BattlePresenter> current;      // the battle of now (it is a new one at every retry)
+    private final Supplier<BattleChoices> current;      // the battle of now (it is a new one at every retry)
 
     private String commandMode = "";
     private String page = PAGE_MAIN;
 
-    BattleMenu(RpgButtons buttons, Supplier<BattlePresenter> current)
+    BattleMenu(RpgButtons buttons, Supplier<BattleChoices> current)
     {
         this.buttons = Objects.requireNonNull(buttons, "buttons must not be null");
         this.current = Objects.requireNonNull(current, "current must not be null");
@@ -87,7 +87,7 @@ final class BattleMenu
     // The n-th entry of the menu (1 = first, written with the key KEYS.get(n - 1))
     private void pick(int number)
     {
-        BattlePresenter presenter = current.get();
+        BattleChoices presenter = current.get();
 
         if (page.equals(PAGE_MAIN))
         {
@@ -120,7 +120,7 @@ final class BattleMenu
     // What the menu depends on: if it is the same as before, it is the same
     private String commandMode()
     {
-        BattlePresenter presenter = current.get();
+        BattleChoices presenter = current.get();
 
         if (presenter.isOver())
             return "over";
@@ -137,7 +137,7 @@ final class BattleMenu
     // There is no menu while the target is chosen: it is chosen on the battlefield (A / D, Enter)
     private void build()
     {
-        BattlePresenter presenter = current.get();
+        BattleChoices presenter = current.get();
 
         box.getChildren().clear();
 

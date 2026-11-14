@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
-import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
+import it.unicam.cs.mpgc.rpg130268.ui.FighterView;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -31,7 +31,7 @@ final class PartyPanel {
     private static final String AP_COLOR = "#56b9ec";
     private static final String INK_COLOR = "#3d8fd6";
 
-    private final BattlePresenter.FighterView view;
+    private final FighterView view;
     private final Pane root = new Pane();
 
     private final Rectangle hpBackground =
@@ -52,7 +52,7 @@ final class PartyPanel {
     private StackPane diamond;
     private StackPane portrait;
 
-    PartyPanel(BattlePresenter.FighterView view) {
+    PartyPanel(FighterView view) {
         this.view = view;
 
         root.setPrefSize(WIDTH, HP_Y + HP_HEIGHT + AP_HEIGHT);

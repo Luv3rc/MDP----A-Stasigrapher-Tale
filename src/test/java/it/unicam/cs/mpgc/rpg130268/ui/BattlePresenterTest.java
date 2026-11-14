@@ -250,7 +250,7 @@ class BattlePresenterTest
         assertTrue(presenter.getCue().isEmpty());            // the player's own strike: nothing to react to
 
         presenter.advance(300);                              // 400: the swing starts and lands at 1900
-        BattlePresenter.Cue cue = presenter.getCue().orElseThrow();
+        Cue cue = presenter.getCue().orElseThrow();
         assertEquals(400, cue.startMs());
         assertEquals(1900, cue.impactMs());
         assertTrue(cue.parry());

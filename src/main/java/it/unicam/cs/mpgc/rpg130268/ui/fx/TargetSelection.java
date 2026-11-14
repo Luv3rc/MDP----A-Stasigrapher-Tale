@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
-import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
+import it.unicam.cs.mpgc.rpg130268.ui.BattleChoices;
 
 import java.util.Comparator;
 import java.util.List;
@@ -18,11 +18,11 @@ import java.util.function.Supplier;
 final class TargetSelection
 {
     private final Map<Fighter, FighterCard> cards;           // to know where every sprite is
-    private final Supplier<BattlePresenter> current;
+    private final Supplier<BattleChoices> current;
 
     private int index = 0;              // which of the candidates (from the left) is selected
 
-    TargetSelection(Map<Fighter, FighterCard> cards, Supplier<BattlePresenter> current)
+    TargetSelection(Map<Fighter, FighterCard> cards, Supplier<BattleChoices> current)
     {
         this.cards = Objects.requireNonNull(cards, "cards must not be null");
         this.current = Objects.requireNonNull(current, "current must not be null");

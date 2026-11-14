@@ -7,6 +7,7 @@ import it.unicam.cs.mpgc.rpg130268.ui.question.Choice;
 import it.unicam.cs.mpgc.rpg130268.ui.question.QuestionPrompt;
 import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
 import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
+import it.unicam.cs.mpgc.rpg130268.ui.FighterView;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -243,7 +244,7 @@ public class BattleScreen implements GameScreen
         enemies.clear();
         hudBox.getChildren().clear();
 
-        for (BattlePresenter.FighterView view : presenter.getParty())
+        for (FighterView view : presenter.getParty())
         {
             partyBox.getChildren().add(makeCard(view).getRoot());
 
@@ -253,7 +254,7 @@ public class BattleScreen implements GameScreen
         }
 
         List<FighterCard> enemyCards = new ArrayList<>();
-        for (BattlePresenter.FighterView view : presenter.getEnemies()) enemyCards.add(makeCard(view));
+        for (FighterView view : presenter.getEnemies()) enemyCards.add(makeCard(view));
         enemies.place(enemyCards);
 
         background.show(presenter.getArea());
@@ -274,7 +275,7 @@ public class BattleScreen implements GameScreen
         for (FighterCard card : cards.values()) card.dispose();
     }
 
-    private FighterCard makeCard(BattlePresenter.FighterView view)
+    private FighterCard makeCard(FighterView view)
     {
         FighterCard card = new FighterCard(view);
 
