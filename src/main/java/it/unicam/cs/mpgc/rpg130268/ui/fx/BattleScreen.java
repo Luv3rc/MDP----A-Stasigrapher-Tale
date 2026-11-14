@@ -1,29 +1,10 @@
 package it.unicam.cs.mpgc.rpg130268.ui.fx;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
-import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleEvent;
-import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleOutcome;
-import it.unicam.cs.mpgc.rpg130268.ui.question.Choice;
-import it.unicam.cs.mpgc.rpg130268.ui.question.QuestionPrompt;
-import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
 import it.unicam.cs.mpgc.rpg130268.ui.BattlePresenter;
 import it.unicam.cs.mpgc.rpg130268.ui.FighterView;
-import javafx.animation.AnimationTimer;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,19 +18,24 @@ import java.util.function.Supplier;
     The window of a battle: it draws what the BattlePresenter says and tells it what the player does.
     There is no game logic here. This class only puts the pieces together and decides what happens at every frame:
 
+    BattleLayout       where everything is (and the texts, the log and the timing bar)
+    BattleLoop         the frames
+    BattleKeys         what every key does (and the keys that work now)
+    EndOfBattle        self-explanatory
+    BattleEnding       self-explanatory
     BattleBackground   the picture of the area, darkened
     EnemyFormation     where the enemies stand
     FighterCard        one sprite with its life bar (one for every fighter)
     PartyPanel         the HUD of a party member (face, life, AP, ink)
-    BattleMenu         ATTACK / ABILITIES / ITEMS, and the question to retry
+    BattleMenu         ATTACK / ABILITIES / ITEMS
     TargetSelection    A / D / Enter: which target is selected
     BattleAnimator     what the events of the battle look like (cuts, numbers, shakes)
     BattleOverlay      the announcement of an ability and the banner of the end
     RpgButtons         the hexagon buttons (css/battle.css, in the resources)
 
     How it works:
-    - A timer calls frame() every frame: time goes on (the presenter returns the events that have just become
-      visible, and they are animated), and everything is drawn again
+    - The loop calls frame() every frame: the presenter returns the events that have just become visible and they
+      are animated, then everything is drawn again
     - A key is stamped where it happened: before it is handled the battle is moved forward up to that moment,
       not only up to the last frame, so the timing of the player counts exactly
     - The keys that can be used now are written in the bottom-left corner (ESC -- go back, E -- parry...):
@@ -62,59 +48,27 @@ import java.util.function.Supplier;
 * */
 public class BattleScreen implements GameScreen
 {
-    private static final long NANOS_PER_MS = 1_000_000;
-    private static final long MAX_STEP_MS = 100;       // a long pause (the window was dragged...) is not played at once
-    private static final long END_PAUSE_NANOS = 1_200_000_000L;    // in the story, how long the end of a battle stays on screen
-
-    private static final double HUD_MARGIN = 14;
-    private static final double BOTTOM_MARGIN = 40;          // under it there is room for the keys that work now
-    private static final double PARTY_LEFT = 300;
-    private static final double MENU_LEFT = PARTY_LEFT + 150 + 36;   // the menu is on the right of Gunther (150 = his width)
-    private static final double ENEMIES_RIGHT = 120;
-    private static final double ENEMIES_BOTTOM = 150;        // the feet of the enemies in front: above the head of Gunther
-
     private final Supplier<BattlePresenter> factory;
-    private final BattleExit exit;                // how the battle leaves the screen in the story, or null for a battle on its own
 
-    private final BorderPane root = new BorderPane();
-    private final Pane slashLayer = new Pane();
-    private final StackPane stage = new StackPane(root, slashLayer);
-    private final BattleBackground background = new BattleBackground(stage, root);
     private final BattleOverlay overlay = new BattleOverlay();
     private final EnemyFormation enemies = new EnemyFormation();
-
-    private final StackPane field = new StackPane();
-    private final HBox partyBox = new HBox(24);
-    private final HBox hudBox = new HBox(16);
-    private final Label titleLabel = new Label();
-    private final Label lockLabel = new Label();
-    private final Label hintLabel = new Label();
-    private final TimingBar timingBar = new TimingBar();
-    private final TextArea logArea = new TextArea();
-
     private final Map<Fighter, FighterCard> cards = new LinkedHashMap<>();
     private final List<PartyPanel> panels = new ArrayList<>();
 
+    private final BattleEnding ending;
     private final BattleMenu menu;
-    private final QuestionPopup retryPopup;                // only used by a battle on its own
-    private final QuestionPrompt retryPrompt = new QuestionPrompt();
     private final TargetSelection targeting;
+    private final BattleLayout layout;
+    private final BattleBackground background;
     private final BattleAnimator animator;
-
-    private final AnimationTimer timer = new AnimationTimer()
-    {
-        @Override
-        public void handle(long ignored) { frame(System.nanoTime()); }
-    };
+    private final BattleKeys keys;
+    private final EndOfBattle endOfBattle;
+    private final BattleLoop loop = new BattleLoop(this::advance, this::render, this::afterFrame);
 
     private BattlePresenter presenter;
-    private long lastNanos;
     private int logShown;
-    private boolean timingBarOn = false;          // the bar with the windows of parry and dodge. T key shows it
-    private long endSeenNanos;                    // when the end of the battle was first seen, or 0 if it is not over
-    private boolean exitDone;
 
-    // A battle on its own
+    // A battle on its own: at the end it asks to retry
     public BattleScreen(Supplier<BattlePresenter> factory)
     {
         this(factory, null);
@@ -124,101 +78,35 @@ public class BattleScreen implements GameScreen
     BattleScreen(Supplier<BattlePresenter> factory, BattleExit exit)
     {
         this.factory = Objects.requireNonNull(factory, "factory must not be null");
-        this.exit = exit;
-        overlay.setOutcomeBanner(exit == null);
 
         // The look of the buttons (src/main/resources/css/battle.css). If it is not there the buttons are plain
         URL stylesheet = BattleScreen.class.getResource("/css/battle.css");
-        if (stylesheet != null)
-            stage.getStylesheets().add(stylesheet.toExternalForm());
+        boolean styled = stylesheet != null;
+
+        ending = exit == null ? new BattleRetry(new RpgButtons(styled), this::startNewBattle) : BattleEnding.story(exit);
+        overlay.setOutcomeBanner(ending.showsOutcomeBanner());
 
         // The pieces that need "the battle of now" get a way to ask for it: a new presenter is made at every battle
-        menu = new BattleMenu(new RpgButtons(stylesheet != null), () -> presenter);
-        retryPopup = new QuestionPopup(new RpgButtons(stylesheet != null), () -> answerRetry(true), () -> answerRetry(false));
+        menu = new BattleMenu(new RpgButtons(styled), () -> presenter);
         targeting = new TargetSelection(cards, () -> presenter);
-        animator = new BattleAnimator(cards, new SlashEffect(slashLayer), overlay, () -> presenter.getTimeMs());
 
-        // The cuts go over everything but they must not catch the mouse, and they never draw outside of the window
-        slashLayer.setMouseTransparent(true);
-        Rectangle slashClip = new Rectangle();
-        slashClip.widthProperty().bind(slashLayer.widthProperty());
-        slashClip.heightProperty().bind(slashLayer.heightProperty());
-        slashLayer.setClip(slashClip);
+        layout = new BattleLayout(enemies.getRoot(), menu.getRoot(), overlay);
+        if (styled) layout.addStylesheet(stylesheet);
 
         // The background is the first thing of the window, under everything. Which picture it is depends on the area
         // of the battle (see startNewBattle)
-        stage.getChildren().addAll(0, background.nodes());
+        background = new BattleBackground(layout.stage(), layout.content());
+        layout.addBehind(background.nodes());
+        ending.popup().ifPresent(layout::addOnTop);      // the question is over everything
 
-        // The content can never ask for more room than the window has (a taller menu, a longer text...): if it did,
-        // the StackPane would make the screen bigger than the window and everything would slide
-        root.setMinSize(0, 0);
-
-        // Top: the round, whose turn it is, the lockout, and the timing bar (T to hide it)
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
-        lockLabel.setStyle("-fx-text-fill: #e67e22; -fx-font-size: 16px; -fx-font-weight: bold;");
-        Region topSpace = new Region();
-        HBox.setHgrow(topSpace, Priority.ALWAYS);
-        HBox titleRow = new HBox(12, titleLabel, topSpace, lockLabel);
-        titleRow.setAlignment(Pos.CENTER_LEFT);
-
-        Label legend = new Label("green = parry window    blue = dodge window    white line = impact");
-        legend.setStyle("-fx-text-fill: #8888aa; -fx-font-size: 12px;");
-        legend.visibleProperty().bind(timingBar.visibleProperty());
-
-        VBox top = new VBox(6, titleRow, timingBar, legend);
-        top.setAlignment(Pos.TOP_CENTER);
-        top.setPadding(new Insets(12, 14, 0, 14));
-        root.setTop(top);
-
-        // Center: the field. Gunther on the left and the enemies on the right, facing each other: the middle of the
-        // screen is left free, because that is where the backgrounds have what is worth looking at.
-        // The menu is on the right of Gunther, and the HUD in the top-right corner.
-        // The enemies are above the head of Gunther: the middle of the screen stays free.
-        // Every box has exactly the size of its content: if the StackPane stretched them, the alignment
-        // (and the middle of the sprites, where the cuts aim) would be wrong
-        partyBox.setAlignment(Pos.BOTTOM_CENTER);
-        hudBox.setAlignment(Pos.TOP_RIGHT);
-        hudBox.setSpacing(12);
-        for (HBox box : List.of(partyBox, hudBox)) box.setFillHeight(false);
-        for (Region box : List.of(enemies.getRoot(), partyBox, hudBox, menu.getRoot())) box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-
-        StackPane.setAlignment(enemies.getRoot(), Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(enemies.getRoot(), new Insets(0, ENEMIES_RIGHT, ENEMIES_BOTTOM, 0));
-        StackPane.setAlignment(partyBox, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(partyBox, new Insets(0, 0, BOTTOM_MARGIN, PARTY_LEFT));
-        StackPane.setAlignment(menu.getRoot(), Pos.BOTTOM_LEFT);
-        StackPane.setMargin(menu.getRoot(), new Insets(0, 0, BOTTOM_MARGIN, MENU_LEFT));
-        StackPane.setAlignment(hudBox, Pos.TOP_RIGHT);
-        StackPane.setMargin(hudBox, new Insets(HUD_MARGIN, HUD_MARGIN, 0, 0));
-
-        // The log is out of the way: it is only there if the player wants it (L)
-        logArea.setEditable(false);
-        logArea.setWrapText(true);
-        logArea.setFocusTraversable(false);
-        logArea.setStyle("-fx-control-inner-background: #14141d; -fx-text-fill: #dddddd; -fx-opacity: 0.92;");
-        logArea.setMaxSize(360, 220);
-        logArea.setVisible(false);
-        StackPane.setAlignment(logArea, Pos.TOP_LEFT);
-        StackPane.setMargin(logArea, new Insets(8));
-
-        // The keys that work now, in the bottom-left corner
-        hintLabel.setStyle("-fx-text-fill: #ccccdd; -fx-font-size: 14px; -fx-font-weight: bold; "
-                + "-fx-effect: dropshadow(gaussian, black, 4, 0.8, 0, 0);");
-        hintLabel.setMouseTransparent(true);
-        StackPane.setAlignment(hintLabel, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(hintLabel, new Insets(0, 0, 8, 10));
-
-        field.getChildren().addAll(enemies.getRoot(), partyBox, menu.getRoot(), hintLabel, logArea, overlay.bannerNode());
-
-        // The announcement and the HUD are over the WHOLE window (the HUD over the top bar), but under the cuts
-        stage.getChildren().add(stage.getChildren().indexOf(slashLayer), overlay.announcementNode());
-        stage.getChildren().add(stage.getChildren().indexOf(slashLayer), hudBox);
-        stage.getChildren().add(retryPopup.getRoot());      // the question is over everything
-        root.setCenter(field);
+        animator = new BattleAnimator(cards, new SlashEffect(layout.slashLayer()), overlay, () -> presenter.getTimeMs());
+        keys = new BattleKeys(() -> presenter, menu, targeting, ending,
+                layout::toggleTimingBar, layout::toggleLog, loop::catchUp);
+        endOfBattle = new EndOfBattle(ending);
     }
 
     @Override
-    public Region getRoot() { return stage; }
+    public Region getRoot() { return layout.stage(); }
 
     @Override
     public void onShow() { startNewBattle(); }
@@ -226,13 +114,11 @@ public class BattleScreen implements GameScreen
     // A new fight: the presenter is built again, and the sprites, the HUD, the log and the menu with it
     public void startNewBattle()
     {
-        timer.stop();
+        loop.stop();
 
         presenter = factory.get();
-        endSeenNanos = 0;
-        exitDone = false;
-        retryPrompt.close();
-        retryPopup.hide();
+        endOfBattle.reset();
+        ending.reset();
 
         presenter.setAlwaysAskTarget(true);     // even with a single enemy, the player confirms it
         presenter.start();
@@ -240,17 +126,14 @@ public class BattleScreen implements GameScreen
         for (FighterCard old : cards.values()) old.dispose();
         cards.clear();
         panels.clear();
-        partyBox.getChildren().clear();
+        layout.clearFighters();
         enemies.clear();
-        hudBox.getChildren().clear();
 
         for (FighterView view : presenter.getParty())
         {
-            partyBox.getChildren().add(makeCard(view).getRoot());
-
             PartyPanel panel = new PartyPanel(view);
             panels.add(panel);
-            hudBox.getChildren().add(panel.getRoot());
+            layout.addPartyMember(makeCard(view).getRoot(), panel.getRoot());
         }
 
         List<FighterCard> enemyCards = new ArrayList<>();
@@ -261,19 +144,21 @@ public class BattleScreen implements GameScreen
         animator.reset();
         menu.reset();
 
-        logArea.clear();
+        layout.clearLog();
         logShown = 0;
 
-        lastNanos = System.nanoTime();
-        timer.start();
+        loop.start();
     }
 
     @Override
     public void stop()
     {
-        timer.stop();
+        loop.stop();
         for (FighterCard card : cards.values()) card.dispose();
     }
+
+    @Override
+    public void onKeyPressed(KeyEvent event) { keys.onKey(event.getCode()); }
 
     private FighterCard makeCard(FighterView view)
     {
@@ -286,144 +171,21 @@ public class BattleScreen implements GameScreen
         return card;
     }
 
-    // ---------- Time ----------
+    // ---------- Every frame ----------
 
-    private void frame(long nowNanos)
+    // Time goes on: what has just become visible is animated
+    private void advance(long deltaMs)
     {
-        long elapsedMs = (nowNanos - lastNanos) / NANOS_PER_MS;
-
-        if (elapsedMs > 0)
-        {
-            // The leftover nanoseconds are kept for the next frame: no time is lost
-            lastNanos += elapsedMs * NANOS_PER_MS;
-
-            for (BattleEvent event : presenter.advance(Math.min(elapsedMs, MAX_STEP_MS)))
-                animator.animate(event);
-        }
-
-        render();
-        checkEnd(nowNanos);
+        presenter.advance(deltaMs).forEach(animator::animate);
     }
 
-    private void checkEnd(long nowNanos)
-    {
-        if (exitDone || !presenter.isOver())
-            return;
-
-        if (endSeenNanos == 0)
-        {
-            endSeenNanos = nowNanos;
-            return;
-        }
-
-        if (nowNanos - endSeenNanos < END_PAUSE_NANOS)
-            return;
-
-        exitDone = true;
-        BattleEvent.BattleEnded end = presenter.getEnd().orElseThrow();
-
-        if (exit == null)
-            askToRetry(end);
-        else if (end.outcome() == BattleOutcome.VICTORY)
-            exit.onWon(end);
-        else
-            exit.onLost();
-    }
-
-    // The question of a battle on its own
-    private void askToRetry(BattleEvent.BattleEnded end)
-    {
-        retryPrompt.ask("Do you want to retry the battle?", end.outcome() == BattleOutcome.VICTORY ? "Victory!" : "Defeat.",
-                "Yes", "No");
-        showRetry();
-    }
-
-    private void showRetry() { retryPopup.show(retryPrompt.view().orElseThrow()); }
-
-    // Yes starts a new fight and No closes the program
-    private void answerRetry(boolean yes)
-    {
-        retryPrompt.close();
-        retryPopup.hide();
-
-        if (yes)
-            startNewBattle();
-        else
-            Platform.exit();
-    }
-
-    // ---------- Keys ----------
-
-    @Override
-    public void onKeyPressed(KeyEvent event)
-    {
-        if (presenter == null) return;
-
-        KeyCode code = event.getCode();
-
-        // What a key does depends on what the player is doing: choosing in the menu (F, E, W...), choosing the
-        // target (A, D, Enter), reacting to an attack (E, Q). They never happen together, so E can be both
-        if (code == KeyCode.T)
-            timingBarOn = !timingBarOn;
-        else if (code == KeyCode.L)
-            logArea.setVisible(!logArea.isVisible());
-        else if (presenter.isOver())
-            retryKey(code);
-        else if (presenter.isTargeting())
-            targetKey(code);
-        else if (presenter.isChoosing())
-            menu.onKey(code);
-        else if (code == KeyCode.E)
-            react(ReactionType.PARRY);
-        else if (code == KeyCode.Q)
-            react(ReactionType.DODGE);
-    }
-
-    private void retryKey(KeyCode code)
-    {
-        if (exit != null || !retryPrompt.isAsking())
-            return;                         // in the story nobody asks anything here
-
-        switch (code)
-        {
-            case A, LEFT, D, RIGHT ->
-            {
-                retryPrompt.toggle();
-                showRetry();
-            }
-            case ENTER, SPACE -> answerRetry(retryPrompt.selected() == Choice.CONFIRM);
-            case Y -> answerRetry(true);
-            case N -> answerRetry(false);
-            default -> { }
-        }
-    }
-
-    private void targetKey(KeyCode code)
-    {
-        if (code == KeyCode.A || code == KeyCode.LEFT)
-            targeting.move(-1);
-        else if (code == KeyCode.D || code == KeyCode.RIGHT)
-            targeting.move(1);
-        else if (code == KeyCode.ENTER)
-            targeting.confirm();
-        else if (code == KeyCode.ESCAPE)
-            presenter.cancel();
-    }
-
-    // The battle is moved forward up to THIS moment first, so the key is stamped where it happened
-    private void react(ReactionType type)
-    {
-        frame(System.nanoTime());
-        presenter.press(type);
-    }
-
-    // ---------- Drawing ----------
+    private void afterFrame(long nowNanos) { endOfBattle.check(presenter, nowNanos); }
 
     private void render()
     {
         String actor = presenter.getCurrentActor().map(Fighter::getName).orElse("-");
-        titleLabel.setText("Round " + presenter.getRound() + "   |   " + actor + (presenter.isChoosing() ? "   (your turn)" : ""));
-        lockLabel.setText(presenter.isLocked() ? "KEYS LOCKED  " + presenter.getLockedRemainingMs() + " ms" : "");
+        layout.setTitle("Round " + presenter.getRound() + "   |   " + actor + (presenter.isChoosing() ? "   (your turn)" : ""));
+        layout.setLock(presenter.isLocked() ? "KEYS LOCKED  " + presenter.getLockedRemainingMs() + " ms" : "");
 
         if (!presenter.isTargeting()) targeting.reset();
 
@@ -438,36 +200,17 @@ public class BattleScreen implements GameScreen
             entry.getValue().update(active, candidates.contains(fighter), fighter == selected);
         }
 
-        hintLabel.setText(hint());
+        layout.setHint(keys.hint());
 
         for (PartyPanel panel : panels) panel.update();
 
-        if (timingBarOn)
-            presenter.getCue().ifPresentOrElse(timingBar::show, timingBar::hide);
-        else
-            timingBar.hide();
-
+        layout.showCue(presenter.getCue());
         animator.update();
 
         List<String> log = presenter.getLog();
         for (; logShown < log.size(); logShown++)
-            logArea.appendText(log.get(logShown) + "\n");
+            layout.appendLog(log.get(logShown));
 
         menu.update();
-    }
-
-    // The keys that work now, written in the bottom-left corner (there are no buttons for them)
-    private String hint()
-    {
-        if (presenter.isOver())
-            return "";
-
-        if (presenter.isTargeting())
-            return "A / D -- change target        ENTER -- confirm        ESC -- go back";
-
-        if (presenter.isChoosing())
-            return menu.isOnAbilitiesPage() ? "ESC -- go back" : "";
-
-        return "E -- parry        Q -- dodge";
     }
 }
