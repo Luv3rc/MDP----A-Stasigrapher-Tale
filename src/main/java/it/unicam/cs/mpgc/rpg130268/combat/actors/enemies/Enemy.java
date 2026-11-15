@@ -41,6 +41,7 @@ public class Enemy extends Fighter
         this.xpReward = xpReward;
     }
 
+    @Override
     public int getLevel() { return level; }
     public int getXpReward() { return xpReward; }
 

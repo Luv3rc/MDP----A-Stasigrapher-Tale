@@ -87,6 +87,10 @@ public abstract class Fighter
 
     public Optional<ResourceGauge> getExtraGauge() { return Optional.empty(); }
 
+    public int getLevel() { return 1; }
+
+    public Optional<ResourceGauge> getApGauge() { return Optional.empty(); }
+
     // ? Will I need more here -- Will be Overridden
     public void onBasicAttackLanded() {}
     public void onPerfectParry() {}

@@ -168,8 +168,9 @@ public class Battle
     {
         Objects.requireNonNull(fighter, "fighter must not be null");
 
-        if (fighter instanceof PartyMember p && party.contains(p)) return true;
-        if (fighter instanceof Enemy e && enemies.contains(e)) return false;
+        // The party and enemy lists already say which side a fighter is on
+        if (party.contains(fighter)) return true;
+        if (enemies.contains(fighter)) return false;
 
         throw new IllegalArgumentException(fighter.getName() + " is not in this battle");
     }
@@ -201,20 +202,25 @@ public class Battle
             current = next.get();
             context.record(new BattleEvent.TurnStarted(current, now()));
 
-            if (current instanceof Enemy enemy)
-            {
-                if (enemyActs(enemy))
-                {
-                    phase = BattlePhase.PLAYING;
-                    return;
-                }
-            }
-            else
+            Optional<Enemy> enemy = enemyOf(current);
+
+            if (enemy.isEmpty())
             {
                 phase = BattlePhase.WAITING_FOR_PLAYER;
                 return;
             }
+
+            if (enemyActs(enemy.get()))
+            {
+                phase = BattlePhase.PLAYING;
+                return;
+            }
         }
+    }
+
+    private Optional<Enemy> enemyOf(Fighter fighter)
+    {
+        return enemies.stream().filter(enemy -> enemy == fighter).findFirst();
     }
 
     // False if the enemy chose to do nothing

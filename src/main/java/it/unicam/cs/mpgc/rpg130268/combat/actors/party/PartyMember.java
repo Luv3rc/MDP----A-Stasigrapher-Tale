@@ -4,6 +4,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.Ids;
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.ScalingStat;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.LevelRules;
+import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatPoints;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.StatRules;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.WeaponType;
@@ -15,6 +16,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 // This is anyone who is part of a party.
@@ -89,9 +91,13 @@ public abstract class PartyMember extends Fighter
         this.currentXp = startingXp;
     }
 
+    @Override
     public int getLevel () { return level; }
     public int getCurrentXp() { return currentXp; }
     public ApPool getAp() { return ap; }
+
+    @Override
+    public Optional<ResourceGauge> getApGauge() { return Optional.of(new ResourceGauge("AP", ap.getCurrentAp(), ap.getMaxAp())); }
 
     public int getXpForNextLevel()
     {

@@ -1,8 +1,6 @@
 package it.unicam.cs.mpgc.rpg130268.ui;
 
 import it.unicam.cs.mpgc.rpg130268.combat.actors.Fighter;
-import it.unicam.cs.mpgc.rpg130268.combat.actors.enemies.Enemy;
-import it.unicam.cs.mpgc.rpg130268.combat.actors.party.PartyMember;
 import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 
 // A fighter. The HP bar follows what has been SHOWN, not the real HP
@@ -10,12 +8,15 @@ import it.unicam.cs.mpgc.rpg130268.combat.mechanics.ResourceGauge;
 public final class FighterView
 {
     private final Fighter fighter;
+    private final boolean partyMember;
     private final int maxHp;
     private int shownHp;
 
-    FighterView(Fighter fighter)
+    // The presenter knows which side the fighter is on
+    FighterView(Fighter fighter, boolean partyMember)
     {
         this.fighter = fighter;
+        this.partyMember = partyMember;
         this.maxHp = fighter.getStats().maxHealth();
         this.shownHp = fighter.getHp();
     }
@@ -26,21 +27,17 @@ public final class FighterView
     public int getMaxHp() { return maxHp; }
     public int getShownHp() { return shownHp; }
     public boolean isAlive() { return shownHp > 0; }
-    public boolean isPartyMember() { return fighter instanceof PartyMember; }
+    public boolean isPartyMember() { return partyMember; }
 
-    public int getAp() { return fighter instanceof PartyMember member ? member.getAp().getCurrentAp() : 0; }
-    public int getMaxAp() { return fighter instanceof PartyMember member ? member.getAp().getMaxAp() : 0; }
+    // Only the party has AP; this is the real value, which changes at once
+    public int getAp() { return fighter.getApGauge().map(ResourceGauge::current).orElse(0); }
+    public int getMaxAp() { return fighter.getApGauge().map(ResourceGauge::max).orElse(0); }
 
     // The extra bar (Ink for Gunther). It is 0 / 0 for a fighter that has none. Real values, like AP
     public int getInk() { return fighter.getExtraGauge().map(ResourceGauge::current).orElse(0); }
     public int getMaxInk() { return fighter.getExtraGauge().map(ResourceGauge::max).orElse(0); }
 
-    public int getLevel()
-    {
-        if (fighter instanceof PartyMember member) return member.getLevel();
-        if (fighter instanceof Enemy enemy) return enemy.getLevel();
-        return 1;
-    }
+    public int getLevel() { return fighter.getLevel(); }
 
     void damage(int amount) { shownHp = Math.max(0, shownHp - amount); }
     void heal(int amount) { shownHp = Math.min(maxHp, shownHp + amount); }

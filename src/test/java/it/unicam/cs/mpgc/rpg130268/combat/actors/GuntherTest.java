@@ -49,4 +49,20 @@ class GuntherTest {
     void aFighterWithoutAResourceHasNoExtraGauge() {
         assertTrue(new Enemy("Goblin", new Stats(30, 5, 3, 3, 3)).getExtraGauge().isEmpty());
     }
+
+    @Test
+    void thePartyShowsItsApAsAGaugeAndEveryFighterHasALevel() {
+        Gunther g = gunther();
+        ResourceGauge ap = g.getApGauge().orElseThrow();
+
+        assertEquals("AP", ap.label());
+        assertEquals(g.getAp().getCurrentAp(), ap.current());
+        assertEquals(g.getAp().getMaxAp(), ap.max());
+
+
+        Enemy goblin = new Enemy("Goblin", new Stats(30, 5, 3, 3, 3), 4, 10);
+        assertTrue(goblin.getApGauge().isEmpty());
+        assertEquals(4, goblin.getLevel());
+        assertEquals(1, new Enemy("Rat", new Stats(30, 5, 3, 3, 3)).getLevel());
+    }
 }

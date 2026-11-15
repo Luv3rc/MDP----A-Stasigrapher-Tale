@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /* *
     The logic of the console UI for a Battle: it shows what happens, asks the player what to do, and punishes
@@ -377,12 +378,8 @@ public class ConsoleBattle
     {
         String text = fighter.getName() + "  HP " + fighter.getHp() + "/" + fighter.getStats().maxHealth();
 
-        if (fighter instanceof PartyMember member)
-            text += "  AP " + member.getAp().getCurrentAp() + "/" + member.getAp().getMaxAp();
-
-        Optional<ResourceGauge> gauge = fighter.getExtraGauge();
-        if (gauge.isPresent())
-            text += "  " + gauge.get().label() + " " + gauge.get().current() + "/" + gauge.get().max();
+        for (ResourceGauge gauge : Stream.of(fighter.getApGauge(), fighter.getExtraGauge()).flatMap(Optional::stream).toList())
+            text += "  " + gauge.label() + " " + gauge.current() + "/" + gauge.max();
 
         return text;
     }

@@ -69,19 +69,18 @@ public class BattlePresenter implements BattleChoices
         this.cues = new ReactionCues(windows);
 
         for (PartyMember member : Objects.requireNonNull(party, "party must not be null"))
-            register(member, this.party);
+            register(member, this.party, true);
 
         for (Enemy enemy : Objects.requireNonNull(enemies, "enemies must not be null"))
-            register(enemy, this.enemies);
+            register(enemy, this.enemies, false);
     }
 
-    private void register(Fighter fighter, List<FighterView> side)
+    private void register(Fighter fighter, List<FighterView> side, boolean partyMember)
     {
-        FighterView view = new FighterView(fighter);
+        FighterView view = new FighterView(fighter, partyMember);
         side.add(view);
         views.put(fighter, view);
     }
-
 
     // ---------- Driving it ----------
 
