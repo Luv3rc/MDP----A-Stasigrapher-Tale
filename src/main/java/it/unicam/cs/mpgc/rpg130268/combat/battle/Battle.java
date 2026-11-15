@@ -8,7 +8,6 @@ import it.unicam.cs.mpgc.rpg130268.combat.reaction.ReactionType;
 import it.unicam.cs.mpgc.rpg130268.combat.skills.Ability;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,9 +28,8 @@ import java.util.Optional;
       An enemy with nothing to do passes
     - The next turn begins only when the action in progress has been played (its events, on the clock, are over)
       and the dead zone after it has passed (see BattleRules)
-    - When one side has fallen the battle is over. If the party won, the XP of the enemies is shared in the party
-      (see XpRules: the members who have fallen get a little less, and it goes to the ones standing) and the
-      members who had fallen come back with 1 HP
+    - When one side has fallen the battle is over. If the party won, the rewards are applied (XpRewards by default,
+      which shares the XP of the enemies, see XpRules, and brings the fallen back with 1 HP)
 * */
 public class Battle
 {
@@ -40,18 +38,18 @@ public class Battle
     private final TurnManager turns;
     private final LiveBattleContext context;
     private final EnemyBehavior behavior;
-    private final XpRules xpRules;
+    private final BattleRewards rewards;
 
     private BattlePhase phase = BattlePhase.NOT_STARTED;
     private Fighter current = null;
 
     public Battle(List<PartyMember> party, List<Enemy> enemies, LiveBattleContext context, EnemyBehavior behavior)
     {
-        this(party, enemies, context, behavior, XpRules.defaults());
+        this(party, enemies, context, behavior, XpRewards.defaults());
     }
 
     public Battle(List<PartyMember> party, List<Enemy> enemies, LiveBattleContext context, EnemyBehavior behavior,
-                  XpRules xpRules)
+                  BattleRewards rewards)
     {
         Objects.requireNonNull(party, "party must not be null");
         Objects.requireNonNull(enemies, "enemies must not be null");
@@ -61,7 +59,7 @@ public class Battle
         this.turns = new TurnManager(this.party, this.enemies);     // it checks both sides have fighters
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.behavior = Objects.requireNonNull(behavior, "behavior must not be null");
-        this.xpRules = Objects.requireNonNull(xpRules, "xpRules must not be null");
+        this.rewards = Objects.requireNonNull(rewards, "rewards must not be null");
     }
 
     // With the default rules and the simplest behavior for the enemies
@@ -241,22 +239,8 @@ public class Battle
         current = null;
 
         BattleOutcome outcome = turns.getBattleOutcome();
-        Map<PartyMember, Integer> xp = new LinkedHashMap<>();
 
-        if (outcome == BattleOutcome.VICTORY)
-        {
-            int totalXp = enemies.stream().mapToInt(Enemy::getXpReward).sum();
-
-            xp.putAll(xpRules.split(totalXp, party));
-
-            for (PartyMember member : party)
-            {
-                member.gainXp(xp.get(member));
-
-                if (!member.isAlive())
-                    member.setHp(1);            // the ones who had fallen come back with 1 HP
-            }
-        }
+        Map<PartyMember, Integer> xp = outcome == BattleOutcome.VICTORY ? rewards.award(party, enemies) : Map.of();
 
         context.record(new BattleEvent.BattleEnded(outcome, xp, now()));
     }

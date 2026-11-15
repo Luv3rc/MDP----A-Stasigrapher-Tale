@@ -5,6 +5,7 @@ import it.unicam.cs.mpgc.rpg130268.combat.battle.Battle;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleClock;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.BattleRules;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.LiveBattleContext;
+import it.unicam.cs.mpgc.rpg130268.combat.battle.XpRewards;
 import it.unicam.cs.mpgc.rpg130268.combat.battle.XpRules;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.DamageCalculator;
 import it.unicam.cs.mpgc.rpg130268.combat.damage.StrikeWeight;
@@ -33,7 +34,7 @@ public final class BattleFactory
 
         LiveBattleContext context = new LiveBattleContext(new DamageCalculator(), WINDOWS, RULES, new BattleClock());
 
-        return new Battle(party, setup.enemies(), context, setup.behavior(), XP_RULES);
+        return new Battle(party, setup.enemies(), context, setup.behavior(), new XpRewards(XP_RULES));
     }
 
     public static ReactionWindows reactionWindows() { return WINDOWS; }
